@@ -20,8 +20,10 @@ int main(void)
 
     InitWindow(screenWidth, screenHeight, "raylib [core] example - keyboard input");
 
-    Rectangle player = { (float)screenWidth / 2, (float)screenHeight / 1.5, 50, 50 }; // Set player size
+    // Define the player position and size for collision, set it to match your ship's texture
+    Rectangle player = { (float)screenWidth / 2, (float)screenHeight / 1.5, 32, 32 }; // Player size (for collision)
     Texture2D bulletSprite = LoadTexture("resources/Disparo_Spaceship.png");
+    Texture2D shipSprite = LoadTexture("resources/Nave Base.png");
 
     std::queue<Bullet> bullets;
     bool gameOver = false;
@@ -85,15 +87,15 @@ int main(void)
                 Bullet bullet = bullets.front();
                 bullets.pop();
 
-                // Draw the bullet using the same position as the rectangle
-                // This makes sure the bullet is drawn in the same place as its rect
-                DrawTexture(bulletSprite, (int)bullet.rect.x-13, (int)bullet.rect.y, WHITE);
+                // Draw the bullet in the middle
+                DrawTexture(bulletSprite, (int)bullet.rect.x-8, (int)bullet.rect.y, WHITE);
 
                 bullets.push(bullet);  // Put the bullet back in the queue
             }
 
-            // Draw player
-            DrawRectangleRec(player, BLUE);
+            // Draw player (ship texture)
+            // Instead of drawing a rectangle, draw the ship sprite using the player's position
+            DrawTexture(shipSprite, (int)player.x, (int)player.y, WHITE);
         }
 
         EndDrawing();
