@@ -30,7 +30,7 @@ int main(void)
     std::queue<Bullet> bullets;
     bool gameOver = false;
     int hard = 220;
-    int score = 10000;
+    int score = 0;
 
     SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
