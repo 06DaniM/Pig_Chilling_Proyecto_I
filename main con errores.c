@@ -2,17 +2,11 @@
 #include <queue>
 
 #define BULLET_SPEED 7
-#define ENEMY_SPEED 3
 
 typedef struct Bullet {
     Rectangle rect;
     bool active;
 } Bullet;
-
-typedef struct Enemy {
-    Rectangle rect;
-    bool active;
-} Enemy;
 
 //------------------------------------------------------------------------------------
 // Program main entry point
@@ -27,9 +21,9 @@ int main(void)
     InitWindow(screenWidth, screenHeight, "raylib [core] example - keyboard input");
 
     Rectangle player = { (float)screenWidth / 2, (float)screenHeight / 1.5, 50, 50 }; // Set player size
+    Texture2D bulletSprite = LoadTexture("resources/Disparo_Spaceship.png");
 
     std::queue<Bullet> bullets;
-    std::queue<Enemy> enemies;
     bool gameOver = false;
     int hard = 220;
 
@@ -44,32 +38,6 @@ int main(void)
             // Player movement
             if (IsKeyDown(KEY_D)) player.x += 5.0f;
             if (IsKeyDown(KEY_A)) player.x -= 5.0f;
-
-            // Randomly generate enemies
-            if (rand() % hard == 1)
-            {
-                Enemy enemy;
-                enemy.rect.x = GetRandomValue(0, screenWidth - 50);
-                enemy.rect.y = -20;
-                enemy.rect.width = 50;
-                enemy.rect.height = 20;
-                enemies.push(enemy);
-                if (hard > 10) hard--;
-            }
-
-            int enemyCount = enemies.size();
-            for (int i = 0; i < enemyCount; i++)
-            {
-                Enemy enemy = enemies.front();
-                enemies.pop();
-                enemy.rect.y += ENEMY_SPEED;
-                if (enemy.rect.y + enemy.rect.height > screenHeight)
-                {
-                    gameOver = true;
-                }
-
-                else enemies.push(enemy);
-            }
 
             // Bullet firing
             if (IsKeyPressed(KEY_SPACE) || IsMouseButtonDown(MOUSE_BUTTON_LEFT))
@@ -99,36 +67,8 @@ int main(void)
                 }
             }
 
-            bulletCount = bullets.size();
-            enemyCount = enemies.size();
-            std::queue<Bullet> tempBullets;
-            std::queue<Enemy> tempenemies;
-
-            for (int i = 0; i < bulletCount; i++)
-            {
-                Bullet bullet = bullets.front();
-                bullets.pop();
-                bool bulletHit = false;
-                for (int j = 0; j < enemyCount; j++)
-                {
-                    Enemy enemy = enemies.front();
-                    enemies.pop();
-                    if (CheckCollisionRecs(bullet.rect, enemy.rect))
-                    {
-                        bulletHit = true;
-                    }
-
-                    else tempenemies.push(enemy);
-                }
-
-                if (!bulletHit) tempBullets.push(bullet);
-                enemies = tempenemies;
-            }
-
             // Replace old bullets queue with updated one
             bullets = tempBullets;
-
-            // Collision detection logic can go here
         }
 
         // Drawing
@@ -144,16 +84,12 @@ int main(void)
             {
                 Bullet bullet = bullets.front();
                 bullets.pop();
-                DrawRectangleRec(bullet.rect, RED);
-                bullets.push(bullet);  // Put the bullet back in the queue
-            }
 
-            int enemyCount = enemies.size();
-            for (int i = 0; i < enemyCount; i++)
-            {
-                Enemy enemy = enemies.front();
-                enemies.pop();
-                DrawRectangleRec(enemy.rect, WHITE);
+                // Draw the bullet using the same position as the rectangle
+                // This makes sure the bullet is drawn in the same place as its rect
+                DrawTexture(bulletSprite, (int)bullet.rect.x-13, (int)bullet.rect.y, WHITE);
+
+                bullets.push(bullet);  // Put the bullet back in the queue
             }
 
             // Draw player
