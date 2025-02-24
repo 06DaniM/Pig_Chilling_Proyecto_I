@@ -34,7 +34,7 @@ int main(void)
 
     // Generación de enemigos
     std::vector<Enemy> enemies;
-    for (int i = 0; i < 5; i++) // Crear 5 enemigos por ahora
+    for (int i = 0; i < 5; i++) // Create 5 enemys
     {
         Enemy newEnemy = { { screenWidth / 6.0f * (i + 1), 50.0f, 32, 32 }, true, 0.0f, false, 3.0f, (float)GetRandomValue(2, 5) };
         enemies.push_back(newEnemy);
@@ -148,16 +148,23 @@ int main(void)
             if ((IsKeyDown(KEY_SPACE) || IsMouseButtonDown(MOUSE_BUTTON_LEFT)) && shootTimer >= shootCooldown)
             {
                 shootTimer = 0.0f;
+
+                // Define the size of the bullets collision
+                float bulletWidth = 20;  // Width of the collision
+                float bulletHeight = 12; // Height of the collision
+
                 if (doubleShoot)
                 {
-                    bullets.push_back({ { player.x + player.width / 2 - 30, player.y, 4, 10 }, true });
-                    bullets.push_back({ { player.x + player.width / 2 - 3, player.y, 4, 10 }, true });
+                    bullets.push_back({ { player.x + player.width / 2 - 15 - bulletWidth / 2, player.y, bulletWidth, bulletHeight }, true });
+                    bullets.push_back({ { player.x + player.width / 2 + 15 - bulletWidth / 2, player.y, bulletWidth, bulletHeight }, true });
                 }
+
                 else
                 {
-                    bullets.push_back({ { player.x + player.width / 2 - 16, player.y, 4, 10 }, true });
+                    bullets.push_back({ { player.x + player.width / 2 - bulletWidth / 2, player.y, bulletWidth, bulletHeight }, true });
                 }
             }
+
 
             // Update the bullets
             for (Bullet& bullet : bullets)
@@ -165,13 +172,18 @@ int main(void)
                 if (bullet.active)
                 {
                     bullet.rect.y -= BULLET_SPEED;
+
                     for (Enemy& enemy : enemies)
                     {
-                        if (CheckCollisionRecs(bullet.rect, enemy.rect) && enemy.active)
+                        if (enemy.active)
                         {
-                            bullet.active = false;
-                            enemy.active = false;
-                            score += 100;
+                            if (CheckCollisionRecs(bullet.rect, enemy.rect))
+                            {
+                                bullet.active = false;
+                                enemy.active = false;
+                                score += 100;
+                                break;
+                            }
                         }
                     }
                 }
@@ -205,12 +217,15 @@ int main(void)
         // Draw the bullets
         for (const Bullet& bullet : bullets)
         {
-            if (bullet.active) 
+            if (bullet.active)
             {
-                DrawTexture(bulletSprite, (int)bullet.rect.x, (int)bullet.rect.y, WHITE);
+                DrawTexture(bulletSprite,
+                    (int)(bullet.rect.x + bullet.rect.width / 2 - bulletSprite.width / 2),
+                    (int)(bullet.rect.y + bullet.rect.height / 2 - bulletSprite.height / 2),
+                    WHITE);
             }
         }
-
+        
         // Draw the ship
         DrawTexture(doubleShoot ? shipSpriteDouble : shipSpriteBase, (int)player.x, (int)player.y, WHITE);
 
@@ -262,26 +277,9 @@ int main(void)
 
 void UpdateEnemy(Enemy& enemy, float deltaTime, Rectangle player)
 {
-    // Movimiento senoidal de izquierda a derecha
-    enemy.rect.x += sinf(enemy.offsetX) * 2;
-    enemy.offsetX += 0.1f;
 
     if (enemy.isAttacking)
     {
-        // Movimiento de ataque
-        float speed = 2.0f;
-        if (enemy.rect.y < player.y)
-        {
-            enemy.rect.y += speed;
-        }
-        else if (enemy.rect.x < player.x)
-        {
-            enemy.rect.x += speed;
-        }
-        else if (enemy.rect.x > player.x)
-        {
-            enemy.rect.x -= speed;
-        }
 
         // Control del tiempo de ataque
         enemy.attackTime -= deltaTime;
