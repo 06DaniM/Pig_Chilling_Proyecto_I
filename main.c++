@@ -2,6 +2,7 @@
 #include <vector>
 #include <string>
 #include <algorithm>
+#include <cmath>
 
 #define BULLET_SPEED 7
 #define PLAYER_SPEED 5.0f
@@ -14,7 +15,14 @@ typedef struct Bullet {
 typedef struct Enemy {
     Rectangle rect;
     bool active;
+    float offsetX; // Para el movimiento senoidal
+    bool isAttacking;  // Estado de ataque
+    float attackTime;  // Tiempo para el ataque
+    float attackCooldown;  // Enfriamiento antes del siguiente ataque
 } Enemy;
+
+// Declaración de la función antes de main()
+void UpdateEnemy(Enemy& enemy, float deltaTime, Rectangle player);
 
 int main(void)
 {
@@ -23,7 +31,14 @@ int main(void)
     InitWindow(screenWidth, screenHeight, "Space Attacks!");
 
     Rectangle player = { screenWidth / 2.0f, screenHeight / 1.5f, 64, 64 };
-    Enemy enemy = { screenWidth / 2.0f, screenHeight / 3.0f, 32, 32, true };
+
+    // Generación de enemigos
+    std::vector<Enemy> enemies;
+    for (int i = 0; i < 5; i++) // Crear 5 enemigos por ahora
+    {
+        Enemy newEnemy = { { screenWidth / 6.0f * (i + 1), 50.0f, 32, 32 }, true, 0.0f, false, 3.0f, (float)GetRandomValue(2, 5) };
+        enemies.push_back(newEnemy);
+    }
 
     Texture2D shipSpriteBase = LoadTexture("resources/ship/Nave Base.png");
     Texture2D shipSpriteDouble = LoadTexture("resources/ship/NAVE 2DS 64X64.png");
@@ -45,13 +60,12 @@ int main(void)
     float shootTimer = 0.0f;     // Timer for counting seconds
     bool showGameOver = false;
 
-
     SetTargetFPS(60);
 
     while (!WindowShouldClose())
     {
         // For testing
-        if (IsKeyPressed(KEY_R)) 
+        if (IsKeyPressed(KEY_R))
         {
             doubleShoot = !doubleShoot;
         }
@@ -107,8 +121,6 @@ int main(void)
 
                 // Restore to its initial state
                 player.x = (screenWidth - player.width) / 2.0f;
-                enemy.rect = { screenWidth / 2.0f, screenHeight / 3.0f, 32, 32 };
-                enemy.active = true;
                 bullets.clear();
                 score = 0;
             }
@@ -119,7 +131,6 @@ int main(void)
         if (IsKeyPressed(KEY_ESCAPE) || IsKeyPressed('P')) {
             pause = !pause;
         }
-
 
         // Game manager 
         if (!pause)
@@ -154,21 +165,34 @@ int main(void)
                 if (bullet.active)
                 {
                     bullet.rect.y -= BULLET_SPEED;
-                    if (CheckCollisionRecs(bullet.rect, enemy.rect) && enemy.active)
+                    for (Enemy& enemy : enemies)
                     {
-                        bullet.active = false;
-                        enemy.active = false;
-                        score += 100;
+                        if (CheckCollisionRecs(bullet.rect, enemy.rect) && enemy.active)
+                        {
+                            bullet.active = false;
+                            enemy.active = false;
+                            score += 100;
+                        }
                     }
                 }
             }
 
             // Delete the inactive bullets
-            bullets.erase(std::remove_if(bullets.begin(), bullets.end(), 
+            bullets.erase(std::remove_if(bullets.begin(), bullets.end(),
                 [](const Bullet& b) { return !b.active || b.rect.y < 0; }), bullets.end());
+
+            // Update the enemeis
+            for (Enemy& enemy : enemies)
+            {
+                if (enemy.active)
+                {
+                    UpdateEnemy(enemy, GetFrameTime(), player);
+                }
+            }
         }
 
-        if (life <= 0) // Change to when life is <= 0
+        // Game Over when is dead
+        if (life <= 0)
         {
             gameOver = true;
         }
@@ -181,7 +205,8 @@ int main(void)
         // Draw the bullets
         for (const Bullet& bullet : bullets)
         {
-            if (bullet.active) {
+            if (bullet.active) 
+            {
                 DrawTexture(bulletSprite, (int)bullet.rect.x, (int)bullet.rect.y, WHITE);
             }
         }
@@ -189,6 +214,7 @@ int main(void)
         // Draw the ship
         DrawTexture(doubleShoot ? shipSpriteDouble : shipSpriteBase, (int)player.x, (int)player.y, WHITE);
 
+        // Draw the lifes of the ship
         for (int i = 0; i < life; i++) {
             Vector2 position = { 20 + i * (shipSpriteBase.width * scale + 10), screenHeight - shipSpriteBase.height * scale - 20 };
 
@@ -196,8 +222,12 @@ int main(void)
         }
 
         // Draw the enemies
-        if (enemy.active) DrawTexture(enemySprite, (int)enemy.rect.x, (int)enemy.rect.y, WHITE);
-
+        for (const Enemy& enemy : enemies)
+        {
+            if (enemy.active) {
+                DrawTexture(enemySprite, (int)enemy.rect.x, (int)enemy.rect.y, WHITE);
+            }
+        }
 
         // Draw the score
         DrawTextEx(font, "SCORE", { 50, 15 }, 34, 2, WHITE);
@@ -215,7 +245,6 @@ int main(void)
             DrawText("Press 'P' again to continue", (screenWidth - textWidth) / 2, screenHeight / 2, 20, WHITE);
         }
 
-
         EndDrawing();
     }
 
@@ -229,4 +258,47 @@ int main(void)
 
     CloseWindow();
     return 0;
+}
+
+void UpdateEnemy(Enemy& enemy, float deltaTime, Rectangle player)
+{
+    // Movimiento senoidal de izquierda a derecha
+    enemy.rect.x += sinf(enemy.offsetX) * 2;
+    enemy.offsetX += 0.1f;
+
+    if (enemy.isAttacking)
+    {
+        // Movimiento de ataque
+        float speed = 2.0f;
+        if (enemy.rect.y < player.y)
+        {
+            enemy.rect.y += speed;
+        }
+        else if (enemy.rect.x < player.x)
+        {
+            enemy.rect.x += speed;
+        }
+        else if (enemy.rect.x > player.x)
+        {
+            enemy.rect.x -= speed;
+        }
+
+        // Control del tiempo de ataque
+        enemy.attackTime -= deltaTime;
+        if (enemy.attackTime <= 0.0f)
+        {
+            enemy.isAttacking = false;
+            enemy.attackCooldown = (float)GetRandomValue(2, 5);
+        }
+    }
+    else
+    {
+        // Control del tiempo de enfriamiento para el ataque
+        enemy.attackCooldown -= deltaTime;
+        if (enemy.attackCooldown <= 0.0f)
+        {
+            enemy.isAttacking = true;
+            enemy.attackTime = (float)GetRandomValue(1, 3);
+        }
+    }
 }
