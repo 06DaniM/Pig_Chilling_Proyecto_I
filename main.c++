@@ -15,30 +15,40 @@ typedef struct Bullet {
 typedef struct Enemy {
     Rectangle rect;
     bool active;
-    float offsetX; // Para el movimiento senoidal
-    bool isAttacking;  // Estado de ataque
-    float attackTime;  // Tiempo para el ataque
-    float attackCooldown;  // Enfriamiento antes del siguiente ataque
+    bool isAttacking;
+    float attackTime;
+    float attackCooldown;
+    Vector2 targetPosition; // Posición final
+    float entryTime; // Tiempo de entrada
+    int index; // Índice del enemigo en la fila
+    int loopDirection;
 } Enemy;
 
+const int screenWidth = 800;
+const int screenHeight = 450;
+int screen = 1;
+
+int maxEnemies = 5;        // Declarada como global
+int currentEnemies = 0;    // Declarada como global
+
 // Declaración de la función antes de main()
-void UpdateEnemy(Enemy& enemy, float deltaTime, Rectangle player);
+void UpdateEnemy(Enemy& enemy, float deltaTime);
+void SpawnEnemies(std::vector<Enemy>& enemies, float baseHeight, float baseWidth, int direction);
 
 int main(void)
 {
-    const int screenWidth = 800;
-    const int screenHeight = 450;
     InitWindow(screenWidth, screenHeight, "Space Attacks!");
 
     Rectangle player = { screenWidth / 2.0f, screenHeight / 1.5f, 64, 64 };
 
-    // Generación de enemigos
     std::vector<Enemy> enemies;
-    for (int i = 0; i < 5; i++) // Create 5 enemys
-    {
-        Enemy newEnemy = { { screenWidth / 6.0f * (i + 1), 50.0f, 32, 32 }, true, 0.0f, false, 3.0f, (float)GetRandomValue(2, 5) };
-        enemies.push_back(newEnemy);
-    }
+
+    int currentWave = 1;
+    int totalWaves = 3;  // Número de oleadas por pantalla
+    float waveTimer = 0.0f;
+    float waveDelay = 10.0f; // Segundos entre oleadas
+
+    SpawnEnemies(enemies, 100.0f, -50.0f, 1); // Generar la primera oleada
 
     Texture2D shipSpriteBase = LoadTexture("resources/ship/Nave Base.png");
     Texture2D shipSpriteDouble = LoadTexture("resources/ship/NAVE 2DS 64X64.png");
@@ -50,7 +60,7 @@ int main(void)
 
     std::vector<Bullet> bullets;
     bool doubleShoot = false;
-    bool pause = false, gameOver = false;
+    bool pause = false, gameOver = false, hasWon = false;
     bool inMenu = true;
     int score = 0;
     int life = 3;
@@ -112,7 +122,7 @@ int main(void)
             DrawText("Press any key to return to the menu", (screenWidth - retryWidth) / 2, screenHeight / 2 + 50, 20, WHITE);
 
             EndDrawing();
-
+            
             if (GetKeyPressed() != 0) // Detect any key
             {
                 // Restart the game
@@ -123,9 +133,53 @@ int main(void)
                 player.x = (screenWidth - player.width) / 2.0f;
                 bullets.clear();
                 score = 0;
+                currentWave = 1;
+                SpawnEnemies(enemies, 100.0f, -50.0f, 1);
             }
             continue; // Avoid the code is still executing in the menu
         }
+
+        if (hasWon)
+        {
+            // Show victory screen
+            BeginDrawing();
+            ClearBackground(BLACK);
+
+            int winMessageWidth = MeasureText("CONGRATULATIONS, YOU WON", 20);
+            int winMessageHeight = 20;
+
+            float x = (screenWidth - winMessageWidth) / 2;
+            float y = (screenHeight - winMessageHeight) / 2;
+
+            // Show victory messages
+            DrawTextEx(font, "CONGRATULATIONS, YOU WON", { x, y }, 20, 2, WHITE);
+
+            int retryWidth = MeasureText("Press any key to return to the menu", 20);
+            DrawText("Press any key to return to the menu", (screenWidth - retryWidth) / 2, screenHeight / 2 + 50, 20, WHITE);
+
+            EndDrawing();
+
+
+            if (GetKeyPressed() != 0) // Detect any key
+            {
+                // Reset the initial states
+                hasWon = false;  // Reset the variable
+                inMenu = true;   // Return to menu
+                score = 0;       // Reset the score
+                life = 3;        // Reset the life
+                currentWave = 1; // Reset the waves
+
+                // Reset the position of the player
+                player.x = (screenWidth - player.width) / 2.0f;
+
+                // Clear all the enemies and bullets, just in case
+                bullets.clear();
+                enemies.clear();
+                currentEnemies = 0;
+            }
+            continue; // Avoid the code is still executing in the victory menu
+        }
+
 
         // Pause the game
         if (IsKeyPressed(KEY_ESCAPE) || IsKeyPressed('P')) {
@@ -182,6 +236,7 @@ int main(void)
                                 bullet.active = false;
                                 enemy.active = false;
                                 score += 100;
+                                currentEnemies--;
                                 break;
                             }
                         }
@@ -198,9 +253,21 @@ int main(void)
             {
                 if (enemy.active)
                 {
-                    UpdateEnemy(enemy, GetFrameTime(), player);
+                    UpdateEnemy(enemy, GetFrameTime());
                 }
             }
+
+            if (currentEnemies == 0 && currentWave < 3)
+            {
+                currentWave++;
+                SpawnEnemies(enemies, 150.0f, screenWidth, -1);
+            }
+            
+            else if(currentEnemies == 0 && currentWave >= 3)
+            {
+                hasWon = true;
+            }
+
         }
 
         // Game Over when is dead
@@ -225,45 +292,44 @@ int main(void)
                     WHITE);
             }
         }
-        
+
         // Draw the ship
         DrawTexture(doubleShoot ? shipSpriteDouble : shipSpriteBase, (int)player.x, (int)player.y, WHITE);
 
         // Draw the lifes of the ship
         for (int i = 0; i < life; i++) {
             Vector2 position = { 20 + i * (shipSpriteBase.width * scale + 10), screenHeight - shipSpriteBase.height * scale - 20 };
-
-            DrawTextureEx(doubleShoot ? shipSpriteDouble : shipSpriteBase, position, 0.0f, scale, WHITE);
+            DrawTextureEx(shipSpriteBase, position, 0.0f, scale, WHITE);
         }
 
         // Draw the enemies
         for (const Enemy& enemy : enemies)
         {
-            if (enemy.active) {
-                DrawTexture(enemySprite, (int)enemy.rect.x, (int)enemy.rect.y, WHITE);
+            if (enemy.active)
+            {
+                DrawTexture(enemySprite,
+                    (int)(enemy.rect.x + enemy.rect.width / 2 - enemySprite.width / 2),
+                    (int)(enemy.rect.y + enemy.rect.height / 2 - enemySprite.height / 2),
+                    WHITE);
             }
         }
 
-        // Draw the score
-        DrawTextEx(font, "SCORE", { 50, 15 }, 34, 2, WHITE);
-        DrawTextEx(font, std::to_string(score).c_str(), { 50, 40 }, 34, 2, WHITE);
+        // Display the score
+        DrawTextEx(font, TextFormat("SCORE: %i", score), { 10, 10 }, 34, 2, WHITE);
 
-        // Draw the pause layer
+        // Display wave and enemy count
+        DrawTextEx(font, TextFormat("Wave %i / %i", currentWave, totalWaves), { screenWidth - 200, 10 }, 34, 2, WHITE); // Quitar cuando esté acabado el manager
+
+        // Draw pause
         if (pause)
         {
-            DrawRectangle(0, 0, screenWidth, screenHeight, Color{ 0, 0, 0, 128 });
-
-            int pauseWidth = MeasureText("Paused", 20);
-            DrawText("Paused", (screenWidth - pauseWidth) / 2, screenHeight / 2 + 50, 20, WHITE);
-
-            int textWidth = MeasureText("Press 'P' again to continue", 20);
-            DrawText("Press 'P' again to continue", (screenWidth - textWidth) / 2, screenHeight / 2, 20, WHITE);
+            DrawTextEx(font, "PAUSE", { (screenWidth - 100) / 2, (screenHeight - 50) / 2 }, 50, 2, WHITE);
         }
 
         EndDrawing();
     }
 
-    // Release the memory
+    // Unload resources
     UnloadTexture(shipSpriteBase);
     UnloadTexture(shipSpriteDouble);
     UnloadTexture(enemySprite);
@@ -275,28 +341,93 @@ int main(void)
     return 0;
 }
 
-void UpdateEnemy(Enemy& enemy, float deltaTime, Rectangle player)
+// Function to spawn enemies in a wave
+void SpawnEnemies(std::vector<Enemy>& enemies, float baseHeight, float baseWidth, int direction)
 {
+    enemies.clear();
+    for (int i = 0; i < maxEnemies; i++) {
+        float delay = i * 0.5f;
+        float startX = baseWidth; // Ahora la posición en X varía según la oleada
+        float startY = baseHeight; // La altura inicial varía según la oleada
+        float targetX = screenWidth / 6.0f * (i + 1);
+        float targetY = baseHeight + 20.0f; // Ajusta el destino en función de la base
 
-    if (enemy.isAttacking)
+        // Asignar la dirección de "looping" directamente según el parámetro
+        enemies.push_back({ { startX, startY, 32, 32 }, true, false, 3.0f,
+                            (float)GetRandomValue(2, 5), { targetX, targetY }, -delay, i, direction });
+    }
+    currentEnemies = maxEnemies; // Se reasigna en lugar de sumarlo
+}
+
+float Lerp(float a, float b, float t)
+{
+    return a + t * (b - a);
+}
+
+void UpdateEnemy(Enemy& enemy, float deltaTime)
+{
+    enemy.entryTime += deltaTime;
+    float t = enemy.entryTime;
+
+    float startX = enemy.rect.x;  // Igual a la posición X del enemigo
+    float startY = enemy.rect.y;  // Igual a la posición Y del enemigo
+
+    // === Fase de Entrada ===
+    if (t < 1.5f)
     {
+        float midX = screenWidth / 2.0f;
+        float midY = startY;
 
-        // Control del tiempo de ataque
-        enemy.attackTime -= deltaTime;
-        if (enemy.attackTime <= 0.0f)
+        if (t < 0.5f)
         {
-            enemy.isAttacking = false;
-            enemy.attackCooldown = (float)GetRandomValue(2, 5);
+            enemy.rect.x = startX;
+            enemy.rect.y = startY;
+        }
+        else
+        {
+            float duration = 10.0f; // Duración para mover el enemigo
+            float tProgress = (t - 0.5f) / duration;
+
+            // Para evitar temblores
+            if (tProgress > 1.0f)
+            {
+                tProgress = 1.0f;
+            }
+
+            enemy.rect.x = Lerp(startX, midX, tProgress);
+            enemy.rect.y = Lerp(startY, midY, tProgress);
         }
     }
+
+    // === Fase de Looping ===
+    else if (t < 3.0f)
+    {
+        float loopT = (t - 1.5f) / 1.5f;
+        float radius = 4.0f;
+
+        float centerX = enemy.rect.x;
+        float centerY = enemy.rect.y;
+
+        // Usa loopDirection para aplicar el movimiento en la dirección correcta
+        enemy.rect.x = centerX + radius * enemy.loopDirection * cos(loopT * PI * 2);
+        enemy.rect.y = centerY + radius * sin(loopT * PI * 2);
+    }
+
+    // === Fase Final ===
     else
     {
-        // Control del tiempo de enfriamiento para el ataque
-        enemy.attackCooldown -= deltaTime;
-        if (enemy.attackCooldown <= 0.0f)
+        float finalT = (t - 3.0f) / 1.5f;
+
+        float startX = enemy.rect.x;
+        float startY = enemy.rect.y;
+
+        enemy.rect.x = Lerp(startX, enemy.targetPosition.x, finalT);
+        enemy.rect.y = Lerp(startY, enemy.targetPosition.y, finalT);
+
+        if (finalT >= 1.0f)
         {
-            enemy.isAttacking = true;
-            enemy.attackTime = (float)GetRandomValue(1, 3);
+            enemy.rect.x = enemy.targetPosition.x;
+            enemy.rect.y = enemy.targetPosition.y;
         }
     }
 }
