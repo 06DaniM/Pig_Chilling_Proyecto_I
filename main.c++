@@ -7,6 +7,18 @@
 #define BULLET_SPEED 7
 #define PLAYER_SPEED 5.0f
 
+enum PowerUpType {
+    Double_shot,
+    Shield
+};
+
+struct PowerUp {
+    Rectangle rect;
+    bool active;
+    PowerUpType type; // Tipo de power-up
+};
+
+
 typedef struct Bullet {
     Rectangle rect;
     bool active;
@@ -42,6 +54,8 @@ int main(void)
     Rectangle player = { (screenWidth - 74) / 2.0f, screenHeight / 1.5f, 64, 64 };
 
     std::vector<Enemy> enemies;
+    std::vector<PowerUp> powerUps; // Vector to manage the generated power ups 
+
 
     int currentWave = 1;
     int totalWaves = 3;  // Número de oleadas por pantalla
@@ -68,7 +82,7 @@ int main(void)
     Font font = LoadFontEx("Font/monogram.ttf", 64, 0, 0);
 
     std::vector<Bullet> bullets;
-    bool doubleShoot = false, shield = false;
+    bool doubleShoot = false, shield = false, canShot = false;
     bool pause = false, gameOver = false, hasWon = false;
     bool inMenu = true;
     int score = 0;
@@ -107,6 +121,7 @@ int main(void)
         // Pause the game
         if (IsKeyPressed(KEY_ESCAPE) || IsKeyPressed('P')) {
             pause = !pause;
+            canShot = !canShot;
         }
 
         // Menu manager
@@ -127,6 +142,7 @@ int main(void)
             {
                 life = 3;
                 inMenu = false;
+                canShot = true;
             }
             continue; // Avoid the code is still executing in the menu
         }
@@ -144,7 +160,7 @@ int main(void)
 
             // Shots with cooldown
             shootTimer += GetFrameTime();
-            if ((IsKeyDown(KEY_SPACE) || IsMouseButtonDown(MOUSE_BUTTON_LEFT)) && shootTimer >= shootCooldown)
+            if ((IsKeyDown(KEY_SPACE) || IsMouseButtonDown(MOUSE_BUTTON_LEFT)) && shootTimer >= shootCooldown && canShot)
             {
                 shootTimer = 0.0f;
 
@@ -176,29 +192,49 @@ int main(void)
                     {
                         if (enemy.active)
                         {
-                            if (CheckCollisionRecs(bullet.rect, enemy.rect)) // Collision with enemys
+                            if (CheckCollisionRecs(bullet.rect, enemy.rect)) // Si hay colisión con un enemigo
                             {
                                 bullet.active = false;
                                 enemy.active = false;
-
-                                if (!doubleShoot)
-                                {
-                                    if (GetRandomValue(0, 1) == 0)
-                                    {
-                                        DrawTexture(doubleShootSprite, enemy.rect.x, enemy.rect.y, WHITE); // Spawnear ojeto doble disparo
-                                    }
-                                }
-                                
-                                else if (!shield)
-                                {
-                                    if (GetRandomValue(0, 5) == 0)
-                                    {
-                                        // Spawnear ojeto escudo
-                                    }
-                                }
-
                                 score += 100;
                                 currentEnemies--;
+
+                                // 20% to generate the item/object
+                                if (GetRandomValue(1, 100) < 20) // 20% de probabilidad de generar un power-up
+                                {
+                                    // Lista de power-ups disponibles según los estados actuales y los que ya están en pantalla
+                                    std::vector<PowerUpType> availablePowerUps;
+
+                                    PowerUp newPowerUp;
+
+                                    bool doubleShootOnScreen = false;
+                                    bool shieldOnScreen = false;
+
+                                    // Verificar si ya hay un power-up de cada tipo en pantalla
+                                    for (const auto& powerUp : powerUps)
+                                    {
+                                        if (powerUp.type == Double_shot) doubleShootOnScreen = true;
+                                        if (powerUp.type == Shield) shieldOnScreen = true;
+                                    }
+
+                                    // Solo añadir si el power-up no está activo ni en pantalla
+                                    if (!doubleShoot && !doubleShootOnScreen) availablePowerUps.push_back(Double_shot);
+                                    if (!shield && !shieldOnScreen) availablePowerUps.push_back(Shield);
+
+                                    // Solo generamos un power-up si hay disponibles
+                                    if (!availablePowerUps.empty())
+                                    {
+                                        newPowerUp.rect = { enemy.rect.x + enemy.rect.width / 2, enemy.rect.y + enemy.rect.height / 2, 20, 20 };
+
+                                        // Convertir size_t a int de forma segura
+                                        int maxIndex = static_cast<int>(availablePowerUps.size()) - 1;
+                                        newPowerUp.type = availablePowerUps[GetRandomValue(0, maxIndex)];
+
+                                        powerUps.push_back(newPowerUp);
+                                    }
+                                    newPowerUp.active = true;
+                                }
+
                                 break;
                             }
                         }
@@ -230,6 +266,33 @@ int main(void)
                 hasWon = true;
             }
 
+            for (PowerUp& powerUp : powerUps)
+            {
+                if (powerUp.active)
+                {
+                    powerUp.rect.y += 2; // Velocity to down
+
+                    // Activate the double shot if collsion between the ship and the item
+                    if (CheckCollisionRecs(player, powerUp.rect))
+                    {
+                        if (powerUp.type == Double_shot)
+                        {
+                            doubleShoot = true;
+                        }
+
+                        else if (powerUp.type == Shield)
+                        {
+                            shield = true;
+                        }
+
+                        powerUp.active = false; // Desactivate the power up
+                    }
+                }
+            }
+
+            // Eliminar power-ups inactivos
+            powerUps.erase(std::remove_if(powerUps.begin(), powerUps.end(),
+                [](const PowerUp& p) { return !p.active || p.rect.y > screenHeight; }), powerUps.end());
         }
 
         // Game Over when is dead
@@ -322,6 +385,8 @@ int main(void)
 
             EndDrawing();
 
+            canShot = false;
+
             if (GetKeyPressed() != 0) // Detect any key
             {
                 // Restart the game
@@ -357,6 +422,7 @@ int main(void)
 
             EndDrawing();
 
+            canShot = false;
 
             if (GetKeyPressed() != 0) // Detect any key
             {
@@ -376,6 +442,14 @@ int main(void)
                 currentEnemies = 0;
             }
             continue; // Avoid the code is still executing in the victory menu
+        }
+
+        for (const PowerUp& powerUp : powerUps)
+        {
+            if (powerUp.active)
+            {
+                DrawTexture(doubleShootSprite, (int)powerUp.rect.x, (int)powerUp.rect.y, WHITE);
+            }
         }
 
         EndDrawing();
