@@ -39,7 +39,7 @@ int main(void)
 {
     InitWindow(screenWidth, screenHeight, "Space Attacks!");
 
-    Rectangle player = { screenWidth / 2.0f, screenHeight / 1.5f, 64, 64 };
+    Rectangle player = { (screenWidth - 74) / 2.0f, screenHeight / 1.5f, 64, 64 };
 
     std::vector<Enemy> enemies;
 
@@ -52,14 +52,23 @@ int main(void)
 
     Texture2D shipSpriteBase = LoadTexture("resources/ship/Nave Base.png");
     Texture2D shipSpriteDouble = LoadTexture("resources/ship/NAVE 2DS 64X64.png");
+    Texture2D shipSpriteBuble = LoadTexture("resources/ship/Nave Bubble 0.png");
+    Texture2D shipSpriteDoubleandBuble = LoadTexture("resources/ship/Nave 2S Bubble 0.png");
+
     Texture2D enemySprite = LoadTexture("resources/enemies/nave draconoida.png");
+
+    Texture2D doubleShootSprite = LoadTexture("resources/powerUps/DobleShoot_PowerUp.png");
+
     Texture2D bulletSprite = LoadTexture("resources/bullets/Disparo_Spaceship.png");
-    Texture2D background = LoadTexture("resources/background.jpg");
+    Texture2D bulletEnemySprite = LoadTexture("resources/bullets/Disparo_Regular_Enemy.png");
+    Texture2D bulletBossSprite = LoadTexture("resources/bullets/Disparo_Boss.png");
+
+    Texture2D background = LoadTexture("resources/backgrounds/background.jpg");
 
     Font font = LoadFontEx("Font/monogram.ttf", 64, 0, 0);
 
     std::vector<Bullet> bullets;
-    bool doubleShoot = false;
+    bool doubleShoot = false, shield = false;
     bool pause = false, gameOver = false, hasWon = false;
     bool inMenu = true;
     int score = 0;
@@ -80,9 +89,24 @@ int main(void)
             doubleShoot = !doubleShoot;
         }
 
+        if (IsKeyPressed(KEY_F))
+        {
+            shield = !shield;
+        }
+
         if (IsKeyPressed(KEY_ENTER)) // Change to when life is <= 0
         {
             life -= 1;
+        }
+
+        if (IsKeyPressed(KEY_BACKSPACE)) // Change to when life is <= 0
+        {
+            hasWon = true;
+        }
+
+        // Pause the game
+        if (IsKeyPressed(KEY_ESCAPE) || IsKeyPressed('P')) {
+            pause = !pause;
         }
 
         // Menu manager
@@ -107,85 +131,6 @@ int main(void)
             continue; // Avoid the code is still executing in the menu
         }
 
-        // Game Over manager
-        if (gameOver)
-        {
-            // Show the GAME OVER screen
-            BeginDrawing();
-            ClearBackground(BLACK);
-            DrawTexture(background, 0, 0, WHITE);
-
-            int gameOverWidth = MeasureText("GAME OVER", 40);
-            DrawText("GAME OVER", (screenWidth - gameOverWidth) / 2, screenHeight / 2, 40, RED);
-
-            int retryWidth = MeasureText("Press any key to return to the menu", 20);
-            DrawText("Press any key to return to the menu", (screenWidth - retryWidth) / 2, screenHeight / 2 + 50, 20, WHITE);
-
-            EndDrawing();
-            
-            if (GetKeyPressed() != 0) // Detect any key
-            {
-                // Restart the game
-                inMenu = true;
-                gameOver = false;
-
-                // Restore to its initial state
-                player.x = (screenWidth - player.width) / 2.0f;
-                bullets.clear();
-                score = 0;
-                currentWave = 1;
-                SpawnEnemies(enemies, 100.0f, -50.0f, 1);
-            }
-            continue; // Avoid the code is still executing in the menu
-        }
-
-        if (hasWon)
-        {
-            // Show victory screen
-            BeginDrawing();
-            ClearBackground(BLACK);
-
-            int winMessageWidth = MeasureText("CONGRATULATIONS, YOU WON", 20);
-            int winMessageHeight = 20;
-
-            float x = (screenWidth - winMessageWidth) / 2;
-            float y = (screenHeight - winMessageHeight) / 2;
-
-            // Show victory messages
-            DrawTextEx(font, "CONGRATULATIONS, YOU WON", { x, y }, 20, 2, WHITE);
-
-            int retryWidth = MeasureText("Press any key to return to the menu", 20);
-            DrawText("Press any key to return to the menu", (screenWidth - retryWidth) / 2, screenHeight / 2 + 50, 20, WHITE);
-
-            EndDrawing();
-
-
-            if (GetKeyPressed() != 0) // Detect any key
-            {
-                // Reset the initial states
-                hasWon = false;  // Reset the variable
-                inMenu = true;   // Return to menu
-                score = 0;       // Reset the score
-                life = 3;        // Reset the life
-                currentWave = 1; // Reset the waves
-
-                // Reset the position of the player
-                player.x = (screenWidth - player.width) / 2.0f;
-
-                // Clear all the enemies and bullets, just in case
-                bullets.clear();
-                enemies.clear();
-                currentEnemies = 0;
-            }
-            continue; // Avoid the code is still executing in the victory menu
-        }
-
-
-        // Pause the game
-        if (IsKeyPressed(KEY_ESCAPE) || IsKeyPressed('P')) {
-            pause = !pause;
-        }
-
         // Game manager 
         if (!pause)
         {
@@ -204,18 +149,18 @@ int main(void)
                 shootTimer = 0.0f;
 
                 // Define the size of the bullets collision
-                float bulletWidth = 20;  // Width of the collision
+                float bulletWidth = 16;  // Width of the collision
                 float bulletHeight = 12; // Height of the collision
 
                 if (doubleShoot)
                 {
-                    bullets.push_back({ { player.x + player.width / 2 - 15 - bulletWidth / 2, player.y, bulletWidth, bulletHeight }, true });
-                    bullets.push_back({ { player.x + player.width / 2 + 15 - bulletWidth / 2, player.y, bulletWidth, bulletHeight }, true });
+                    bullets.push_back({ { player.x + player.width / 2 - 15, player.y + player.height / 2, bulletWidth, bulletHeight }, true });
+                    bullets.push_back({ { player.x + player.width / 2 + 15, player.y + player.height / 2, bulletWidth, bulletHeight }, true });
                 }
 
                 else
                 {
-                    bullets.push_back({ { player.x + player.width / 2 - bulletWidth / 2, player.y, bulletWidth, bulletHeight }, true });
+                    bullets.push_back({ { player.x + player.width / 2, player.y, bulletWidth, bulletHeight }, true });
                 }
             }
 
@@ -231,10 +176,27 @@ int main(void)
                     {
                         if (enemy.active)
                         {
-                            if (CheckCollisionRecs(bullet.rect, enemy.rect))
+                            if (CheckCollisionRecs(bullet.rect, enemy.rect)) // Collision with enemys
                             {
                                 bullet.active = false;
                                 enemy.active = false;
+
+                                if (!doubleShoot)
+                                {
+                                    if (GetRandomValue(0, 1) == 0)
+                                    {
+                                        DrawTexture(doubleShootSprite, enemy.rect.x, enemy.rect.y, WHITE); // Spawnear ojeto doble disparo
+                                    }
+                                }
+                                
+                                else if (!shield)
+                                {
+                                    if (GetRandomValue(0, 5) == 0)
+                                    {
+                                        // Spawnear ojeto escudo
+                                    }
+                                }
+
                                 score += 100;
                                 currentEnemies--;
                                 break;
@@ -294,7 +256,25 @@ int main(void)
         }
 
         // Draw the ship
-        DrawTexture(doubleShoot ? shipSpriteDouble : shipSpriteBase, (int)player.x, (int)player.y, WHITE);
+        if (doubleShoot && !shield)
+        {
+            DrawTexture(shipSpriteDouble, (int)player.x, (int)player.y, WHITE);
+        }
+
+        else if (shield && !doubleShoot)
+        {
+            DrawTexture(shipSpriteBuble, (int)player.x, (int)player.y, WHITE);
+        }
+
+        else if (doubleShoot && shield)
+        {
+            DrawTexture(shipSpriteDoubleandBuble, (int)player.x, (int)player.y, WHITE);
+        }
+
+        else
+        {
+            DrawTexture(shipSpriteBase, (int)player.x, (int)player.y, WHITE);
+        }
 
         // Draw the lifes of the ship
         for (int i = 0; i < life; i++) {
@@ -323,7 +303,79 @@ int main(void)
         // Draw pause
         if (pause)
         {
+            DrawRectangle(0, 0, screenWidth, screenHeight, { 0,0,0,125 });
             DrawTextEx(font, "PAUSE", { (screenWidth - 100) / 2, (screenHeight - 50) / 2 }, 50, 2, WHITE);
+        }
+
+        // Game Over manager
+        if (gameOver)
+        {
+            // Show the GAME OVER screen
+            BeginDrawing();
+            ClearBackground(BLACK);
+
+            int gameOverWidth = MeasureText("GAME OVER", 40);
+            DrawText("GAME OVER", (screenWidth - gameOverWidth) / 2, screenHeight / 2, 40, RED);
+
+            int retryWidth = MeasureText("Press any key to return to the menu", 20);
+            DrawText("Press any key to return to the menu", (screenWidth - retryWidth) / 2, screenHeight / 2 + 50, 20, WHITE);
+
+            EndDrawing();
+
+            if (GetKeyPressed() != 0) // Detect any key
+            {
+                // Restart the game
+                inMenu = true;
+                gameOver = false;
+
+                // Restore to its initial state
+                player.x = (screenWidth - player.width) / 2.0f;
+                bullets.clear();
+                score = 0;
+                currentWave = 1;
+                SpawnEnemies(enemies, 100.0f, -50.0f, 1);
+            }
+            continue; // Avoid the code is still executing in the menu
+        }
+
+        if (hasWon)
+        {
+            // Show victory screen
+            DrawRectangle(0, 0, screenWidth, screenHeight, { 0,0,0,125 });
+
+            int winMessageWidth = MeasureText("CONGRATULATIONS, YOU WON", 20);
+            int winMessageHeight = 20;
+
+            int x = (screenWidth - winMessageWidth) / 2;
+            int y = (screenHeight - winMessageHeight) / 2;
+
+            // Show victory messages
+            DrawText("CONGRATULATIONS, YOU WON", x, y, 20, WHITE);
+
+            int retryWidth = MeasureText("Press any key to return to the menu", 20);
+            DrawText("Press any key to return to the menu", (screenWidth - retryWidth) / 2, screenHeight / 2 + 50, 20, WHITE);
+
+            EndDrawing();
+
+
+            if (GetKeyPressed() != 0) // Detect any key
+            {
+                // Reset the initial states
+                hasWon = false;  // Reset the variable
+                inMenu = true;   // Return to menu
+                score = 0;       // Reset the score
+                life = 3;        // Reset the life
+                currentWave = 1; // Reset the waves
+
+                // Reset the position of the player
+                player.x = (screenWidth - player.width) / 2.0f;
+
+                // Clear all the enemies and bullets, just in case
+                bullets.clear();
+                enemies.clear();
+                currentEnemies = 0;
+            }
+            continue; // Avoid the code is still executing in the victory menu
         }
 
         EndDrawing();
