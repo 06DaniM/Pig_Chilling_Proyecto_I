@@ -71,7 +71,7 @@ int main(void)
 
     Texture2D enemySprite = LoadTexture("resources/enemies/nave draconoida.png");
 
-    Texture2D doubleShootSprite = LoadTexture("resources/powerUps/DobleShoot_PowerUp.png");
+    Texture2D doubleShotSprite = LoadTexture("resources/powerUps/DobleShot_PowerUp.png");
 
     Texture2D bulletSprite = LoadTexture("resources/bullets/Disparo_Spaceship.png");
     Texture2D bulletEnemySprite = LoadTexture("resources/bullets/Disparo_Regular_Enemy.png");
@@ -82,15 +82,15 @@ int main(void)
     Font font = LoadFontEx("Font/monogram.ttf", 64, 0, 0);
 
     std::vector<Bullet> bullets;
-    bool doubleShoot = false, shield = false, canShot = false;
+    bool doubleShot = false, shield = false, canShot = false;
     bool pause = false, gameOver = false, hasWon = false;
     bool inMenu = true;
     int score = 0;
     int life = 3;
     float scale = 0.5f; // Reduce a 50% the scale of the sprites
 
-    float shootCooldown = 0.3f;  // Time between shots
-    float shootTimer = 0.0f;     // Timer for counting seconds
+    float shotCooldown = 0.3f;  // Time between shots
+    float shotTimer = 0.0f;     // Timer for counting seconds
     bool showGameOver = false;
 
     SetTargetFPS(60);
@@ -100,7 +100,7 @@ int main(void)
         // For testing
         if (IsKeyPressed(KEY_R))
         {
-            doubleShoot = !doubleShoot;
+            doubleShot = !doubleShot;
         }
 
         if (IsKeyPressed(KEY_F))
@@ -159,16 +159,16 @@ int main(void)
             if (player.x > screenWidth - player.width) player.x = screenWidth - player.width;
 
             // Shots with cooldown
-            shootTimer += GetFrameTime();
-            if ((IsKeyDown(KEY_SPACE) || IsMouseButtonDown(MOUSE_BUTTON_LEFT)) && shootTimer >= shootCooldown && canShot)
+            shotTimer += GetFrameTime();
+            if ((IsKeyDown(KEY_SPACE) || IsMouseButtonDown(MOUSE_BUTTON_LEFT)) && shotTimer >= shotCooldown && canShot)
             {
-                shootTimer = 0.0f;
+                shotTimer = 0.0f;
 
                 // Define the size of the bullets collision
                 float bulletWidth = 16;  // Width of the collision
                 float bulletHeight = 12; // Height of the collision
 
-                if (doubleShoot)
+                if (doubleShot)
                 {
                     bullets.push_back({ { player.x + player.width / 2 - 15, player.y + player.height / 2, bulletWidth, bulletHeight }, true });
                     bullets.push_back({ { player.x + player.width / 2 + 15, player.y + player.height / 2, bulletWidth, bulletHeight }, true });
@@ -207,18 +207,18 @@ int main(void)
 
                                     PowerUp newPowerUp;
 
-                                    bool doubleShootOnScreen = false;
+                                    bool doubleShotOnScreen = false;
                                     bool shieldOnScreen = false;
 
                                     // Verificar si ya hay un power-up de cada tipo en pantalla
                                     for (const auto& powerUp : powerUps)
                                     {
-                                        if (powerUp.type == Double_shot) doubleShootOnScreen = true;
+                                        if (powerUp.type == Double_shot) doubleShotOnScreen = true;
                                         if (powerUp.type == Shield) shieldOnScreen = true;
                                     }
 
                                     // Solo añadir si el power-up no está activo ni en pantalla
-                                    if (!doubleShoot && !doubleShootOnScreen) availablePowerUps.push_back(Double_shot);
+                                    if (!doubleShot && !doubleShotOnScreen) availablePowerUps.push_back(Double_shot);
                                     if (!shield && !shieldOnScreen) availablePowerUps.push_back(Shield);
 
                                     // Solo generamos un power-up si hay disponibles
@@ -277,7 +277,7 @@ int main(void)
                     {
                         if (powerUp.type == Double_shot)
                         {
-                            doubleShoot = true;
+                            doubleShot = true;
                         }
 
                         else if (powerUp.type == Shield)
@@ -319,17 +319,17 @@ int main(void)
         }
 
         // Draw the ship
-        if (doubleShoot && !shield)
+        if (doubleShot && !shield)
         {
             DrawTexture(shipSpriteDouble, (int)player.x, (int)player.y, WHITE);
         }
 
-        else if (shield && !doubleShoot)
+        else if (shield && !doubleShot)
         {
             DrawTexture(shipSpriteBuble, (int)player.x, (int)player.y, WHITE);
         }
 
-        else if (doubleShoot && shield)
+        else if (doubleShot && shield)
         {
             DrawTexture(shipSpriteDoubleandBuble, (int)player.x, (int)player.y, WHITE);
         }
@@ -446,9 +446,14 @@ int main(void)
 
         for (const PowerUp& powerUp : powerUps)
         {
-            if (powerUp.active)
+            if (powerUp.active && powerUp.type == Double_shot)
             {
-                DrawTexture(doubleShootSprite, (int)powerUp.rect.x, (int)powerUp.rect.y, WHITE);
+                DrawTexture(doubleShotSprite, (int)powerUp.rect.x, (int)powerUp.rect.y, WHITE); // Draw the double shot item
+            }
+
+            else if (powerUp.active && powerUp.type == Shield)
+            {
+                DrawTexture(bulletBossSprite, (int)powerUp.rect.x, (int)powerUp.rect.y, WHITE); // Cambiar al sprite del escudo cuando esté
             }
         }
 
