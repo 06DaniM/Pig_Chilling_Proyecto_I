@@ -30,21 +30,26 @@ typedef struct Enemy {
     bool isAttacking;
     float attackTime;
     float attackCooldown;
-    Vector2 targetPosition; // Posici√≥n final
+    Vector2 targetPosition; // PosiciÛn final
     float entryTime; // Tiempo de entrada
-    int index; // √çndice del enemigo en la fila
+    int index; // Õndice del enemigo en la fila
     int loopDirection;
 } Enemy;
 
-const int screenWidth = 800;
-const int screenHeight = 450;
+typedef struct Bullet_Enemy {
+    Rectangle rect;
+    bool active;
+}; Bullet_Enemy;
+
+const int screenWidth = 1920;
+const int screenHeight = 1080;
 int screen = 1;
 
 int maxEnemies = 5;        // Declarada como global
 int currentEnemies = 0;    // Declarada como global
 
-// Declaraci√≥n de la funci√≥n antes de main()
-void UpdateEnemy(Enemy& enemy, float deltaTime);
+// DeclaraciÛn de la funciÛn antes de main()
+void UpdateEnemy(std::vector<Bullet_Enemy> enemyBullets, Enemy& enemy, float deltaTime);
 void SpawnEnemies(std::vector<Enemy>& enemies, float baseHeight, float baseWidth, int direction);
 
 int main(void)
@@ -58,11 +63,11 @@ int main(void)
 
 
     int currentWave = 1;
-    int totalWaves = 3;  // N√∫mero de oleadas por pantalla
+    int totalWaves = 3;  // N˙mero de oleadas por pantalla
     float waveTimer = 0.0f;
     float waveDelay = 10.0f; // Segundos entre oleadas
 
-    SpawnEnemies(enemies, 100.0f, -50.0f, 1); // Generar la primera oleada
+    SpawnEnemies(enemies, 100.0f, -100.0f, 1); // Generar la primera oleada
 
     Texture2D shipSpriteBase = LoadTexture("resources/ship/Nave Base.png");
     Texture2D shipSpriteDouble = LoadTexture("resources/ship/NAVE 2DS 64X64.png");
@@ -77,17 +82,19 @@ int main(void)
     Texture2D bulletEnemySprite = LoadTexture("resources/bullets/Disparo_Regular_Enemy.png");
     Texture2D bulletBossSprite = LoadTexture("resources/bullets/Disparo_Boss.png");
 
-    Texture2D background = LoadTexture("resources/backgrounds/background.jpg");
+    Texture2D background = LoadTexture("resources/backgrounds/FONDO_GALAGA.png");
 
     Font font = LoadFontEx("Font/monogram.ttf", 64, 0, 0);
 
     std::vector<Bullet> bullets;
-    bool doubleShot = false, shield = false, canShot = false;
+    std::vector<Bullet_Enemy> enemyBullets;
+
+    bool doubleShot = false, shield = false, canAct = false;
     bool pause = false, gameOver = false, hasWon = false;
     bool inMenu = true;
     int score = 0;
     int life = 3;
-    float scale = 0.5f; // Reduce a 50% the scale of the sprites
+    float scale = 0.75f; // Reduce a 50% the scale of the sprites
 
     float shotCooldown = 0.3f;  // Time between shots
     float shotTimer = 0.0f;     // Timer for counting seconds
@@ -121,7 +128,7 @@ int main(void)
         // Pause the game
         if (IsKeyPressed(KEY_ESCAPE) || IsKeyPressed('P')) {
             pause = !pause;
-            canShot = !canShot;
+            canAct = !canAct;
         }
 
         // Menu manager
@@ -142,7 +149,7 @@ int main(void)
             {
                 life = 3;
                 inMenu = false;
-                canShot = true;
+                canAct = true;
             }
             continue; // Avoid the code is still executing in the menu
         }
@@ -151,8 +158,8 @@ int main(void)
         if (!pause)
         {
             // Movement of the ship
-            if (IsKeyDown(KEY_D)) player.x += PLAYER_SPEED;
-            if (IsKeyDown(KEY_A)) player.x -= PLAYER_SPEED;
+            if (IsKeyDown(KEY_D) && canAct) player.x += PLAYER_SPEED;
+            if (IsKeyDown(KEY_A) && canAct) player.x -= PLAYER_SPEED;
 
             // Limit the movemente inside the window
             if (player.x < 0) player.x = 0;
@@ -160,7 +167,7 @@ int main(void)
 
             // Shots with cooldown
             shotTimer += GetFrameTime();
-            if ((IsKeyDown(KEY_SPACE) || IsMouseButtonDown(MOUSE_BUTTON_LEFT)) && shotTimer >= shotCooldown && canShot)
+            if ((IsKeyDown(KEY_SPACE) || IsMouseButtonDown(MOUSE_BUTTON_LEFT)) && shotTimer >= shotCooldown && canAct)
             {
                 shotTimer = 0.0f;
 
@@ -192,7 +199,7 @@ int main(void)
                     {
                         if (enemy.active)
                         {
-                            if (CheckCollisionRecs(bullet.rect, enemy.rect)) // Si hay colisi√≥n con un enemigo
+                            if (CheckCollisionRecs(bullet.rect, enemy.rect)) // Si hay colisiÛn con un enemigo
                             {
                                 bullet.active = false;
                                 enemy.active = false;
@@ -202,7 +209,7 @@ int main(void)
                                 // 20% to generate the item/object
                                 if (GetRandomValue(1, 100) < 20) // 20% de probabilidad de generar un power-up
                                 {
-                                    // Lista de power-ups disponibles seg√∫n los estados actuales y los que ya est√°n en pantalla
+                                    // Lista de power-ups disponibles seg˙n los estados actuales y los que ya est·n en pantalla
                                     std::vector<PowerUpType> availablePowerUps;
 
                                     PowerUp newPowerUp;
@@ -217,7 +224,7 @@ int main(void)
                                         if (powerUp.type == Shield) shieldOnScreen = true;
                                     }
 
-                                    // Solo a√±adir si el power-up no est√° activo ni en pantalla
+                                    // Solo aÒadir si el power-up no est· activo ni en pantalla
                                     if (!doubleShot && !doubleShotOnScreen) availablePowerUps.push_back(Double_shot);
                                     if (!shield && !shieldOnScreen) availablePowerUps.push_back(Shield);
 
@@ -251,17 +258,35 @@ int main(void)
             {
                 if (enemy.active)
                 {
-                    UpdateEnemy(enemy, GetFrameTime());
+                    UpdateEnemy(enemyBullets, enemy, GetFrameTime());
                 }
             }
+
+            for (Bullet_Enemy& bullet : enemyBullets)
+            {
+                if (bullet.active)
+                {
+                    bullet.rect.y -= BULLET_SPEED;
+                    if (CheckCollisionRecs(player, bullet.rect))
+                    {
+                        bullet.active = false;
+                        life--;
+                        break;
+                    }
+                }
+            }
+
+            // Delete the inactive bullets
+            enemyBullets.erase(std::remove_if(enemyBullets.begin(), enemyBullets.end(),
+                [](const Bullet_Enemy& b) { return !b.active || b.rect.y < 0; }), enemyBullets.end());
 
             if (currentEnemies == 0 && currentWave < 3)
             {
                 currentWave++;
                 SpawnEnemies(enemies, 150.0f, screenWidth, -1);
             }
-            
-            else if(currentEnemies == 0 && currentWave >= 3)
+
+            else if (currentEnemies == 0 && currentWave >= 3)
             {
                 hasWon = true;
             }
@@ -318,6 +343,18 @@ int main(void)
             }
         }
 
+        // Draw the enemy bullets
+        for (const Bullet_Enemy& bullet : enemyBullets)
+        {
+            if (bullet.active)
+            {
+                DrawTexture(bulletEnemySprite,
+                    (int)(bullet.rect.x + bullet.rect.width / 2 - bulletSprite.width / 2),
+                    (int)(bullet.rect.y + bullet.rect.height / 2 - bulletSprite.height / 2),
+                    WHITE);
+            }
+        }
+
         // Draw the ship
         if (doubleShot && !shield)
         {
@@ -341,7 +378,7 @@ int main(void)
 
         // Draw the lifes of the ship
         for (int i = 0; i < life; i++) {
-            Vector2 position = { 20 + i * (shipSpriteBase.width * scale + 10), screenHeight - shipSpriteBase.height * scale - 20 };
+            Vector2 position = { 75 + i * (shipSpriteBase.width * scale + 10), screenHeight - shipSpriteBase.height * scale - 75 };
             DrawTextureEx(shipSpriteBase, position, 0.0f, scale, WHITE);
         }
 
@@ -350,10 +387,10 @@ int main(void)
         {
             if (enemy.active)
             {
-                DrawTexture(enemySprite,
-                    (int)(enemy.rect.x + enemy.rect.width / 2 - enemySprite.width / 2),
-                    (int)(enemy.rect.y + enemy.rect.height / 2 - enemySprite.height / 2),
-                    WHITE);
+                Vector2 position = { (int)(enemy.rect.x + enemy.rect.width / 2 - enemySprite.width / 2),
+                    (int)(enemy.rect.y + enemy.rect.height / 2 - enemySprite.height / 2) };
+
+                DrawTextureEx(enemySprite, position, 0.0f, 1.0f,WHITE);
             }
         }
 
@@ -361,7 +398,7 @@ int main(void)
         DrawTextEx(font, TextFormat("SCORE: %i", score), { 10, 10 }, 34, 2, WHITE);
 
         // Display wave and enemy count
-        DrawTextEx(font, TextFormat("Wave %i / %i", currentWave, totalWaves), { screenWidth - 200, 10 }, 34, 2, WHITE); // Quitar cuando est√© acabado el manager
+        DrawTextEx(font, TextFormat("Wave %i / %i", currentWave, totalWaves), { screenWidth - 200, 10 }, 34, 2, WHITE); // Quitar cuando estÈ acabado el manager
 
         // Draw pause
         if (pause)
@@ -385,7 +422,7 @@ int main(void)
 
             EndDrawing();
 
-            canShot = false;
+            canAct = false;
 
             if (GetKeyPressed() != 0) // Detect any key
             {
@@ -422,7 +459,7 @@ int main(void)
 
             EndDrawing();
 
-            canShot = false;
+            canAct = false;
 
             if (GetKeyPressed() != 0) // Detect any key
             {
@@ -453,7 +490,7 @@ int main(void)
 
             else if (powerUp.active && powerUp.type == Shield)
             {
-                DrawTexture(bulletBossSprite, (int)powerUp.rect.x, (int)powerUp.rect.y, WHITE); // Cambiar al sprite del escudo cuando est√©
+                DrawTexture(bulletBossSprite, (int)powerUp.rect.x, (int)powerUp.rect.y, WHITE); // Cambiar al sprite del escudo cuando estÈ
             }
         }
 
@@ -478,16 +515,16 @@ void SpawnEnemies(std::vector<Enemy>& enemies, float baseHeight, float baseWidth
     enemies.clear();
     for (int i = 0; i < maxEnemies; i++) {
         float delay = i * 0.5f;
-        float startX = baseWidth; // Ahora la posici√≥n en X var√≠a seg√∫n la oleada
-        float startY = baseHeight; // La altura inicial var√≠a seg√∫n la oleada
+        float startX = baseWidth; // Position X in the wave
+        float startY = baseHeight; // Position Y in the wave
         float targetX = screenWidth / 6.0f * (i + 1);
-        float targetY = baseHeight + 20.0f; // Ajusta el destino en funci√≥n de la base
+        float targetY = baseHeight + 20.0f; // Destiny of the enemy
 
-        // Asignar la direcci√≥n de "looping" directamente seg√∫n el par√°metro
-        enemies.push_back({ { startX, startY, 32, 32 }, true, false, 3.0f,
+        // Enemy data
+        enemies.push_back({ { startX, startY, 112, 84 }, true, false, 3.0f, // Enemys collision
                             (float)GetRandomValue(2, 5), { targetX, targetY }, -delay, i, direction });
     }
-    currentEnemies = maxEnemies; // Se reasigna en lugar de sumarlo
+    currentEnemies = maxEnemies; // Change to sum when more waves will be added
 }
 
 float Lerp(float a, float b, float t)
@@ -495,38 +532,30 @@ float Lerp(float a, float b, float t)
     return a + t * (b - a);
 }
 
-void UpdateEnemy(Enemy& enemy, float deltaTime)
+void UpdateEnemy(std::vector<Bullet_Enemy> enemyBullets, Enemy& enemy, float deltaTime)
 {
     enemy.entryTime += deltaTime;
     float t = enemy.entryTime;
-
-    float startX = enemy.rect.x;  // Igual a la posici√≥n X del enemigo
-    float startY = enemy.rect.y;  // Igual a la posici√≥n Y del enemigo
 
     // === Fase de Entrada ===
     if (t < 1.5f)
     {
         float midX = screenWidth / 2.0f;
-        float midY = startY;
+        float midY = enemy.rect.y;
 
         if (t < 0.5f)
         {
-            enemy.rect.x = startX;
-            enemy.rect.y = startY;
+            enemy.rect.x = enemy.rect.x;
+            enemy.rect.y = enemy.rect.y;
         }
         else
         {
-            float duration = 10.0f; // Duraci√≥n para mover el enemigo
+            float duration = 10.0f; // DuraciÛn para mover el enemigo
             float tProgress = (t - 0.5f) / duration;
+            if (tProgress > 1.0f) tProgress = 1.0f;
 
-            // Para evitar temblores
-            if (tProgress > 1.0f)
-            {
-                tProgress = 1.0f;
-            }
-
-            enemy.rect.x = Lerp(startX, midX, tProgress);
-            enemy.rect.y = Lerp(startY, midY, tProgress);
+            enemy.rect.x = Lerp(enemy.rect.x, midX, tProgress);
+            enemy.rect.y = Lerp(enemy.rect.y, midY, tProgress);
         }
     }
 
@@ -535,20 +564,29 @@ void UpdateEnemy(Enemy& enemy, float deltaTime)
     {
         float loopT = (t - 1.5f) / 1.5f;
         float radius = 4.0f;
-
         float centerX = enemy.rect.x;
         float centerY = enemy.rect.y;
 
-        // Usa loopDirection para aplicar el movimiento en la direcci√≥n correcta
+        // Movimiento en loop
         enemy.rect.x = centerX + radius * enemy.loopDirection * cos(loopT * PI * 2);
         enemy.rect.y = centerY + radius * sin(loopT * PI * 2);
+
+        // LÛgica de disparo: disparar balas cada cierto tiempo
+        if (KEY_H) // enemy.isAttacking && enemy.attackCooldown <= 0.0f
+        {
+            enemyBullets.push_back({ { enemy.rect.x + enemy.rect.width / 2 - 15, enemy.rect.y + enemy.rect.height / 2, 16, 12 }, true });
+            enemy.attackCooldown = 1.5f; // Resetear el tiempo de cooldown
+        }
+        else
+        {
+            enemy.attackCooldown -= deltaTime;  // Reducir el tiempo de cooldown
+        }
     }
 
     // === Fase Final ===
     else
     {
         float finalT = (t - 3.0f) / 1.5f;
-
         float startX = enemy.rect.x;
         float startY = enemy.rect.y;
 
