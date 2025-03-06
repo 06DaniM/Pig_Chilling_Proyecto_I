@@ -18,7 +18,6 @@ struct PowerUp {
     PowerUpType type; // Tipo de power-up
 };
 
-
 typedef struct Bullet {
     Rectangle rect;
     bool active;
