@@ -399,4 +399,4 @@ FodyWeavers.xsd
 build_files
 raylib-master
 Makefile
-# /*.sln
+/*.sln

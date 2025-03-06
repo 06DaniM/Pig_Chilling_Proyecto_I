@@ -1,4 +1,4 @@
-#include "raylib.h"
+ï»¿#include "raylib.h"
 #include <vector>
 #include <string>
 #include <algorithm>
@@ -29,9 +29,9 @@ typedef struct Enemy {
     bool isAttacking;
     float attackTime;
     float attackCooldown;
-    Vector2 targetPosition; // Posición final
+    Vector2 targetPosition; // Posiciï¿½n final
     float entryTime; // Tiempo de entrada
-    int index; // Índice del enemigo en la fila
+    int index; // ï¿½ndice del enemigo en la fila
     int loopDirection;
 } Enemy;
 
@@ -198,7 +198,7 @@ int main(void)
                     {
                         if (enemy.active)
                         {
-                            if (CheckCollisionRecs(bullet.rect, enemy.rect)) // Si hay colisión con un enemigo
+                            if (CheckCollisionRecs(bullet.rect, enemy.rect)) // Si hay colisiï¿½n con un enemigo
                             {
                                 bullet.active = false;
                                 enemy.active = false;
@@ -208,7 +208,7 @@ int main(void)
                                 // 20% to generate the item/object
                                 if (GetRandomValue(1, 100) < 20) // 20% de probabilidad de generar un power-up
                                 {
-                                    // Lista de power-ups disponibles según los estados actuales y los que ya están en pantalla
+                                    // Lista de power-ups disponibles segï¿½n los estados actuales y los que ya estï¿½n en pantalla
                                     std::vector<PowerUpType> availablePowerUps;
 
                                     PowerUp newPowerUp;
@@ -223,7 +223,7 @@ int main(void)
                                         if (powerUp.type == Shield) shieldOnScreen = true;
                                     }
 
-                                    // Solo añadir si el power-up no está activo ni en pantalla
+                                    // Solo aï¿½adir si el power-up no estï¿½ activo ni en pantalla
                                     if (!doubleShot && !doubleShotOnScreen) availablePowerUps.push_back(Double_shot);
                                     if (!shield && !shieldOnScreen) availablePowerUps.push_back(Shield);
 
@@ -407,7 +407,7 @@ int main(void)
                 Vector2 position = { (int)(enemy.rect.x + enemy.rect.width / 2 - enemySprite.width / 2),
                     (int)(enemy.rect.y + enemy.rect.height / 2 - enemySprite.height / 2) };
 
-                DrawTextureEx(enemySprite, position, 0.0f, 1.0f,WHITE);
+                DrawTextureEx(enemySprite, position, 0.0f, 1.0f, WHITE);
             }
         }
 
@@ -415,7 +415,7 @@ int main(void)
         DrawTextEx(font, TextFormat("SCORE: %i", score), { 10, 10 }, 34, 2, WHITE);
 
         // Display wave and enemy count
-        DrawTextEx(font, TextFormat("Wave %i / %i", currentWave, totalWaves), { screenWidth - 200, 10 }, 34, 2, WHITE); // Quitar cuando esté acabado el manager
+        DrawTextEx(font, TextFormat("Wave %i / %i", currentWave, totalWaves), { screenWidth - 200, 10 }, 34, 2, WHITE); // Quitar cuando estï¿½ acabado el manager
 
         // Draw pause
         if (pause)
@@ -507,7 +507,7 @@ int main(void)
 
             else if (powerUp.active && powerUp.type == Shield)
             {
-                DrawTexture(bulletBossSprite, (int)powerUp.rect.x, (int)powerUp.rect.y, WHITE); // Cambiar al sprite del escudo cuando esté hecho
+                DrawTexture(bulletBossSprite, (int)powerUp.rect.x, (int)powerUp.rect.y, WHITE); // Cambiar al sprite del escudo cuando estï¿½ hecho
             }
         }
 
@@ -534,7 +534,7 @@ void SpawnEnemies(std::vector<Enemy>& enemies, float baseHeight, float baseWidth
         float delay = i * 0.5f;
         float startX = baseWidth; // Position X in the wave
         float startY = baseHeight; // Position Y in the wave
-        float targetX = screenWidth / 6.0f * (i+0.75f);
+        float targetX = screenWidth / 6.0f * (i + 0.75f);
         float targetY = baseHeight + 20.0f; // Destiny of the enemy
 
         // Enemy data
@@ -611,9 +611,9 @@ void UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, float de
     // === NEW ENEMY MOVEMENT ===
 
     // Definir la velocidad de movimiento (unidades por segundo)
-    //float velocity = 500.0f; // Velocidad en unidades por segundo (puedes ajustarla según el juego)
+    //float velocity = 500.0f; // Velocidad en unidades por segundo (puedes ajustarla segï¿½n el juego)
 
-    //// Calcular la distancia entre la posición actual del enemigo y el punto de destino
+    //// Calcular la distancia entre la posiciï¿½n actual del enemigo y el punto de destino
     //float distX = enemy.targetPosition.x - enemy.rect.x; 
     //float distY = enemy.targetPosition.y - enemy.rect.y;
     //float distance = sqrt(distX * distX + distY * distY); // Total distance
@@ -625,11 +625,11 @@ void UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, float de
     //// Si la distancia es mayor que el movimiento en este frame, movemos al enemigo hacia su objetivo
     //if (distance > moveSpeed)
     //{
-    //    // Normalizar la dirección
+    //    // Normalizar la direcciï¿½n
     //    float directionX = distX / distance;
     //    float directionY = distY / distance;
 
-    //    // Mover al enemigo en la dirección de su objetivo
+    //    // Mover al enemigo en la direcciï¿½n de su objetivo
     //    enemy.rect.x += directionX * moveSpeed;
     //    enemy.rect.y += directionY * moveSpeed;
     //}
@@ -639,7 +639,7 @@ void UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, float de
     //    enemy.rect.x = enemy.targetPosition.x;
     //    enemy.rect.y = enemy.targetPosition.y;
     //}
-    
+
     // Shoot logic
     if (enemy.attackCooldown >= 1.5f) // enemy.isAttacking && enemy.attackCooldown >= 1.5f
     {
