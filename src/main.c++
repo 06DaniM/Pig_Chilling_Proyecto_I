@@ -534,7 +534,7 @@ void SpawnEnemies(std::vector<Enemy>& enemies, float baseHeight, float baseWidth
         float delay = i * 0.5f;
         float startX = baseWidth; // Position X in the wave
         float startY = baseHeight; // Position Y in the wave
-        float targetX = screenWidth / 6.0f * (i + 1);
+        float targetX = screenWidth / 6.0f * (i+0.75f);
         float targetY = baseHeight + 20.0f; // Destiny of the enemy
 
         // Enemy data
@@ -606,6 +606,39 @@ void UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, float de
             enemy.rect.y = enemy.targetPosition.y;
         }
     }
+
+
+    // === NEW ENEMY MOVEMENT ===
+
+    // Definir la velocidad de movimiento (unidades por segundo)
+    //float velocity = 500.0f; // Velocidad en unidades por segundo (puedes ajustarla según el juego)
+
+    //// Calcular la distancia entre la posición actual del enemigo y el punto de destino
+    //float distX = enemy.targetPosition.x - enemy.rect.x; 
+    //float distY = enemy.targetPosition.y - enemy.rect.y;
+    //float distance = sqrt(distX * distX + distY * distY); // Total distance
+
+    //// Delta time for fluid movement
+    //// Speed per frame
+    //float moveSpeed = velocity * deltaTime;
+
+    //// Si la distancia es mayor que el movimiento en este frame, movemos al enemigo hacia su objetivo
+    //if (distance > moveSpeed)
+    //{
+    //    // Normalizar la dirección
+    //    float directionX = distX / distance;
+    //    float directionY = distY / distance;
+
+    //    // Mover al enemigo en la dirección de su objetivo
+    //    enemy.rect.x += directionX * moveSpeed;
+    //    enemy.rect.y += directionY * moveSpeed;
+    //}
+    //else
+    //{
+    //    // Si la distancia es menor que el movimiento en este frame, el enemigo ha llegado al objetivo
+    //    enemy.rect.x = enemy.targetPosition.x;
+    //    enemy.rect.y = enemy.targetPosition.y;
+    //}
     
     // Shoot logic
     if (enemy.attackCooldown >= 1.5f) // enemy.isAttacking && enemy.attackCooldown >= 1.5f
