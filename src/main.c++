@@ -267,10 +267,17 @@ int main(void)
                 if (bullet.active)
                 {
                     bullet.rect.y += BULLET_SPEED;
-                    if (CheckCollisionRecs(player, bullet.rect))
+                    if (CheckCollisionRecs(player, bullet.rect) && !shield)
                     {
                         bullet.active = false;
                         life--;
+                        break;
+                    }
+
+                    else if (CheckCollisionRecs(player, bullet.rect) && shield)
+                    {
+                        shield = false;
+                        bullet.active = false;
                         break;
                     }
                 }
@@ -280,6 +287,7 @@ int main(void)
             enemyBullets.erase(std::remove_if(enemyBullets.begin(), enemyBullets.end(),
                 [](const Bullet_Enemy& b) { return !b.active || b.rect.y < 0; }), enemyBullets.end());
 
+            // === WAVES ===
             if (currentWave < totalWaves)
             {
                 if (currentEnemies == 0 && currentWave == 1)
@@ -598,8 +606,6 @@ void UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, float de
             enemy.rect.y = enemy.targetPosition.y;
         }
     }
-
-
     
     // Shoot logic
     if (enemy.attackCooldown >= 1.5f) // enemy.isAttacking && enemy.attackCooldown >= 1.5f
