@@ -37,6 +37,7 @@ typedef struct Enemy {
     int index; // Índice del enemigo en la fila
     int loopDirection;
     bool enemyInitialState;
+    bool enemyLoopState;
 } Enemy;
 
 typedef struct Bullet_Enemy {
@@ -546,7 +547,7 @@ void SpawnEnemies(std::vector<Enemy>& enemies, float baseHeight, float baseWidth
 
         // Enemy data
         enemies.push_back({ { startX, startY, 112, 84 }, true, false, 3.0f, // Enemys collision
-                            (float)GetRandomValue(2, 5), { targetX, targetY }, { finaltargetX, finaltargetY }, -delay, i, direction, true });
+                            (float)GetRandomValue(2, 5), { targetX, targetY }, { finaltargetX, finaltargetY }, -delay, i, direction, true, false });
     }
     currentEnemies = maxEnemies; // Change to sum when more waves will be added
 }
@@ -593,6 +594,7 @@ void UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, float de
 
         if (enemy.enemyInitialState)
         {
+            enemy.enemyLoopState = false;
             if (distance1 > moveSpeed)
             {
                 // Normalizar la dirección
@@ -606,23 +608,30 @@ void UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, float de
 
             else
             {
-                enemy.rect.x = enemy.targetPosition1.x;
-                enemy.rect.y = enemy.targetPosition1.y;
-
                 enemy.enemyInitialState = false;
+                enemy.enemyLoopState = true;
             }
         }
 
         // CORREGIR PUNTO DE INICIO DEL LOOP
 
         // === MOVIMIENTO CIRCULAR ===
-        if (!enemy.enemyInitialState)
+        else if (!enemy.enemyInitialState && enemy.enemyLoopState)
         {
             float t = enemy.entryTime;
             float loopT = t * 0.5f;  // Controlar la velocidad angular (ajusta este valor si es necesario)
 
-            enemy.rect.x = enemy.targetPosition1.x + radius * cos(loopT * PI * 2); // Movimiento en X
-            enemy.rect.y = enemy.targetPosition1.y + radius * sin(loopT * PI * 2); // Movimiento en Y
+            enemy.rect.x -= cos(loopT * PI * 2) * 5; // Movimiento en X
+            enemy.rect.y -= sin(loopT * PI * 2) * 5; // Movimiento en Y
+
+            cout << "X: " << enemy.rect.x;
+            cout << "Y: " << enemy.rect.y;
+            cout << "t: " << t;
+        }
+
+        if (enemy.entryTime > 4.5f)
+        {
+            enemy.enemyLoopState = false;
         }
     }
 
