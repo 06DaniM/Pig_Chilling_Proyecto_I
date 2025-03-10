@@ -581,6 +581,15 @@ void UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, float de
         float distY = enemy.targetPosition1.y - enemy.rect.y;
         float distance1 = sqrt(distX * distX + distY * distY); // Distancia total al objetivo
 
+        // Calcular la posición circular
+        float radius = 100.0f;  // Radio del círculo
+        float centerX = enemy.targetPosition1.x; // Centro de la órbita
+        float centerY = enemy.targetPosition1.y;
+
+        // Incrementar 't' para el movimiento circular
+        float loopT = t * 0.5f;  // Controlar la velocidad angular (ajusta este valor si es necesario)
+
+
         // === MOVIMIENTO HASTA EL OBJETIVO ===
         float moveSpeed = velocity * deltaTime;
 
@@ -599,28 +608,17 @@ void UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, float de
 
             else
             {
-                printf("Cambiando Rect ");
                 // El enemigo ha llegado al objetivo
                 enemy.rect.x = enemy.targetPosition1.x;
                 enemy.rect.y = enemy.targetPosition1.y;
 
                 enemy.enemyInitialState = false;
-                cout << "Valor despues  es: " << enemy.enemyInitialState;
             }
         }
 
         // === MOVIMIENTO CIRCULAR ===
         if (!enemy.enemyInitialState)
         {
-            // Calcular la posición circular
-            float radius = 100.0f;  // Radio del círculo
-            float centerX = enemy.targetPosition1.x; // Centro de la órbita
-            float centerY = enemy.targetPosition1.y;
-
-            // Incrementar 't' para el movimiento circular
-            float loopT = t * 0.5f;  // Controlar la velocidad angular (ajusta este valor si es necesario)
-
-            // Movimiento circular (solo en círculo, no hacia el centro)
             enemy.rect.x = centerX + radius * cos(loopT * PI * 2); // Movimiento en X
             enemy.rect.y = centerY + radius * sin(loopT * PI * 2); // Movimiento en Y
         }
