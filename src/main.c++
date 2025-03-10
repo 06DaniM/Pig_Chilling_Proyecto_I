@@ -589,7 +589,6 @@ void UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, float de
         // Incrementar 't' para el movimiento circular
         float loopT = t * 0.5f;  // Controlar la velocidad angular (ajusta este valor si es necesario)
 
-
         // === MOVIMIENTO HASTA EL OBJETIVO ===
         float moveSpeed = velocity * deltaTime;
 
