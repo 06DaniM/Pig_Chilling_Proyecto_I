@@ -1,9 +1,9 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "C:\\Users\\Pc\\OneDrive\\Escritorio\\Universidad\\Pig_Chilling_Proyecto_I\\",
+  "WorkspaceRootPath": "C:\\Users\\danielmo1\\Documents\\GitHub\\Pig_Chilling_Proyecto_I\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{7223710C-5E1D-9A5E-478A-306F332300CB}|build\\build_files\\raylib-quickstart-main.vcxproj|C:\\Users\\Pc\\OneDrive\\Escritorio\\Universidad\\Pig_Chilling_Proyecto_I\\src\\main.c\u002B\u002B||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "AbsoluteMoniker": "D:0:0:{7223710C-5E1D-9A5E-478A-306F332300CB}|build\\build_files\\raylib-quickstart-main.vcxproj|C:\\Users\\danielmo1\\Documents\\GitHub\\Pig_Chilling_Proyecto_I\\src\\main.c\u002B\u002B||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{7223710C-5E1D-9A5E-478A-306F332300CB}|build\\build_files\\raylib-quickstart-main.vcxproj|solutionrelative:src\\main.c\u002B\u002B||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     }
   ],
@@ -20,11 +20,11 @@
               "$type": "Document",
               "DocumentIndex": 0,
               "Title": "main.c\u002B\u002B",
-              "DocumentMoniker": "C:\\Users\\Pc\\OneDrive\\Escritorio\\Universidad\\Pig_Chilling_Proyecto_I\\src\\main.c\u002B\u002B",
+              "DocumentMoniker": "C:\\Users\\danielmo1\\Documents\\GitHub\\Pig_Chilling_Proyecto_I\\src\\main.c\u002B\u002B",
               "RelativeDocumentMoniker": "src\\main.c\u002B\u002B",
-              "ToolTip": "C:\\Users\\Pc\\OneDrive\\Escritorio\\Universidad\\Pig_Chilling_Proyecto_I\\src\\main.c\u002B\u002B",
+              "ToolTip": "C:\\Users\\danielmo1\\Documents\\GitHub\\Pig_Chilling_Proyecto_I\\src\\main.c\u002B\u002B",
               "RelativeToolTip": "src\\main.c\u002B\u002B",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAGcCAAAAAAAAAAAAALICAAAHAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
               "WhenOpened": "2025-03-06T17:01:53.047Z",
               "EditorCaption": ""

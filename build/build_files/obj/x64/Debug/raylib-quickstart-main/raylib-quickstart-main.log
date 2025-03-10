@@ -1,8 +1,8 @@
 ﻿  main.c++
-C:\Users\Pc\OneDrive\Escritorio\Universidad\Q2\raylib-quickstart-main\src\main.c++(38,16): warning C4091: 'typedef ': se ha omitido a la izquierda de 'Bullet_Enemy' cuando no hay ninguna variable declarada
-C:\Users\Pc\OneDrive\Escritorio\Universidad\Q2\raylib-quickstart-main\src\main.c++(41,4): warning C4091: '': se ha omitido a la izquierda de 'Bullet_Enemy' cuando no hay ninguna variable declarada
-C:\Users\Pc\OneDrive\Escritorio\Universidad\Q2\raylib-quickstart-main\src\main.c++(407,43): warning C4838: la conversión de 'int' en 'float' requiere una conversión de restricción
-C:\Users\Pc\OneDrive\Escritorio\Universidad\Q2\raylib-quickstart-main\src\main.c++(407,43): warning C4244: 'inicializando': conversión de 'int' a 'float'; posible pérdida de datos
-C:\Users\Pc\OneDrive\Escritorio\Universidad\Q2\raylib-quickstart-main\src\main.c++(408,26): warning C4838: la conversión de 'int' en 'float' requiere una conversión de restricción
-C:\Users\Pc\OneDrive\Escritorio\Universidad\Q2\raylib-quickstart-main\src\main.c++(408,26): warning C4244: 'inicializando': conversión de 'int' a 'float'; posible pérdida de datos
-  raylib-quickstart-main.vcxproj -> C:\Users\Pc\OneDrive\Escritorio\Universidad\Q2\raylib-quickstart-main\bin\Debug\raylib-quickstart-main.exe
+C:\Users\danielmo1\Documents\GitHub\Pig_Chilling_Proyecto_I\src\main.c++(42,16): warning C4091: 'typedef ': se ha omitido a la izquierda de 'Bullet_Enemy' cuando no hay ninguna variable declarada
+C:\Users\danielmo1\Documents\GitHub\Pig_Chilling_Proyecto_I\src\main.c++(45,4): warning C4091: '': se ha omitido a la izquierda de 'Bullet_Enemy' cuando no hay ninguna variable declarada
+C:\Users\danielmo1\Documents\GitHub\Pig_Chilling_Proyecto_I\src\main.c++(412,43): warning C4838: la conversión de 'int' en 'float' requiere una conversión de restricción
+C:\Users\danielmo1\Documents\GitHub\Pig_Chilling_Proyecto_I\src\main.c++(412,43): warning C4244: 'inicializando': conversión de 'int' a 'float'; posible pérdida de datos
+C:\Users\danielmo1\Documents\GitHub\Pig_Chilling_Proyecto_I\src\main.c++(413,26): warning C4838: la conversión de 'int' en 'float' requiere una conversión de restricción
+C:\Users\danielmo1\Documents\GitHub\Pig_Chilling_Proyecto_I\src\main.c++(413,26): warning C4244: 'inicializando': conversión de 'int' a 'float'; posible pérdida de datos
+  raylib-quickstart-main.vcxproj -> C:\Users\danielmo1\Documents\GitHub\Pig_Chilling_Proyecto_I\bin\Debug\raylib-quickstart-main.exe
