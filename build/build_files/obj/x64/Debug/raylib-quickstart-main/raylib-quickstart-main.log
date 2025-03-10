@@ -1,4 +1,2 @@
 ﻿  main.c++
-C:\Users\danielmo1\Desktop\Project II\Pig_Chilling_Proyecto_I\src\main.c++(42,16): warning C4091: 'typedef ': se ha omitido a la izquierda de 'Bullet_Enemy' cuando no hay ninguna variable declarada
-C:\Users\danielmo1\Desktop\Project II\Pig_Chilling_Proyecto_I\src\main.c++(45,4): warning C4091: '': se ha omitido a la izquierda de 'Bullet_Enemy' cuando no hay ninguna variable declarada
   raylib-quickstart-main.vcxproj -> C:\Users\danielmo1\Desktop\Project II\Pig_Chilling_Proyecto_I\bin\Debug\raylib-quickstart-main.exe

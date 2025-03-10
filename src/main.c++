@@ -42,7 +42,7 @@ typedef struct Enemy {
 typedef struct Bullet_Enemy {
     Rectangle rect;
     bool active;
-}; Bullet_Enemy;
+} Bullet_Enemy;
 
 const int screenWidth = 1920;
 const int screenHeight = 1080;
@@ -536,7 +536,7 @@ void SpawnEnemies(std::vector<Enemy>& enemies, float baseHeight, float baseWidth
 {
     enemies.clear();
     for (int i = 0; i < maxEnemies; i++) {
-        float delay = i * 0.5f;
+        float delay = i * 0.35f; // Space between enemies
         float startX = baseWidth; // Position X in the wave
         float startY = baseHeight; // Position Y in the wave
         float targetX = targetx; // Loop X position
@@ -566,14 +566,12 @@ void UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, float de
     // === NEW ENEMY MOVEMENT ===
 
     // El retraso se calcula dependiendo del índice del enemigo
-    float delayTime = 0.5f; // Por ejemplo, 0.5 segundos de retraso por cada enemigo
+    float delayTime = 0.0f; // Por ejemplo, 0.5 segundos de retraso por cada enemigo
 
     // Enemy start de movement with a delay 
 
     if (enemy.entryTime >= delayTime)
     {
-        
-
         // === NEW ENEMY MOVEMENT ===
         float velocity = 500.0f; // Velocidad de movimiento
 
@@ -623,11 +621,10 @@ void UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, float de
             float t = enemy.entryTime;
             float loopT = t * 0.5f;  // Controlar la velocidad angular (ajusta este valor si es necesario)
 
-            enemy.rect.x = centerX + radius * cos(loopT * PI * 2); // Movimiento en X
-            enemy.rect.y = centerY + radius * sin(loopT * PI * 2); // Movimiento en Y
+            enemy.rect.x = enemy.targetPosition1.x + radius * cos(loopT * PI * 2); // Movimiento en X
+            enemy.rect.y = enemy.targetPosition1.y + radius * sin(loopT * PI * 2); // Movimiento en Y
         }
     }
-
 
     // Lógica de disparo
     if (enemy.attackCooldown >= 1.5f) // Si está listo para atacar
