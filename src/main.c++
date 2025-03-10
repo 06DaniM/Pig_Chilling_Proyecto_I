@@ -576,15 +576,15 @@ void UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, float de
         // === NEW ENEMY MOVEMENT ===
         float velocity = 500.0f; // Velocidad de movimiento
 
-        // Calcular la distancia entre la posición actual y el objetivo
-        float distX = enemy.targetPosition1.x - enemy.rect.x;
-        float distY = enemy.targetPosition1.y - enemy.rect.y;
-        float distance1 = sqrt(distX * distX + distY * distY); // Distancia total al objetivo
-
         // Calcular la posición circular
         float radius = 100.0f;  // Radio del círculo
         float centerX = enemy.targetPosition1.x; // Centro de la órbita
         float centerY = enemy.targetPosition1.y;
+
+        // Calcular la distancia entre la posición actual y el objetivo
+        float distX = enemy.targetPosition1.x - enemy.rect.x;
+        float distY = enemy.targetPosition1.y - enemy.rect.y + radius;
+        float distance1 = sqrt(distX * distX + distY * distY); // Distancia total al objetivo
 
         // Incrementar 't' para el movimiento circular
         float loopT = t * 0.5f;  // Controlar la velocidad angular (ajusta este valor si es necesario)
