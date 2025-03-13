@@ -678,19 +678,17 @@ void UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, float de
             float distX = enemy.targetIdlePosition - enemy.rect.x;
 
             float distance = sqrt(distX * distX); // Distancia total al objetivo
+            float directionX = distX / distance;
 
             if (distance > moveSpeed)
             {
-                // Normalizar la dirección
-                float directionX = distX / distance;
-
                 // Mover al enemigo hacia el objetivo
                 enemy.rect.x += directionX * moveSpeed;
             }
 
             else
             {
-                enemy.rect.x = enemy.targetFinalPosition.x;
+                enemy.rect.x += -directionX * moveSpeed;
             }
         }
 
