@@ -529,8 +529,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\resource_dir.h" />
+    <ClInclude Include="..\..\src\Enemy2.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\src\Enemy2.cpp" />
     <ClCompile Include="..\..\src\main.c++" />
   </ItemGroup>
   <ItemGroup>
