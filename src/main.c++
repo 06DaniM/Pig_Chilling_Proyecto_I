@@ -66,10 +66,7 @@ void SpawnEnemies(std::vector<Enemy>& enemies, float baseHeight, float baseWidth
 int main(void)
 {
     InitWindow(screenWidth, screenHeight, "Space Attacks!");
-
     InitAudioDevice();
-    Music music = LoadMusicStream("resources/music/02 Regular Stage Theme.ogg");
-    PlayMusicStream(music);
 
     Rectangle player = { (screenWidth - 74) / 2.0f, screenHeight / 1.5f, 64, 64 };
 
@@ -101,6 +98,8 @@ int main(void)
 
     Texture2D background = LoadTexture("resources/backgrounds/FONDO_GALAGA.png");
 
+    Music music = LoadMusicStream("resources/music/02 Regular Stage Theme.ogg");
+
     Font font = LoadFontEx("Font/monogram.ttf", 64, 0, 0);
 
     bool doubleShot = false, shield = false, canAct = false;
@@ -115,6 +114,7 @@ int main(void)
     bool showGameOver = false;
 
     SetTargetFPS(60);
+    PlayMusicStream(music);
 
     while (!WindowShouldClose())
     {
@@ -561,8 +561,8 @@ void SpawnEnemies(std::vector<Enemy>& enemies, float baseHeight, float baseWidth
         float finaltargetY = baseHeight + 20.0f; // Final Y position
 
         // Enemy data
-        enemies.push_back({ { startX, startY, 112, 84 }, true, false, 3.0f, // Enemys collision
-                            (float)GetRandomValue(2, 5), { targetX, targetY }, { finaltargetX, finaltargetY }, idletargetX,-delay, i, direction, true, false, true, false, false, false });
+        enemies.push_back({ { startX, startY, 112, 84 }, true, false, 0.0f, // Enemys collision
+                            5.0f, { targetX, targetY }, { finaltargetX, finaltargetY }, idletargetX,-delay, i, direction, true, false, true, false, false, false });
     }
     currentEnemies = maxEnemies; // Change to sum when more waves will be added
 }
@@ -722,23 +722,39 @@ void UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, float de
                     enemy.right = false;
                 }
             }
+
+            if (enemy.attackCooldown >= 1.5f)
+            {
+                enemy.attackTime = GetRandomValue(1, 1000);
+            }
+
+            if (enemy.attackTime <= 10)
+            {
+                enemyBullets.push_back({ { enemy.rect.x + enemy.rect.width / 2, enemy.rect.y + enemy.rect.height / 2, 16, 12 }, true });
+                enemy.attackCooldown = 0.0f;
+            }
+
+            if (enemy.attackCooldown < 1.5f)
+            {
+                enemy.attackCooldown += deltaTime;
+            }
+            //enemy.random = false;
         }
 
-        else if (enemy.random)
+        if (enemy.random)
         {
+            cout << enemy.attackTime; 
+            if (enemy.attackCooldown >= 1.5f) // Si está listo para atacar
+            {
+                enemyBullets.push_back({ { enemy.rect.x + enemy.rect.width / 2, enemy.rect.y + enemy.rect.height / 2, 16, 12 }, true });
+                enemy.attackCooldown = 0.0f; // Resetear el cooldown
+            }
 
+            else
+            {
+                enemy.attackCooldown += deltaTime;  // Reducir el tiempo de cooldown
+            }
+            enemy.random = false;
         }
-    }
-
-    // Lógica de disparo
-    if (enemy.attackCooldown >= 1.5f) // Si está listo para atacar
-    {
-        enemyBullets.push_back({ { enemy.rect.x + enemy.rect.width / 2, enemy.rect.y + enemy.rect.height / 2, 16, 12 }, true });
-        enemy.attackCooldown = 0.0f; // Resetear el cooldown
-    }
-
-    else
-    {
-        enemy.attackCooldown += deltaTime;  // Reducir el tiempo de cooldown
     }
 }
