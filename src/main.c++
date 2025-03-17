@@ -42,6 +42,7 @@ typedef struct Enemy {
     bool manual;
     bool idle;
     bool random;
+    bool right;
 } Enemy;
 
 typedef struct Bullet_Enemy {
@@ -65,6 +66,10 @@ void SpawnEnemies(std::vector<Enemy>& enemies, float baseHeight, float baseWidth
 int main(void)
 {
     InitWindow(screenWidth, screenHeight, "Space Attacks!");
+
+    InitAudioDevice();
+    Music music = LoadMusicStream("resources/music/02 Regular Stage Theme.ogg");
+    PlayMusicStream(music);
 
     Rectangle player = { (screenWidth - 74) / 2.0f, screenHeight / 1.5f, 64, 64 };
 
@@ -113,6 +118,8 @@ int main(void)
 
     while (!WindowShouldClose())
     {
+        UpdateMusicStream(music);
+
         // For testing
         if (IsKeyPressed(KEY_R))
         {
@@ -138,6 +145,9 @@ int main(void)
         if (IsKeyPressed(KEY_ESCAPE) || IsKeyPressed('P')) {
             pause = !pause;
             canAct = !canAct;
+
+            if (pause) PauseMusicStream(music);
+            else ResumeMusicStream(music);
         }
 
         // Menu manager
@@ -552,7 +562,7 @@ void SpawnEnemies(std::vector<Enemy>& enemies, float baseHeight, float baseWidth
 
         // Enemy data
         enemies.push_back({ { startX, startY, 112, 84 }, true, false, 3.0f, // Enemys collision
-                            (float)GetRandomValue(2, 5), { targetX, targetY }, { finaltargetX, finaltargetY }, idletargetX,-delay, i, direction, true, false, true, false, false });
+                            (float)GetRandomValue(2, 5), { targetX, targetY }, { finaltargetX, finaltargetY }, idletargetX,-delay, i, direction, true, false, true, false, false, false });
     }
     currentEnemies = maxEnemies; // Change to sum when more waves will be added
 }
@@ -633,7 +643,6 @@ void UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, float de
                 if (enemy.entryTime > 4 + .5f)
                 {
                     enemy.enemyLoopState = false;
-                    cout << enemy.enemyLoopState;
                 }
             }
 
@@ -667,6 +676,7 @@ void UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, float de
             }
         }
 
+        // === COORDINAR EL MOVIMIENTO, BUSCAR LA FORMA ======
         // === RANDOM STATE
         
         else if (enemy.idle && !enemy.random)
@@ -675,20 +685,42 @@ void UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, float de
             float velocity = 200.0f; // Velocidad de movimiento
             float moveSpeed = velocity * deltaTime;
 
-            float distX = enemy.targetIdlePosition - enemy.rect.x;
+            float distX1 = enemy.targetIdlePosition - enemy.rect.x;
 
-            float distance = sqrt(distX * distX); // Distancia total al objetivo
-            float directionX = distX / distance;
+            float distance1 = sqrt(distX1 * distX1); // Distancia total al objetivo
+            float directionX1 = distX1 / distance1;
 
-            if (distance > moveSpeed)
+            float distX2 = enemy.targetFinalPosition.x - enemy.rect.x;
+
+            float distance2 = sqrt(distX2 * distX2); // Distancia total al objetivo
+            float directionX2 = distX2 / distance2;
+
+            if (!enemy.right)
             {
-                // Mover al enemigo hacia el objetivo
-                enemy.rect.x += directionX * moveSpeed;
+                if (distance1 > moveSpeed)
+                {
+                    // Mover al enemigo hacia el objetivo
+                    enemy.rect.x += directionX1 * moveSpeed;
+                }
+
+                else
+                {
+                    enemy.right = true;
+                }
             }
 
             else
             {
-                enemy.rect.x += -directionX * moveSpeed;
+                if (distance2 > moveSpeed)
+                {
+                    // Mover al enemigo hacia el objetivo
+                    enemy.rect.x += directionX2 * moveSpeed;
+                }
+
+                else
+                {
+                    enemy.right = false;
+                }
             }
         }
 
