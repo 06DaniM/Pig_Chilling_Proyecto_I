@@ -748,19 +748,10 @@ void UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, float de
             float t = enemy.attackingTimer;
             float loopT = t * 0.5f;
 
-            if (enemy.attackingTimer <= 1)
+            if (enemy.attackingTimer <= 0.35f)
             {
-                if (enemy.right)
-                {
-                    enemy.rect.x += cos(loopT * PI * 2) * 5; // Movimiento en X
-                    enemy.rect.y -= sin(loopT * PI * 2) * 5; // Movimiento en Y
-                }
-
-                else
-                {
-                    enemy.rect.x -= cos(loopT * PI * 2) * 5; // Movimiento en X
-                    enemy.rect.y -= sin(loopT * PI * 2) * 5; // Movimiento en Y
-                }
+                enemy.rect.x += cos(loopT * PI * 5) * 5; // Movimiento en X
+                enemy.rect.y -= sin(loopT * PI * 5) * 5; // Movimiento en Y
             }
         }
     }
