@@ -30,13 +30,14 @@ typedef struct Enemy {
     bool active;
     bool isAttacking;
     float attackTime;
+    float attackingTimer;
     float attackCooldown;
-    Vector2 targetPosition1; // Loop position
-    Vector2 targetFinalPosition; // Final position
-    float targetIdlePosition; // Idle position
+    Vector2 targetPosition1; // Start Loop position
+    Vector2 targetFinalPosition; // Final position of the Loop
+    float targetIdlePosition; // Idle position after loop
     float entryTime; // Tiempo de entrada
     int index; // Índice del enemigo en la fila
-    int loopDirection;
+    int loopDirection; // 1 = Right | -1 = Left
     bool enemyInitialState;
     bool enemyLoopState;
     bool manual;
@@ -313,13 +314,13 @@ int main(void)
                 if (currentEnemies == 0 && currentWave == 1)
                 {
                     currentWave++;
-                    SpawnEnemies(enemies, 150.0f, screenWidth + 100, -1, 0.0f, 0.0f); // Wave 2
+                    SpawnEnemies(enemies, 150.0f, screenWidth + 100, -1,screenWidth/2, screenHeight/2); // Wave 2
                 }
 
                 if (currentEnemies == 0 && currentWave == 2)
                 {
                     currentWave++;
-                    SpawnEnemies(enemies, 150.0f, screenWidth + 100, -1, 0.0f, 0.0f); // Wave 3
+                    SpawnEnemies(enemies, 150.0f, screenWidth + 100, -1, screenWidth / 2, screenHeight / 2); // Wave 3
                 }
             }
 
@@ -472,7 +473,7 @@ int main(void)
                 bullets.clear();
                 score = 0;
                 currentWave = 1;
-                SpawnEnemies(enemies, 100.0f, -50.0f, 1, 0.0f, 0.0f);
+                SpawnEnemies(enemies, 100.0f, -100.0f, 1, screenWidth / 1.5f, screenHeight / 2.5f);
             }
             continue; // Avoid the code is still executing in the menu
         }
@@ -561,8 +562,8 @@ void SpawnEnemies(std::vector<Enemy>& enemies, float baseHeight, float baseWidth
         float finaltargetY = baseHeight + 20.0f; // Final Y position
 
         // Enemy data
-        enemies.push_back({ { startX, startY, 112, 84 }, true, false, 0.0f, // Enemys collision
-                            5.0f, { targetX, targetY }, { finaltargetX, finaltargetY }, idletargetX,-delay, i, direction, true, false, true, false, false, false });
+        enemies.push_back({ { startX, startY, 112, 84 }, true, false, 0.0f, 0.0f, // Enemys collision
+                            5.0f,{ targetX, targetY }, { finaltargetX, finaltargetY },idletargetX,-delay, i, direction, true, false, true, false, false, false });
     }
     currentEnemies = maxEnemies; // Change to sum when more waves will be added
 }
@@ -638,9 +639,9 @@ void UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, float de
                 float loopT = t * 0.5f;  // Controlar la velocidad angular (ajusta este valor si es necesario)
 
                 enemy.rect.x -= cos(loopT * PI * 2) * 5; // Movimiento en X
-                enemy.rect.y -= sin(loopT * PI * 2) * 5; // Movimiento en Y
+                enemy.rect.y -= sin(loopT * PI * 2) * 5 * enemy.loopDirection; // Movimiento en Y
 
-                if (enemy.entryTime > 4 + .5f)
+                if (enemy.entryTime > 4.5f)
                 {
                     enemy.enemyLoopState = false;
                 }
@@ -682,8 +683,8 @@ void UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, float de
         else if (enemy.idle && !enemy.random)
         {
             // Incrementar 't' para el movimiento circular
-            float velocity = 200.0f; // Velocidad de movimiento
-            float moveSpeed = velocity * deltaTime;
+            float velocity2 = 200.0f; // Velocidad de movimiento
+            float moveSpeed = velocity2 * deltaTime;
 
             float distX1 = enemy.targetIdlePosition - enemy.rect.x;
 
@@ -725,11 +726,11 @@ void UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, float de
 
             if (enemy.attackCooldown >= 1.5f)
             {
-                enemy.attackTime = GetRandomValue(1, 10000);
+                enemy.attackTime = GetRandomValue(1, 5000);
 
                 if (enemy.attackTime <= 10)
                 {
-                    enemyBullets.push_back({ { enemy.rect.x + enemy.rect.width / 2, enemy.rect.y + enemy.rect.height / 2, 16, 12 }, true });
+                    enemy.random = true;
                     enemy.attackCooldown = 0.0f;
                 }
             }
@@ -738,23 +739,30 @@ void UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, float de
             {
                 enemy.attackCooldown += deltaTime;
             }
-            //enemy.random = false;
         }
 
-        if (enemy.random)
+        else if (enemy.random)
         {
-            cout << enemy.attackTime; 
-            if (enemy.attackCooldown >= 1.5f) // Si está listo para atacar
-            {
-                enemyBullets.push_back({ { enemy.rect.x + enemy.rect.width / 2, enemy.rect.y + enemy.rect.height / 2, 16, 12 }, true });
-                enemy.attackCooldown = 0.0f; // Resetear el cooldown
-            }
+            enemy.attackingTimer += deltaTime;
 
-            else
+            float t = enemy.attackingTimer;
+            float loopT = t * 0.5f;
+
+            if (enemy.attackingTimer <= 1)
             {
-                enemy.attackCooldown += deltaTime;  // Reducir el tiempo de cooldown
+                if (enemy.right)
+                {
+                    enemy.rect.x += cos(loopT * PI * 2) * 5; // Movimiento en X
+                    enemy.rect.y -= sin(loopT * PI * 2) * 5; // Movimiento en Y
+                }
+
+                else
+                {
+                    enemy.rect.x -= cos(loopT * PI * 2) * 5; // Movimiento en X
+                    enemy.rect.y -= sin(loopT * PI * 2) * 5; // Movimiento en Y
+                }
             }
-            enemy.random = false;
         }
     }
 }
+// enemyBullets.push_back({ { enemy.rect.x + enemy.rect.width / 2, enemy.rect.y + enemy.rect.height / 2, 16, 12 }, true });
