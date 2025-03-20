@@ -725,13 +725,13 @@ void UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, float de
 
             if (enemy.attackCooldown >= 1.5f)
             {
-                enemy.attackTime = GetRandomValue(1, 1000);
-            }
+                enemy.attackTime = GetRandomValue(1, 10000);
 
-            if (enemy.attackTime <= 10)
-            {
-                enemyBullets.push_back({ { enemy.rect.x + enemy.rect.width / 2, enemy.rect.y + enemy.rect.height / 2, 16, 12 }, true });
-                enemy.attackCooldown = 0.0f;
+                if (enemy.attackTime <= 10)
+                {
+                    enemyBullets.push_back({ { enemy.rect.x + enemy.rect.width / 2, enemy.rect.y + enemy.rect.height / 2, 16, 12 }, true });
+                    enemy.attackCooldown = 0.0f;
+                }
             }
 
             if (enemy.attackCooldown < 1.5f)
