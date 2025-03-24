@@ -35,6 +35,7 @@ typedef struct Enemy {
     Vector2 targetPosition1; // Start Loop position
     Vector2 targetFinalPosition; // Final position of the Loop
     float targetIdlePosition; // Idle position after loop
+    float attackPlayerPos; // Position of the player when attack
     float entryTime; // Tiempo de entrada
     int index; // Índice del enemigo en la fila
     int loopDirection; // 1 = Right | -1 = Left
@@ -44,6 +45,7 @@ typedef struct Enemy {
     bool idle;
     bool random;
     bool right;
+    bool playerOnRight;
 } Enemy;
 
 typedef struct Bullet_Enemy {
@@ -563,7 +565,7 @@ void SpawnEnemies(std::vector<Enemy>& enemies, float baseHeight, float baseWidth
 
         // Enemy data
         enemies.push_back({ { startX, startY, 112, 84 }, true, false, 0.0f, 0.0f, // Enemys collision
-                            5.0f,{ targetX, targetY }, { finaltargetX, finaltargetY },idletargetX,-delay, i, direction, true, false, true, false, false, false });
+                            5.0f,{ targetX, targetY }, { finaltargetX, finaltargetY },idletargetX,0.0f ,-delay, i, direction, true, false, true, false, false, false, NULL });
     }
     currentEnemies = maxEnemies; // Change to sum when more waves will be added
 }
@@ -678,7 +680,7 @@ void UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, float de
         }
 
         // === RANDOM STATE
-        
+
         else if (enemy.idle && !enemy.random)
         {
             // Incrementar 't' para el movimiento circular
@@ -744,38 +746,56 @@ void UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, float de
         {
             float velocity2 = 300.0f; // Velocidad de movimiento
             float moveSpeed = velocity2 * deltaTime;
-
             enemy.attackingTimer += deltaTime;
 
             float t = enemy.attackingTimer;
             float loopT = t * 0.5f;
 
-            float PlayerposX = player.x;
-            float PlayerposY = player.y;
-
-            float distX = PlayerposX - enemy.rect.x;
-            float distY = PlayerposY - enemy.rect.y;
-
-            float distance = sqrt(distX * distX + distY * distY); // Distancia total al objetivo
-            float directionX = distX / distance;
-            float directionY = distY / distance;
-
-            if (enemy.attackingTimer <= 0.7f)
+            if (enemy.attackingTimer <= 1.2f)
             {
-                enemy.rect.x += cos(loopT * PI * 2.5f) * 5; // Movimiento en X
-                enemy.rect.y -= sin(loopT * PI * 2.5f) * 2.5f; // Movimiento en Y
+                if (enemy.attackingTimer <= 0.7f)
+                {
+                    enemy.rect.x += cos(loopT * PI * 2.5f) * 5; // Movimiento en X
+                    enemy.rect.y -= sin(loopT * PI * 2.5f) * 2.5f; // Movimiento en Y
+                }
+
+                else
+                {
+                    enemy.rect.x += cos(loopT * PI * 2.5f) * 5;
+                    enemy.rect.y -= sin(loopT * PI * 2.5f) * 2.5f;
+                }
+
+                if (enemy.rect.x < player.x)
+                {
+                    enemy.playerOnRight = false;
+                }
+
+                else enemy.playerOnRight = true;
+
+                enemy.attackPlayerPos = player.x;
+                enemy.enemyLoopState = true;
             }
 
-            else if(enemy.attackingTimer <= 1)
+            else
             {
-                enemy.rect.x += cos(loopT * PI * 2.5f) * 5;
-                enemy.rect.y -= sin(loopT * PI * 2.5f) * 2.5f;
-            }
+                float distX;
+                if (enemy.playerOnRight) distX = enemy.targetIdlePosition - 400 - enemy.rect.x;
+                else distX = enemy.targetIdlePosition + 400 - enemy.rect.x;
 
-            else if (enemy.attackingTimer <= 4)
-            {
-                enemy.rect.x += directionX * moveSpeed;
-                enemy.rect.y += directionY * moveSpeed;
+                float distY = player.y - 150 - enemy.rect.y;
+
+                float distance = sqrt(distX * distX + distY * distY); // Distancia total al objetivo
+
+                if (distance > moveSpeed)
+                {
+                    // Normalizar la dirección
+                    float directionX = distX / distance;
+
+                    float directionY = distY / distance;
+                    // Mover al enemigo hacia el objetivo
+                    enemy.rect.x += directionX * moveSpeed;
+                    enemy.rect.y += directionY * moveSpeed;
+                }
             }
         }
     }
