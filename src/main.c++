@@ -61,7 +61,7 @@ int currentEnemies = 0;
 std::vector<Bullet> bullets;
 std::vector<Bullet_Enemy> enemyBullets;
 
-void UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, float deltaTime);
+void UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, float deltaTime, Rectangle& Player);
 void SpawnEnemies(std::vector<Enemy>& enemies, float baseHeight, float baseWidth, int direction, float targetx, float targety);
 
 int main(void)
@@ -278,7 +278,7 @@ int main(void)
             {
                 if (enemy.active)
                 {
-                    UpdateEnemy(enemyBullets, enemy, GetFrameTime());
+                    UpdateEnemy(enemyBullets, enemy, GetFrameTime(), player);
                 }
             }
 
@@ -573,7 +573,7 @@ float Lerp(float a, float b, float t)
     return a + t * (b - a);
 }
 
-void UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, float deltaTime)
+void UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, float deltaTime, Rectangle& player)
 {
     float midX = screenWidth / 2.0f;
     float midY = enemy.rect.y;
@@ -659,8 +659,8 @@ void UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, float de
                 {
                     // Normalizar la dirección
                     float directionX = distX / distance;
-                    float directionY = distY / distance;
 
+                    float directionY = distY / distance;
                     // Mover al enemigo hacia el objetivo
                     enemy.rect.x += directionX * moveSpeed;
                     enemy.rect.y += directionY * moveSpeed;
@@ -677,7 +677,6 @@ void UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, float de
             }
         }
 
-        // === COORDINAR EL MOVIMIENTO, BUSCAR LA FORMA ======
         // === RANDOM STATE
         
         else if (enemy.idle && !enemy.random)
@@ -743,15 +742,40 @@ void UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, float de
 
         else if (enemy.random)
         {
+            float velocity2 = 300.0f; // Velocidad de movimiento
+            float moveSpeed = velocity2 * deltaTime;
+
             enemy.attackingTimer += deltaTime;
 
             float t = enemy.attackingTimer;
             float loopT = t * 0.5f;
 
-            if (enemy.attackingTimer <= 0.35f)
+            float PlayerposX = player.x;
+            float PlayerposY = player.y;
+
+            float distX = PlayerposX - enemy.rect.x;
+            float distY = PlayerposY - enemy.rect.y;
+
+            float distance = sqrt(distX * distX + distY * distY); // Distancia total al objetivo
+            float directionX = distX / distance;
+            float directionY = distY / distance;
+
+            if (enemy.attackingTimer <= 0.7f)
             {
-                enemy.rect.x += cos(loopT * PI * 5) * 5; // Movimiento en X
-                enemy.rect.y -= sin(loopT * PI * 5) * 5; // Movimiento en Y
+                enemy.rect.x += cos(loopT * PI * 2.5f) * 5; // Movimiento en X
+                enemy.rect.y -= sin(loopT * PI * 2.5f) * 2.5f; // Movimiento en Y
+            }
+
+            else if(enemy.attackingTimer <= 1)
+            {
+                enemy.rect.x += cos(loopT * PI * 2.5f) * 5;
+                enemy.rect.y -= sin(loopT * PI * 2.5f) * 2.5f;
+            }
+
+            else if (enemy.attackingTimer <= 4)
+            {
+                enemy.rect.x += directionX * moveSpeed;
+                enemy.rect.y += directionY * moveSpeed;
             }
         }
     }
