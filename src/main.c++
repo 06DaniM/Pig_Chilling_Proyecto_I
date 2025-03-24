@@ -683,6 +683,7 @@ void UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, float de
 
         else if (enemy.idle && !enemy.random)
         {
+            cout << "Idle";
             // Incrementar 't' para el movimiento circular
             float velocity2 = 200.0f; // Velocidad de movimiento
             float moveSpeed = velocity2 * deltaTime;
@@ -727,12 +728,10 @@ void UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, float de
 
             if (enemy.attackCooldown >= 1.5f)
             {
-                enemy.attackTime = GetRandomValue(1, 5000);
-
+                enemy.attackTime = GetRandomValue(1, 50);
                 if (enemy.attackTime <= 10)
                 {
                     enemy.random = true;
-                    enemy.attackCooldown = 0.0f;
                 }
             }
 
@@ -778,23 +777,50 @@ void UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, float de
 
             else
             {
-                float distX;
-                if (enemy.playerOnRight) distX = enemy.targetIdlePosition - 400 - enemy.rect.x;
-                else distX = enemy.targetIdlePosition + 400 - enemy.rect.x;
+                float distX1;
+                if (enemy.playerOnRight) distX1 = enemy.targetIdlePosition - 400 - enemy.rect.x;
+                else distX1 = enemy.targetIdlePosition + 400 - enemy.rect.x;
+                float distY1 = player.y - 100 - enemy.rect.y;
+                float distance1 = sqrt(distX1 * distX1 + distY1 * distY1); // Distancia total al objetivo
 
-                float distY = player.y - 150 - enemy.rect.y;
+                float distX2 = enemy.targetIdlePosition - enemy.rect.x;
+                float distY2 = enemy.targetFinalPosition.y - enemy.rect.y;
+                float distance2 = sqrt(distX2 * distX2+ distY2 * distY2); // Distancia total al objetivo
 
-                float distance = sqrt(distX * distX + distY * distY); // Distancia total al objetivo
-
-                if (distance > moveSpeed)
+                if (distance1 >= moveSpeed && enemy.enemyLoopState)
                 {
                     // Normalizar la dirección
-                    float directionX = distX / distance;
+                    float directionX = distX1 / distance1;
+                    float directionY = distY1 / distance1;
 
-                    float directionY = distY / distance;
                     // Mover al enemigo hacia el objetivo
                     enemy.rect.x += directionX * moveSpeed;
                     enemy.rect.y += directionY * moveSpeed;
+
+                    if (enemy.rect.y >= player.y - 150)
+                    {
+                        enemy.enemyLoopState = false;
+                    }
+                }
+
+                else if (!enemy.enemyLoopState)
+                {
+                    if (distance2 > moveSpeed)
+                    {
+                        // Normalizar la dirección
+                        float directionX = distX2 / distance2;
+                        float directionY = distY2 / distance2;
+
+                        // Mover al enemigo hacia el objetivo
+                        enemy.rect.x += directionX * moveSpeed;
+                        enemy.rect.y += directionY * moveSpeed;
+                    }
+
+                    else
+                    {
+                        enemy.random = false;
+                        enemy.attackCooldown = 0.0f;
+                    }
                 }
             }
         }
