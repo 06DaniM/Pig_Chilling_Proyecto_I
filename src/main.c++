@@ -819,7 +819,7 @@ void UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, float de
                     else
                     {
                         enemy.random = false;
-                        enemy.attackCooldown = 0.0f;
+                        enemy.attackingTimer = 0.0f;
                     }
                 }
             }
