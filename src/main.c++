@@ -53,8 +53,8 @@ typedef struct Bullet_Enemy {
     bool active;
 } Bullet_Enemy;
 
-const int screenWidth = 1920;
-const int screenHeight = 1080;
+const int screenWidth = 1152;
+const int screenHeight = 896;
 int screen = 1;
 
 int maxEnemies = 5;

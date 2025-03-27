@@ -20,7 +20,7 @@
     <ClCompile Include="..\..\src\main.c++">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Enemy2.cpp">
+    <ClCompile Include="..\..\src\Enemy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

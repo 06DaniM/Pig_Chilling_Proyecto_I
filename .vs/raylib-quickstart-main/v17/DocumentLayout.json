@@ -5,6 +5,14 @@
     {
       "AbsoluteMoniker": "D:0:0:{7223710C-5E1D-9A5E-478A-306F332300CB}|build\\build_files\\raylib-quickstart-main.vcxproj|C:\\Users\\danielmo1\\Documents\\GitHub\\Pig_Chilling_Proyecto_I\\src\\main.c\u002B\u002B||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{7223710C-5E1D-9A5E-478A-306F332300CB}|build\\build_files\\raylib-quickstart-main.vcxproj|solutionrelative:src\\main.c\u002B\u002B||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7223710C-5E1D-9A5E-478A-306F332300CB}|build\\build_files\\raylib-quickstart-main.vcxproj|C:\\Users\\danielmo1\\Documents\\GitHub\\Pig_Chilling_Proyecto_I\\src\\Enemy.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{7223710C-5E1D-9A5E-478A-306F332300CB}|build\\build_files\\raylib-quickstart-main.vcxproj|solutionrelative:src\\Enemy.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7223710C-5E1D-9A5E-478A-306F332300CB}|build\\build_files\\raylib-quickstart-main.vcxproj|C:\\Users\\danielmo1\\Documents\\GitHub\\Pig_Chilling_Proyecto_I\\src\\Enemy2.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{7223710C-5E1D-9A5E-478A-306F332300CB}|build\\build_files\\raylib-quickstart-main.vcxproj|solutionrelative:src\\Enemy2.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     }
   ],
   "DocumentGroupContainers": [
@@ -14,17 +22,43 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 0,
+          "SelectedChildIndex": 2,
           "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Enemy.cpp",
+              "DocumentMoniker": "C:\\Users\\danielmo1\\Documents\\GitHub\\Pig_Chilling_Proyecto_I\\src\\Enemy.cpp",
+              "RelativeDocumentMoniker": "src\\Enemy.cpp",
+              "ToolTip": "C:\\Users\\danielmo1\\Documents\\GitHub\\Pig_Chilling_Proyecto_I\\src\\Enemy.cpp",
+              "RelativeToolTip": "src\\Enemy.cpp",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2025-03-27T12:18:52.145Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Enemy2.h",
+              "DocumentMoniker": "C:\\Users\\danielmo1\\Documents\\GitHub\\Pig_Chilling_Proyecto_I\\src\\Enemy2.h",
+              "RelativeDocumentMoniker": "src\\Enemy2.h",
+              "ToolTip": "C:\\Users\\danielmo1\\Documents\\GitHub\\Pig_Chilling_Proyecto_I\\src\\Enemy2.h",
+              "RelativeToolTip": "src\\Enemy2.h",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2025-03-27T12:00:52.833Z",
+              "EditorCaption": ""
+            },
             {
               "$type": "Document",
               "DocumentIndex": 0,
               "Title": "main.c\u002B\u002B",
               "DocumentMoniker": "C:\\Users\\danielmo1\\Documents\\GitHub\\Pig_Chilling_Proyecto_I\\src\\main.c\u002B\u002B",
               "RelativeDocumentMoniker": "src\\main.c\u002B\u002B",
-              "ToolTip": "C:\\Users\\danielmo1\\Documents\\GitHub\\Pig_Chilling_Proyecto_I\\src\\main.c\u002B\u002B*",
-              "RelativeToolTip": "src\\main.c\u002B\u002B*",
-              "ViewState": "AgIAACcDAAAAAAAAAAAAADUDAAAsAAAAAAAAAA==",
+              "ToolTip": "C:\\Users\\danielmo1\\Documents\\GitHub\\Pig_Chilling_Proyecto_I\\src\\main.c\u002B\u002B",
+              "RelativeToolTip": "src\\main.c\u002B\u002B",
+              "ViewState": "AgIAAC0AAAAAAAAAAAAAADgAAAAcAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
               "WhenOpened": "2025-03-06T17:01:53.047Z",
               "EditorCaption": ""
