@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cmath>
 #include <iostream>
+
 using namespace std;
 
 #define BULLET_SPEED 7
@@ -34,7 +35,7 @@ typedef struct Enemy {
     float attackCooldown;
     Vector2 targetPosition1; // Start Loop position
     Vector2 targetFinalPosition; // Final position of the Loop
-    float targetIdlePosition; // Idle position after loop
+    Vector2 targetIdlePosition; // Idle position after loop
     float attackPlayerPos; // Position of the player when attack
     float entryTime; // Tiempo de entrada
     int index; // Índice del enemigo en la fila
@@ -53,8 +54,8 @@ typedef struct Bullet_Enemy {
     bool active;
 } Bullet_Enemy;
 
-const int screenWidth = 1152;
-const int screenHeight = 896;
+const int screenWidth = 1920;
+const int screenHeight = 1080;
 int screen = 1;
 
 int maxEnemies = 5;
@@ -75,7 +76,6 @@ int main(void)
 
     std::vector<Enemy> enemies;
     std::vector<PowerUp> powerUps; // Vector to manage the generated power ups 
-
 
     int currentWave = 1;
     int totalWaves = 3;  // Number of waves per screen
@@ -316,7 +316,7 @@ int main(void)
                 if (currentEnemies == 0 && currentWave == 1)
                 {
                     currentWave++;
-                    SpawnEnemies(enemies, 150.0f, screenWidth + 100, -1,screenWidth/2, screenHeight/2); // Wave 2
+                    SpawnEnemies(enemies, 150.0f, screenWidth + 100, -1, screenWidth / 2, screenHeight / 2); // Wave 2
                 }
 
                 if (currentEnemies == 0 && currentWave == 2)
@@ -565,7 +565,7 @@ void SpawnEnemies(std::vector<Enemy>& enemies, float baseHeight, float baseWidth
 
         // Enemy data
         enemies.push_back({ { startX, startY, 112, 84 }, true, false, 0.0f, 0.0f, // Enemys collision
-                            5.0f,{ targetX, targetY }, { finaltargetX, finaltargetY },idletargetX,0.0f ,-delay, i, direction, true, false, true, false, false, false, NULL });
+                            5.0f,{ targetX, targetY }, { finaltargetX, finaltargetY },{idletargetX, finaltargetY},0.0f ,-delay, i, direction, true, false, true, false, false, false, NULL });
     }
     currentEnemies = maxEnemies; // Change to sum when more waves will be added
 }
@@ -688,7 +688,7 @@ void UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, float de
             float velocity2 = 200.0f; // Velocidad de movimiento
             float moveSpeed = velocity2 * deltaTime;
 
-            float distX1 = enemy.targetIdlePosition - enemy.rect.x;
+            float distX1 = enemy.targetIdlePosition.x - enemy.rect.x;
 
             float distance1 = sqrt(distX1 * distX1); // Distancia total al objetivo
             float directionX1 = distX1 / distance1;
@@ -728,7 +728,7 @@ void UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, float de
 
             if (enemy.attackCooldown >= 1.5f)
             {
-                enemy.attackTime = GetRandomValue(1, 50);
+                enemy.attackTime = GetRandomValue(1, 1000000);
                 if (enemy.attackTime <= 10)
                 {
                     enemy.random = true;
@@ -778,14 +778,14 @@ void UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, float de
             else
             {
                 float distX1;
-                if (enemy.playerOnRight) distX1 = enemy.targetIdlePosition - 400 - enemy.rect.x;
-                else distX1 = enemy.targetIdlePosition + 400 - enemy.rect.x;
+                if (enemy.playerOnRight) distX1 = enemy.targetIdlePosition.x - 400 - enemy.rect.x;
+                else distX1 = enemy.targetIdlePosition.x + 400 - enemy.rect.x;
                 float distY1 = player.y - 100 - enemy.rect.y;
                 float distance1 = sqrt(distX1 * distX1 + distY1 * distY1); // Distancia total al objetivo
 
-                float distX2 = enemy.targetIdlePosition - enemy.rect.x;
+                float distX2 = enemy.targetIdlePosition.x - enemy.rect.x;
                 float distY2 = enemy.targetFinalPosition.y - enemy.rect.y;
-                float distance2 = sqrt(distX2 * distX2+ distY2 * distY2); // Distancia total al objetivo
+                float distance2 = sqrt(distX2 * distX2 + distY2 * distY2); // Distancia total al objetivo
 
                 if (distance1 >= moveSpeed && enemy.enemyLoopState)
                 {
