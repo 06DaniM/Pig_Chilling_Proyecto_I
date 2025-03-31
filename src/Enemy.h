@@ -35,6 +35,7 @@ public:
     bool random;
     bool right;
     bool playerOnRight;
+    bool canAttack;
 
     // Constructor
     Enemy();

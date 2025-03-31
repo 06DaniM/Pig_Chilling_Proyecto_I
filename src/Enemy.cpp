@@ -2,6 +2,8 @@
 #include <cmath>
 #include <iostream>
 
+using namespace std;
+
 // Bullet_Enemy constructor
 Bullet_Enemy::Bullet_Enemy() : rect{ 0, 0, 0, 0 }, active(false) {}
 
@@ -12,7 +14,7 @@ Enemy::Enemy()
     targetFinalPosition{ 0.0f, 0.0f }, targetIdlePosition{ 0.0f, 0.0f },
     attackPlayerPos(0.0f), entryTime(0.0f), index(0), loopDirection(1),
     currentEnemies(5), enemyInitialState(true), enemyLoopState(false), manual(true),
-    idle(false), random(false), right(false), playerOnRight(false) {
+    idle(false), random(false), right(false), playerOnRight(false), canAttack (true) {
 }
 
 const int screenWidth = 1920;
@@ -202,11 +204,13 @@ void Enemy::UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, f
                 enemy.attackTime = GetRandomValue(1, 5000);
                 if (enemy.attackTime <= 10)
                 {
+                    enemy.attackCooldown = 0;
+                    enemy.canAttack = true;
                     enemy.random = true;
                 }
             }
 
-            if (enemy.attackCooldown < 1.5f)
+            else if (enemy.attackCooldown < 1.5f)
             {
                 enemy.attackCooldown += deltaTime;
             }
@@ -257,6 +261,22 @@ void Enemy::UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, f
                 float distX2 = enemy.targetIdlePosition.x - enemy.rect.x;
                 float distY2 = enemy.targetFinalPosition.y - enemy.rect.y;
                 float distance2 = sqrt(distX2 * distX2 + distY2 * distY2); // Distancia total al objetivo
+
+                cout << enemy.attackingTimer << endl;
+
+                if (enemy.attackingTimer >= 2.5f && enemy.canAttack )
+                {
+                    cout << "Technically attacking";
+                    
+                    Bullet_Enemy newBullets_Enemy;
+
+                    newBullets_Enemy.rect = { enemy.rect.x + enemy.rect.width / 2, enemy.rect.y + enemy.rect.height / 2, 16, 12 };
+                    newBullets_Enemy.active = true;
+
+                    enemyBullets.push_back({ newBullets_Enemy });
+
+                    enemy.canAttack = false;
+                }
 
                 if (distance1 >= moveSpeed && enemy.enemyLoopState)
                 {
