@@ -1,3 +1,2 @@
-﻿  Enemy.cpp
-C:\Users\danielmo1\Documents\GitHub\Pig_Chilling_Proyecto_I\src\Enemy.cpp(204,50): warning C4244: '=': conversión de 'int' a 'float'; posible pérdida de datos
+﻿  main.c++
   raylib-quickstart-main.vcxproj -> C:\Users\danielmo1\Documents\GitHub\Pig_Chilling_Proyecto_I\bin\Debug\raylib-quickstart-main.exe

@@ -57,8 +57,8 @@ typedef struct Bullet {
 
 Enemy enemy;
 
-const int screenWidth = 1920;
-const int screenHeight = 1080;
+const int screenWidth = 1152;
+const int screenHeight = 896;
 int screen = 1;
 
 int maxEnemies = 5;
@@ -72,7 +72,7 @@ int main(void)
     InitWindow(screenWidth, screenHeight, "Space Attacks!");
     InitAudioDevice();
 
-    Rectangle player = { (screenWidth - 74) / 2.0f, screenHeight / 1.5f, 64, 64 };
+    Rectangle player = { (screenWidth - 74) / 2.0f, screenHeight / 1.5f, 64, 64 }; // PositionX, PositionY, ColliderX, ColliderY
 
     std::vector<Enemy> enemies;
     std::vector<PowerUp> powerUps; // Vector to manage the generated power ups 
@@ -107,7 +107,7 @@ int main(void)
     bool inMenu = true;
     int score = 0;
     int life = 3;
-    float scale = 0.75f; // Reduce a 50% the scale of the sprites
+    float scale = 1.4f; // Reduce a 50% the scale of the sprites
 
     float shotCooldown = 0.3f;  // Time between shots
     float shotTimer = 0.0f;     // Timer for counting seconds
@@ -195,7 +195,12 @@ int main(void)
                 float bulletWidth = 16;  // Width of the collision
                 float bulletHeight = 12; // Height of the collision
 
-                if (doubleShot)
+                // === FOR THE 2nd ASSIGNMENT
+
+                bullets.push_back({ { player.x + player.width / 2, player.y, bulletWidth/2-7, bulletHeight }, true });
+
+                // === FOR THE FINAL GAME
+                /*if (doubleShot)
                 {
                     bullets.push_back({ { player.x + player.width / 2 - 15, player.y + player.height / 2, bulletWidth, bulletHeight }, true });
                     bullets.push_back({ { player.x + player.width / 2 + 15, player.y + player.height / 2, bulletWidth, bulletHeight }, true });
@@ -204,7 +209,7 @@ int main(void)
                 else
                 {
                     bullets.push_back({ { player.x + player.width / 2, player.y, bulletWidth, bulletHeight }, true });
-                }
+                }*/
             }
 
 
@@ -226,41 +231,42 @@ int main(void)
                                 score += 100;
                                 currentEnemies--;
 
+                                // === FOR THE FINAL GAME
                                 // 20% to generate the item/object
-                                if (GetRandomValue(1, 100) < 20) // 20% de probabilidad de generar un power-up
-                                {
-                                    // Lista de power-ups disponibles según los estados actuales y los que ya están en pantalla
-                                    std::vector<PowerUpType> availablePowerUps;
+                                //if (GetRandomValue(1, 100) < 20) // 20% de probabilidad de generar un power-up
+                                //{
+                                //    // Lista de power-ups disponibles según los estados actuales y los que ya están en pantalla
+                                //    std::vector<PowerUpType> availablePowerUps;
 
-                                    PowerUp newPowerUp;
+                                //    PowerUp newPowerUp;
 
-                                    bool doubleShotOnScreen = false;
-                                    bool shieldOnScreen = false;
+                                //    bool doubleShotOnScreen = false;
+                                //    bool shieldOnScreen = false;
 
-                                    // Verificar si ya hay un power-up de cada tipo en pantalla
-                                    for (const auto& powerUp : powerUps)
-                                    {
-                                        if (powerUp.type == Double_shot) doubleShotOnScreen = true;
-                                        if (powerUp.type == Shield) shieldOnScreen = true;
-                                    }
+                                //    // Verificar si ya hay un power-up de cada tipo en pantalla
+                                //    for (const auto& powerUp : powerUps)
+                                //    {
+                                //        if (powerUp.type == Double_shot) doubleShotOnScreen = true;
+                                //        if (powerUp.type == Shield) shieldOnScreen = true;
+                                //    }
 
-                                    // Solo añadir si el power-up no está activo ni en pantalla
-                                    if (!doubleShot && !doubleShotOnScreen) availablePowerUps.push_back(Double_shot);
-                                    if (!shield && !shieldOnScreen) availablePowerUps.push_back(Shield);
+                                //    // Solo añadir si el power-up no está activo ni en pantalla
+                                //    if (!doubleShot && !doubleShotOnScreen) availablePowerUps.push_back(Double_shot);
+                                //    if (!shield && !shieldOnScreen) availablePowerUps.push_back(Shield);
 
-                                    // Solo generamos un power-up si hay disponibles
-                                    if (!availablePowerUps.empty())
-                                    {
-                                        newPowerUp.rect = { enemy.rect.x + enemy.rect.width / 2, enemy.rect.y + enemy.rect.height / 2, 20, 20 };
+                                //    // Solo generamos un power-up si hay disponibles
+                                //    if (!availablePowerUps.empty())
+                                //    {
+                                //        newPowerUp.rect = { enemy.rect.x + enemy.rect.width / 2, enemy.rect.y + enemy.rect.height / 2, 20, 20 };
 
-                                        // Convertir size_t a int de forma segura
-                                        int maxIndex = static_cast<int>(availablePowerUps.size()) - 1;
-                                        newPowerUp.type = availablePowerUps[GetRandomValue(0, maxIndex)];
+                                //        // Convertir size_t a int de forma segura
+                                //        int maxIndex = static_cast<int>(availablePowerUps.size()) - 1;
+                                //        newPowerUp.type = availablePowerUps[GetRandomValue(0, maxIndex)];
 
-                                        powerUps.push_back(newPowerUp);
-                                    }
-                                    newPowerUp.active = true;
-                                }
+                                //        powerUps.push_back(newPowerUp);
+                                //    }
+                                //    newPowerUp.active = true;
+                                //}
 
                                 break;
                             }
@@ -420,12 +426,12 @@ int main(void)
 
         else
         {
-            DrawTexture(shipSpriteBase, (int)player.x, (int)player.y, WHITE);
+            DrawTextureEx(shipSpriteBase, { player.x, player.y }, 0, 2, WHITE);
         }
 
         // Draw the lifes of the ship
         for (int i = 0; i < life; i++) {
-            Vector2 position = { 75 + i * (shipSpriteBase.width * scale + 10), screenHeight - shipSpriteBase.height * scale - 75 };
+            Vector2 position = { 25 + i * (shipSpriteBase.width * scale + 10), screenHeight - shipSpriteBase.height * scale - 25 };
             DrawTextureEx(shipSpriteBase, position, 0.0f, scale, WHITE);
         }
 
@@ -437,7 +443,7 @@ int main(void)
                 Vector2 position = { (enemy.rect.x + enemy.rect.width / 2 - enemySprite.width / 2),
                     (enemy.rect.y + enemy.rect.height / 2 - enemySprite.height / 2) };
 
-                DrawTextureEx(enemySprite, position, 0.0f, 1.0f, WHITE);
+                DrawTextureEx(enemySprite, position, 0, 1.5f, WHITE);
             }
         }
 

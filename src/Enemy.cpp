@@ -9,7 +9,7 @@ Bullet_Enemy::Bullet_Enemy() : rect{ 0, 0, 0, 0 }, active(false) {}
 
 // Enemy constructor
 Enemy::Enemy()
-    : rect{ 0, 0, 112, 84 }, active(true), isAttacking(false), attackTime(0.0f),
+    : rect{ 0, 0, 48, 48 }, active(true), isAttacking(false), attackTime(0.0f),
     attackingTimer(0.0f), attackCooldown(0.0f), targetPosition1{ 0.0f, 0.0f },
     targetFinalPosition{ 0.0f, 0.0f }, targetIdlePosition{ 0.0f, 0.0f },
     attackPlayerPos(0.0f), entryTime(0.0f), index(0), loopDirection(1),
@@ -17,8 +17,8 @@ Enemy::Enemy()
     idle(false), random(false), right(false), playerOnRight(false), canAttack (true) {
 }
 
-const int screenWidth = 1920;
-const int screenHeight = 1080;
+const int screenWidth = 1152;
+const int screenHeight = 896;
 
 // Función para generar enemigos en una ola
 void Enemy::SpawnEnemies(std::vector<Enemy>& enemies, int numberEnemies, int currentEnemies,float baseHeight, float baseWidth, int direction, float targetx, float targety)
@@ -31,12 +31,12 @@ void Enemy::SpawnEnemies(std::vector<Enemy>& enemies, int numberEnemies, int cur
         float startY = baseHeight;
         float targetX = targetx;
         float targetY = targety;
-        float idletargetX = screenWidth / 6.0f * (i + 0.75f) - 200;
-        float finaltargetX = screenWidth / 6.0f * (i + 0.75f);
+        float idletargetX = screenWidth / 6.0f * (i + 0.75f) + 50;
+        float finaltargetX = screenWidth / 6.0f * (i + 0.75f) - 50;
         float finaltargetY = baseHeight + 20.0f;
 
         Enemy newEnemy;
-        newEnemy.rect = { startX, startY, 112, 84 };
+        newEnemy.rect = { startX, startY, 48, 48 };
         newEnemy.targetPosition1 = { targetX, targetY };
         newEnemy.targetFinalPosition = { finaltargetX, finaltargetY };
         newEnemy.targetIdlePosition = { idletargetX, finaltargetY };
