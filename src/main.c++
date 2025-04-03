@@ -97,11 +97,15 @@ int main(void)
     Texture2D bulletEnemySprite = LoadTexture("resources/bullets/Disparo_Regular_Enemy.png");
     Texture2D bulletBossSprite = LoadTexture("resources/bullets/Disparo_Boss.png");
 
-    Texture2D background = LoadTexture("resources/backgrounds/FONDO_GALAGA.png");
+    Texture2D menuBackground = LoadTexture("resources/backgrounds/Menu.png");
+    Texture2D shipMenuBackground = LoadTexture("resources/backgrounds/Nave Back.png");
+    Texture2D gamePlayBackground = LoadTexture("resources/backgrounds/FONDO_GALAGA.png");
+
+    Texture2D logo = LoadTexture("resources/backgrounds/Logo Game.png");
 
     Music music = LoadMusicStream("resources/music/02 Regular Stage Theme.ogg");
 
-    Font font = LoadFontEx("Font/monogram.ttf", 64, 0, 0);
+    Font font = LoadFontEx("Font/Data 70 Regular.otf", 64, 0, 0);
 
     bool doubleShot = false, shield = false, canAct = false;
     bool pause = false, gameOver = false, hasWon = false;
@@ -156,15 +160,26 @@ int main(void)
         // Menu manager
         if (inMenu)
         {
+            int textWidth;
+
             BeginDrawing();
             ClearBackground(BLACK);
-            DrawTexture(background, 0, 0, WHITE); // Draw the background
+            DrawTexture(menuBackground, 0, 0, WHITE); // Draw the background
+            DrawTexture(shipMenuBackground, screenWidth / 2, 450, WHITE); // Draw the background
+            DrawTexture(logo, screenWidth/2 - 590/2, 100, WHITE); // Draw the logo
 
-            DrawTextEx(font, "SCORE", { 50, 15 }, 34, 2, WHITE);
-            DrawTextEx(font, "0", { 50, 40 }, 34, 2, WHITE);
+            DrawTextEx(font, "SCORE", { 100, 30 }, 34, 2, WHITE);
+            DrawTextEx(font, "0", { 100, 60 }, 34, 2, WHITE);
 
-            int textWidth = MeasureText("Press any key to start", 20); // Measure the length of the text
-            DrawText("Press any key to start", (screenWidth - textWidth) / 2, screenHeight / 2, 20, WHITE); // Center the text
+            textWidth = MeasureText("PUSH RUN", 50); // Measure the length of the text
+            DrawTextEx(font, "PUSH RUN", { ((float)screenWidth - textWidth) / 2, 490 }, 50, 2, GREEN); // Center the text
+
+            textWidth = MeasureText("BUTTON", 50); // Measure the length of the text
+            DrawTextEx(font, "BUTTON", { ((float)screenWidth - textWidth) / 2, 560 }, 50, 2, GREEN); // Center the text
+
+            textWidth = MeasureText("FROM PIG CHILLING", 60); // Measure the length of the text
+            DrawTextEx(font, "FROM PIG CHILLING", { (float)(screenWidth - textWidth) / 2 + 55, 700 }, 60, 2, WHITE); // Center the text
+
             EndDrawing();
 
             if (GetKeyPressed() != 0) // Detect any key
@@ -390,7 +405,7 @@ int main(void)
         // Draw all the scene
         BeginDrawing();
         ClearBackground(BLACK);
-        DrawTexture(background, 0, 0, WHITE);
+        DrawTexture(gamePlayBackground, 0, 0, WHITE);
 
         // Draw the bullets
         for (const Bullet& bullet : bullets)
@@ -564,7 +579,8 @@ int main(void)
     UnloadTexture(shipSpriteDouble);
     UnloadTexture(enemySprite);
     UnloadTexture(bulletSprite);
-    UnloadTexture(background);
+    UnloadTexture(gamePlayBackground);
+    UnloadTexture(menuBackground);
     UnloadFont(font);
 
     CloseWindow();
