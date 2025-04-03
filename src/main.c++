@@ -59,9 +59,10 @@ Enemy enemy;
 
 const int screenWidth = 1152;
 const int screenHeight = 896;
-int screen = 1;
 
-int maxEnemies = 5;
+int screen = 1; // Levels of the game
+
+int maxEnemies = 5; 
 int currentEnemies = 0;
 
 std::vector<Bullet> bullets;
@@ -74,13 +75,13 @@ int main(void)
 
     Rectangle player = { (screenWidth - 74) / 2.0f, screenHeight / 1.5f, 64, 64 }; // PositionX, PositionY, ColliderX, ColliderY
 
-    std::vector<Enemy> enemies;
+    std::vector<Enemy> enemies; // Vector to manage the generated enemies 
     std::vector<PowerUp> powerUps; // Vector to manage the generated power ups 
 
-    int totalWaves = 3;  // Number of waves per screen
-    float waveTimer = 0.0f;
+    int totalWaves = 3; // Number of waves per screen
+    float waveTimer = 0.0f; // Time to start the next wave
     float waveDelay = 10.0f; // Seconds between waves
-    int currentWave;
+    int currentWave; // Last wave played
 
     Texture2D shipSpriteBase = LoadTexture("resources/ship/Nave Base.png");
     Texture2D shipSpriteDouble = LoadTexture("resources/ship/NAVE 2DS 64X64.png");
@@ -120,7 +121,7 @@ int main(void)
     {
         UpdateMusicStream(music);
 
-        // For testing
+        // === HACKS FOR TESTING ===
         if (IsKeyPressed(KEY_R))
         {
             doubleShot = !doubleShot;
@@ -140,6 +141,8 @@ int main(void)
         {
             hasWon = true;
         }
+
+        // === BEGINING GAME CODE
 
         // Pause the game
         if (IsKeyPressed(KEY_ESCAPE) || IsKeyPressed('P')) {
@@ -166,6 +169,7 @@ int main(void)
 
             if (GetKeyPressed() != 0) // Detect any key
             {
+                // Reset the values
                 life = 3;
                 currentWave = 0;
                 inMenu = false;
@@ -197,7 +201,7 @@ int main(void)
 
                 // === FOR THE 2nd ASSIGNMENT
 
-                bullets.push_back({ { player.x + player.width / 2, player.y, bulletWidth/2-7, bulletHeight }, true });
+                bullets.push_back({ { player.x + player.width / 2, player.y, bulletWidth/2-7, bulletHeight }, true }); // Shooting
 
                 // === FOR THE FINAL GAME
                 /*if (doubleShot)
@@ -224,7 +228,7 @@ int main(void)
                     {
                         if (enemy.active)
                         {
-                            if (CheckCollisionRecs(bullet.rect, enemy.rect)) // Si hay colisión con un enemigo
+                            if (CheckCollisionRecs(bullet.rect, enemy.rect)) // If collision with an enemy
                             {
                                 bullet.active = false;
                                 enemy.active = false;
@@ -317,6 +321,7 @@ int main(void)
             // === WAVES ===
             if (currentWave < totalWaves)
             {
+                // === Wave 1 ===
                 if (currentEnemies == 0 && currentWave == 0)
                 {
                     currentEnemies = maxEnemies;
@@ -324,6 +329,7 @@ int main(void)
                     currentWave++;
                 }
 
+                // === Wave 2 ===
                 else if (currentEnemies == 0 && currentWave == 1)
                 {
                     currentEnemies = maxEnemies;
@@ -331,6 +337,7 @@ int main(void)
                     currentWave++;
                 }
 
+                // === Wave 3 ===
                 else if (currentEnemies == 0 && currentWave == 2)
                 {
                     currentEnemies = maxEnemies;
@@ -339,6 +346,7 @@ int main(void)
                 }
             }
 
+            // === Ends the first screen after destroying all enemies ===
             else if (currentEnemies == 0 && currentWave >= 3)
             {
                 hasWon = true;
@@ -355,15 +363,15 @@ int main(void)
                     {
                         if (powerUp.type == Double_shot)
                         {
-                            doubleShot = true;
+                            doubleShot = true; // Activate double shoot power-up 
                         }
 
                         else if (powerUp.type == Shield)
                         {
-                            shield = true;
+                            shield = true; // Activate shield power-up
                         }
 
-                        powerUp.active = false; // Desactivate the power up
+                        // powerUp.active = false; // Desactivate the power up // Innecesario, creo
                     }
                 }
             }
@@ -389,6 +397,7 @@ int main(void)
         {
             if (bullet.active)
             {
+                // Draw the bullet
                 DrawTexture(bulletSprite,
                     (int)(bullet.rect.x + bullet.rect.width / 2 - bulletSprite.width / 2),
                     (int)(bullet.rect.y + bullet.rect.height / 2 - bulletSprite.height / 2),
@@ -517,10 +526,10 @@ int main(void)
             if (GetKeyPressed() != 0) // Detect any key
             {
                 // Reset the initial states
-                hasWon = false;  // Reset the variable
-                inMenu = true;   // Return to menu
-                score = 0;       // Reset the score
-                life = 3;        // Reset the life
+                hasWon = false; // Reset the variable
+                inMenu = true; // Return to menu
+                score = 0; // Reset the score
+                life = 3; // Reset the life
                 currentWave = 0; // Reset the waves
 
                 // Reset the position of the player
@@ -561,277 +570,3 @@ int main(void)
     CloseWindow();
     return 0;
 }
-
-//// Function to spawn enemies in a wave
-//void SpawnEnemies(std::vector<Enemy>& enemies, float baseHeight, float baseWidth, int direction, float targetx, float targety)
-//{
-//    enemies.clear();
-//    for (int i = 0; i < maxEnemies; i++) {
-//        float delay = i * 0.35f; // Space between enemies
-//        float startX = baseWidth; // Position X in the wave
-//        float startY = baseHeight; // Position Y in the wave
-//        float targetX = targetx; // Loop X position
-//        float targetY = targety; // Loop Y position
-//        float idletargetX = screenWidth / 6.0f * (i + 0.75f) - 200;
-//        float finaltargetX = screenWidth / 6.0f * (i + 0.75f); // Final X position
-//        float finaltargetY = baseHeight + 20.0f; // Final Y position
-//
-//        // Enemy data
-//        enemies.push_back({ { startX, startY, 112, 84 }, true, false, 0.0f, 0.0f, // Enemys collision
-//                            5.0f,{ targetX, targetY }, { finaltargetX, finaltargetY },{idletargetX, finaltargetY},0.0f ,-delay, i, direction, true, false, true, false, false, false, NULL });
-//    }
-//    currentEnemies = maxEnemies; // Change to sum when more waves will be added
-//}
-//
-//void UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, float deltaTime, Rectangle& player)
-//{
-//    float midX = screenWidth / 2.0f;
-//    float midY = enemy.rect.y;
-//
-//    enemy.entryTime += deltaTime;
-//
-//    // === NEW ENEMY MOVEMENT ===
-//
-//    // El retraso se calcula dependiendo del índice del enemigo
-//    float delayTime = 0.0f; // Por ejemplo, 0.5 segundos de retraso por cada enemigo
-//
-//    // Enemy start de movement with a delay 
-//
-//    if (enemy.entryTime >= delayTime)
-//    {
-//        // === NEW ENEMY MOVEMENT ===
-//
-//        // Calcular la posición circular
-//        float radius = 150.0f;  // Radio del círculo
-//        float centerX = enemy.targetPosition1.x; // Centro de la órbita
-//        float centerY = enemy.targetPosition1.y + radius;
-//
-//        if (enemy.manual)
-//        {
-//
-//            // Incrementar 't' para el movimiento circular
-//            float velocity = 500.0f; // Velocidad de movimiento
-//            float moveSpeed = velocity * deltaTime;
-//            // === 1ST OBJECTIVE ===
-//            if (enemy.enemyInitialState)
-//            {
-//                // Calcular la distancia entre la posición actual y el objetivo
-//                float distX = enemy.targetPosition1.x - enemy.rect.x;
-//                float distY = enemy.targetPosition1.y - enemy.rect.y;
-//
-//                float distance = sqrt(distX * distX + distY * distY); // Distancia total al objetivo
-//
-//                enemy.enemyLoopState = false;
-//                if (distance > moveSpeed)
-//                {
-//                    // Normalizar la dirección
-//                    float directionX = distX / distance;
-//                    float directionY = distY / distance;
-//
-//                    // Mover al enemigo hacia el objetivo
-//                    enemy.rect.x += directionX * moveSpeed;
-//                    enemy.rect.y += directionY * moveSpeed;
-//                }
-//
-//                else
-//                {
-//                    enemy.enemyInitialState = false;
-//                    enemy.enemyLoopState = true;
-//                }
-//            }
-//
-//            // CORREGIR PUNTO DE INICIO DEL LOOP
-//
-//            // === LOOP MOVEMENT ===
-//            else if (!enemy.enemyInitialState && enemy.enemyLoopState)
-//            {
-//                float t = enemy.entryTime;
-//                float loopT = t * 0.5f;  // Controlar la velocidad angular (ajusta este valor si es necesario)
-//
-//                enemy.rect.x -= cos(loopT * PI * 2) * 5; // Movimiento en X
-//                enemy.rect.y -= sin(loopT * PI * 2) * 5 * enemy.loopDirection; // Movimiento en Y
-//
-//                if (enemy.entryTime > 4.5f)
-//                {
-//                    enemy.enemyLoopState = false;
-//                }
-//            }
-//
-//            // === FINAL STATE ==
-//            else if (!enemy.enemyInitialState && !enemy.enemyLoopState)
-//            {
-//                float distX = enemy.targetFinalPosition.x - enemy.rect.x;
-//                float distY = enemy.targetFinalPosition.y - enemy.rect.y;
-//
-//                float distance = sqrt(distX * distX + distY * distY); // Distancia total al objetivo
-//
-//                if (distance > moveSpeed)
-//                {
-//                    // Normalizar la dirección
-//                    float directionX = distX / distance;
-//
-//                    float directionY = distY / distance;
-//                    // Mover al enemigo hacia el objetivo
-//                    enemy.rect.x += directionX * moveSpeed;
-//                    enemy.rect.y += directionY * moveSpeed;
-//                }
-//
-//                else
-//                {
-//                    enemy.rect.x = enemy.targetFinalPosition.x;
-//                    enemy.rect.y = enemy.targetFinalPosition.y;
-//
-//                    enemy.manual = false;
-//                    enemy.idle = true;
-//                }
-//            }
-//        }
-//
-//        // === RANDOM STATE
-//
-//        else if (enemy.idle && !enemy.random)
-//        {
-//            cout << "Idle";
-//            // Incrementar 't' para el movimiento circular
-//            float velocity2 = 200.0f; // Velocidad de movimiento
-//            float moveSpeed = velocity2 * deltaTime;
-//
-//            float distX1 = enemy.targetIdlePosition.x - enemy.rect.x;
-//
-//            float distance1 = sqrt(distX1 * distX1); // Distancia total al objetivo
-//            float directionX1 = distX1 / distance1;
-//
-//            float distX2 = enemy.targetFinalPosition.x - enemy.rect.x;
-//
-//            float distance2 = sqrt(distX2 * distX2); // Distancia total al objetivo
-//            float directionX2 = distX2 / distance2;
-//
-//            if (!enemy.right)
-//            {
-//                if (distance1 > moveSpeed)
-//                {
-//                    // Mover al enemigo hacia el objetivo
-//                    enemy.rect.x += directionX1 * moveSpeed;
-//                }
-//
-//                else
-//                {
-//                    enemy.right = true;
-//                }
-//            }
-//
-//            else
-//            {
-//                if (distance2 > moveSpeed)
-//                {
-//                    // Mover al enemigo hacia el objetivo
-//                    enemy.rect.x += directionX2 * moveSpeed;
-//                }
-//
-//                else
-//                {
-//                    enemy.right = false;
-//                }
-//            }
-//
-//            if (enemy.attackCooldown >= 1.5f)
-//            {
-//                enemy.attackTime = GetRandomValue(1, 1000000);
-//                if (enemy.attackTime <= 10)
-//                {
-//                    enemy.random = true;
-//                }
-//            }
-//
-//            if (enemy.attackCooldown < 1.5f)
-//            {
-//                enemy.attackCooldown += deltaTime;
-//            }
-//        }
-//
-//        else if (enemy.random)
-//        {
-//            float velocity2 = 300.0f; // Velocidad de movimiento
-//            float moveSpeed = velocity2 * deltaTime;
-//            enemy.attackingTimer += deltaTime;
-//
-//            float t = enemy.attackingTimer;
-//            float loopT = t * 0.5f;
-//
-//            if (enemy.attackingTimer <= 1.2f)
-//            {
-//                if (enemy.attackingTimer <= 0.7f)
-//                {
-//                    enemy.rect.x += cos(loopT * PI * 2.5f) * 5; // Movimiento en X
-//                    enemy.rect.y -= sin(loopT * PI * 2.5f) * 2.5f; // Movimiento en Y
-//                }
-//
-//                else
-//                {
-//                    enemy.rect.x += cos(loopT * PI * 2.5f) * 5;
-//                    enemy.rect.y -= sin(loopT * PI * 2.5f) * 2.5f;
-//                }
-//
-//                if (enemy.rect.x < player.x)
-//                {
-//                    enemy.playerOnRight = false;
-//                }
-//
-//                else enemy.playerOnRight = true;
-//
-//                enemy.attackPlayerPos = player.x;
-//                enemy.enemyLoopState = true;
-//            }
-//
-//            else
-//            {
-//                float distX1;
-//                if (enemy.playerOnRight) distX1 = enemy.targetIdlePosition.x - 400 - enemy.rect.x;
-//                else distX1 = enemy.targetIdlePosition.x + 400 - enemy.rect.x;
-//                float distY1 = player.y - 100 - enemy.rect.y;
-//                float distance1 = sqrt(distX1 * distX1 + distY1 * distY1); // Distancia total al objetivo
-//
-//                float distX2 = enemy.targetIdlePosition.x - enemy.rect.x;
-//                float distY2 = enemy.targetFinalPosition.y - enemy.rect.y;
-//                float distance2 = sqrt(distX2 * distX2 + distY2 * distY2); // Distancia total al objetivo
-//
-//                if (distance1 >= moveSpeed && enemy.enemyLoopState)
-//                {
-//                    // Normalizar la dirección
-//                    float directionX = distX1 / distance1;
-//                    float directionY = distY1 / distance1;
-//
-//                    // Mover al enemigo hacia el objetivo
-//                    enemy.rect.x += directionX * moveSpeed;
-//                    enemy.rect.y += directionY * moveSpeed;
-//
-//                    if (enemy.rect.y >= player.y - 150)
-//                    {
-//                        enemy.enemyLoopState = false;
-//                    }
-//                }
-//
-//                else if (!enemy.enemyLoopState)
-//                {
-//                    if (distance2 > moveSpeed)
-//                    {
-//                        // Normalizar la dirección
-//                        float directionX = distX2 / distance2;
-//                        float directionY = distY2 / distance2;
-//
-//                        // Mover al enemigo hacia el objetivo
-//                        enemy.rect.x += directionX * moveSpeed;
-//                        enemy.rect.y += directionY * moveSpeed;
-//                    }
-//
-//                    else
-//                    {
-//                        enemy.random = false;
-//                        enemy.attackingTimer = 0.0f;
-//                    }
-//                }
-//            }
-//        }
-//    }
-//}
-// enemyBullets.push_back({ { enemy.rect.x + enemy.rect.width / 2, enemy.rect.y + enemy.rect.height / 2, 16, 12 }, true });

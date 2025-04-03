@@ -20,20 +20,20 @@ Enemy::Enemy()
 const int screenWidth = 1152;
 const int screenHeight = 896;
 
-// Función para generar enemigos en una ola
+// Function to spawn the enemies
 void Enemy::SpawnEnemies(std::vector<Enemy>& enemies, int numberEnemies, int currentEnemies,float baseHeight, float baseWidth, int direction, float targetx, float targety)
 {
     enemies.clear();
     for (int i = 0; i < numberEnemies; i++)
     {
-        float delay = i * 0.35f;
-        float startX = baseWidth;
-        float startY = baseHeight;
-        float targetX = targetx;
-        float targetY = targety;
-        float idletargetX = screenWidth / 6.0f * (i + 0.75f) + 50;
-        float finaltargetX = screenWidth / 6.0f * (i + 0.75f) - 50;
-        float finaltargetY = baseHeight + 20.0f;
+        float delay = i * 0.35f; // Delay entry of the enemies
+        float startX = baseWidth; // Start X point
+        float startY = baseHeight; // Start Y point
+        float targetX = targetx; // Target X for the first loop
+        float targetY = targety; // Target Y for the first loop
+        float idletargetX = screenWidth / 6.0f * (i + 0.75f) + 50; // First target X after the first loop (Idle movement)
+        float finaltargetX = screenWidth / 6.0f * (i + 0.75f) - 50; // Seconds target X after the first loop (Idle movement)
+        float finaltargetY = baseHeight + 20.0f; // Height after the first loop (Idle movement)
 
         Enemy newEnemy;
         newEnemy.rect = { startX, startY, 48, 48 };
@@ -46,38 +46,36 @@ void Enemy::SpawnEnemies(std::vector<Enemy>& enemies, int numberEnemies, int cur
 
         enemies.push_back(newEnemy);
     }
-    currentEnemies = numberEnemies;
+    currentEnemies = numberEnemies; // Will be change to += when wave timer is applied
 }
 
 void Enemy::UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, float deltaTime, Rectangle& player)
 {
-    float midX = screenWidth / 2.0f;
-    float midY = enemy.rect.y;
+    float midX = screenWidth / 2.0f; // Middle of the screen in X axis
 
-    enemy.entryTime += deltaTime;
+    enemy.entryTime += deltaTime; // Timer when the enemy has started moving
 
     // === NEW ENEMY MOVEMENT ===
 
-    // El retraso se calcula dependiendo del índice del enemigo
-    float delayTime = 0.0f; // Por ejemplo, 0.5 segundos de retraso por cada enemigo
+    float delayTime = 0.0f; // Delay for the enemy.entrytime
 
     // Enemy start de movement with a delay 
-
     if (enemy.entryTime >= delayTime)
     {
         // === NEW ENEMY MOVEMENT ===
 
-        // Calcular la posición circular
-        float radius = 150.0f;  // Radio del círculo
-        float centerX = enemy.targetPosition1.x; // Centro de la órbita
-        float centerY = enemy.targetPosition1.y + radius;
+        float radius = 150.0f;  // Radius of the loop
+        float centerX = enemy.targetPosition1.x; // Center of the X orbit
+        float centerY = enemy.targetPosition1.y + radius; // Center of the Y orbit
+
+        // === PATROL STATE === 
 
         if (enemy.manual)
         {
-
             // Incrementar 't' para el movimiento circular
             float velocity = 500.0f; // Velocidad de movimiento
             float moveSpeed = velocity * deltaTime;
+
             // === 1ST OBJECTIVE ===
             if (enemy.enemyInitialState)
             {
@@ -101,8 +99,12 @@ void Enemy::UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, f
 
                 else
                 {
+                    // End of initial state
+
                     enemy.enemyInitialState = false;
                     enemy.enemyLoopState = true;
+
+                    // Starting loop
                 }
             }
 
@@ -112,43 +114,47 @@ void Enemy::UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, f
             else if (!enemy.enemyInitialState && enemy.enemyLoopState)
             {
                 float t = enemy.entryTime;
-                float loopT = t * 0.5f;  // Controlar la velocidad angular (ajusta este valor si es necesario)
+                float loopT = t * 0.5f;  // Speed of the loop movment
 
                 enemy.rect.x -= cos(loopT * PI * 2) * 5; // Movimiento en X
                 enemy.rect.y -= sin(loopT * PI * 2) * 5 * enemy.loopDirection; // Movimiento en Y
 
                 if (enemy.entryTime > 4.5f)
                 {
-                    enemy.enemyLoopState = false;
+                    enemy.enemyLoopState = false; // End the loop
                 }
             }
 
             // === FINAL STATE ==
             else if (!enemy.enemyInitialState && !enemy.enemyLoopState)
             {
-                float distX = enemy.targetFinalPosition.x - enemy.rect.x;
-                float distY = enemy.targetFinalPosition.y - enemy.rect.y;
+                float distX = enemy.targetFinalPosition.x - enemy.rect.x; // X Distance to the final position of patrol movement
+                float distY = enemy.targetFinalPosition.y - enemy.rect.y; // Y Distance to the final position of patrol movement
 
-                float distance = sqrt(distX * distX + distY * distY); // Distancia total al objetivo
+                float distance = sqrt(distX * distX + distY * distY); // Total distance to the objective
 
                 if (distance > moveSpeed)
                 {
-                    // Normalizar la dirección
+                    // Normalize the direction
                     float directionX = distX / distance;
-
                     float directionY = distY / distance;
-                    // Mover al enemigo hacia el objetivo
+
+                    // Move the enemy to the objective
                     enemy.rect.x += directionX * moveSpeed;
                     enemy.rect.y += directionY * moveSpeed;
                 }
 
                 else
                 {
+                    // Finishin patrol state
+
                     enemy.rect.x = enemy.targetFinalPosition.x;
                     enemy.rect.y = enemy.targetFinalPosition.y;
 
                     enemy.manual = false;
                     enemy.idle = true;
+
+                    //Starting idle movement
                 }
             }
         }
@@ -157,25 +163,25 @@ void Enemy::UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, f
 
         else if (enemy.idle && !enemy.random)
         {
-            // Incrementar 't' para el movimiento circular
-            float velocity2 = 200.0f; // Velocidad de movimiento
+            float velocity2 = 200.0f; // Movement speed
             float moveSpeed = velocity2 * deltaTime;
 
             float distX1 = enemy.targetIdlePosition.x - enemy.rect.x;
 
-            float distance1 = sqrt(distX1 * distX1); // Distancia total al objetivo
+            float distance1 = sqrt(distX1 * distX1); // Total distance to the objective
             float directionX1 = distX1 / distance1;
 
             float distX2 = enemy.targetFinalPosition.x - enemy.rect.x;
 
-            float distance2 = sqrt(distX2 * distX2); // Distancia total al objetivo
+            float distance2 = sqrt(distX2 * distX2); // Total distance to the objective
             float directionX2 = distX2 / distance2;
 
-            if (!enemy.right)
+            // === Logic for movint the enemy to the right and left automatically ===
+            if (!enemy.right) 
             {
                 if (distance1 > moveSpeed)
                 {
-                    // Mover al enemigo hacia el objetivo
+                    // Move the enemy to the objective
                     enemy.rect.x += directionX1 * moveSpeed;
                 }
 
@@ -189,7 +195,7 @@ void Enemy::UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, f
             {
                 if (distance2 > moveSpeed)
                 {
-                    // Mover al enemigo hacia el objetivo
+                    // Move the enemy to the objective
                     enemy.rect.x += directionX2 * moveSpeed;
                 }
 
@@ -199,14 +205,20 @@ void Enemy::UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, f
                 }
             }
 
+            // === Attacing manager ===
             if (enemy.attackCooldown >= 1.5f)
             {
-                enemy.attackTime = GetRandomValue(1, 5000);
+                enemy.attackTime = GetRandomValue(1, 5000); // Random attack time
+
                 if (enemy.attackTime <= 10)
                 {
-                    enemy.attackCooldown = 0;
+                    // End random state
+
+                    enemy.attackCooldown = 0; // Reset the cooldown
                     enemy.canAttack = true;
                     enemy.random = true;
+
+                    // Start attacing patrol
                 }
             }
 
@@ -218,7 +230,7 @@ void Enemy::UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, f
 
         else if (enemy.random)
         {
-            float velocity2 = 300.0f; // Velocidad de movimiento
+            float velocity2 = 300.0f; // Movement speed
             float moveSpeed = velocity2 * deltaTime;
             enemy.attackingTimer += deltaTime;
 
@@ -229,16 +241,19 @@ void Enemy::UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, f
             {
                 if (enemy.attackingTimer <= 0.7f)
                 {
-                    enemy.rect.x += cos(loopT * PI * 2.5f) * 5; // Movimiento en X
-                    enemy.rect.y -= sin(loopT * PI * 2.5f) * 2.5f; // Movimiento en Y
+                    // Charging attack: 1st state
+                    enemy.rect.x += cos(loopT * PI * 2.5f) * 5; // Movement in X
+                    enemy.rect.y -= sin(loopT * PI * 2.5f) * 2.5f; // Movement in Y
                 }
 
                 else
                 {
+                    // Charging attack: 2nd state
                     enemy.rect.x += cos(loopT * PI * 2.5f) * 5;
                     enemy.rect.y -= sin(loopT * PI * 2.5f) * 2.5f;
                 }
 
+                // Move to the side the player is
                 if (enemy.rect.x < player.x)
                 {
                     enemy.playerOnRight = false;
@@ -246,28 +261,30 @@ void Enemy::UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, f
 
                 else enemy.playerOnRight = true;
 
-                enemy.attackPlayerPos = player.x;
-                enemy.enemyLoopState = true;
+                enemy.attackPlayerPos = player.x; // Storage the player position
+                enemy.enemyLoopState = true; // Finish attack loop state
             }
 
             else
             {
                 float distX1;
+
+                // Move the enemy to the target
+
                 if (enemy.playerOnRight) distX1 = enemy.targetIdlePosition.x - 400 - enemy.rect.x;
                 else distX1 = enemy.targetIdlePosition.x + 400 - enemy.rect.x;
+
                 float distY1 = player.y - 100 - enemy.rect.y;
-                float distance1 = sqrt(distX1 * distX1 + distY1 * distY1); // Distancia total al objetivo
+                float distance1 = sqrt(distX1 * distX1 + distY1 * distY1); // Total distance to the objective
 
                 float distX2 = enemy.targetIdlePosition.x - enemy.rect.x;
                 float distY2 = enemy.targetFinalPosition.y - enemy.rect.y;
-                float distance2 = sqrt(distX2 * distX2 + distY2 * distY2); // Distancia total al objetivo
-
-                cout << enemy.attackingTimer << endl;
+                float distance2 = sqrt(distX2 * distX2 + distY2 * distY2); // Total distance to the objective
 
                 if (enemy.attackingTimer >= 2.5f && enemy.canAttack )
                 {
-                    cout << "Technically attacking";
-                    
+                    // === Enemy shooter manager ===
+
                     Bullet_Enemy newBullets_Enemy;
 
                     newBullets_Enemy.rect = { enemy.rect.x + enemy.rect.width / 2, enemy.rect.y + enemy.rect.height / 2, 16, 12 };
@@ -280,11 +297,11 @@ void Enemy::UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, f
 
                 if (distance1 >= moveSpeed && enemy.enemyLoopState)
                 {
-                    // Normalizar la dirección
+                    // Normalize the direction
                     float directionX = distX1 / distance1;
                     float directionY = distY1 / distance1;
 
-                    // Mover al enemigo hacia el objetivo
+                    // Move the enemy to the objective
                     enemy.rect.x += directionX * moveSpeed;
                     enemy.rect.y += directionY * moveSpeed;
 
@@ -298,19 +315,23 @@ void Enemy::UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, f
                 {
                     if (distance2 > moveSpeed)
                     {
-                        // Normalizar la dirección
+                        // Normalize the direction
                         float directionX = distX2 / distance2;
                         float directionY = distY2 / distance2;
 
-                        // Mover al enemigo hacia el objetivo
+                        // Move the enemy to the objective
                         enemy.rect.x += directionX * moveSpeed;
                         enemy.rect.y += directionY * moveSpeed;
                     }
 
                     else
                     {
+                        // Ends attacking state
+
                         enemy.random = false;
                         enemy.attackingTimer = 0.0f;
+
+                        // Restart random state
                     }
                 }
             }
