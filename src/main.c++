@@ -489,13 +489,13 @@ int main(void)
         {
             // Show the GAME OVER screen
             BeginDrawing();
-            ClearBackground(BLACK);
+            DrawRectangle(0, 0, screenWidth, screenHeight, { 0, 0, 0, 120 });
 
             int gameOverWidth = MeasureText("GAME OVER", 40);
-            DrawText("GAME OVER", (screenWidth - gameOverWidth) / 2, screenHeight / 2, 40, RED);
+            DrawTextEx(font, "GAME OVER", { (float)(screenWidth - gameOverWidth) / 2, screenHeight / 2 }, 40, 2, RED);
 
-            int retryWidth = MeasureText("Press any key to return to the menu", 20);
-            DrawText("Press any key to return to the menu", (screenWidth - retryWidth) / 2, screenHeight / 2 + 50, 20, WHITE);
+            int retryWidth = MeasureText("Press any key to return to the menu", 30);
+            DrawTextEx(font, "Press any key to return to the menu", { (float)(screenWidth - retryWidth) / 2 + 50, screenHeight / 2 + 50 }, 30, 2, WHITE);
 
             EndDrawing();
 
@@ -520,19 +520,19 @@ int main(void)
         if (hasWon)
         {
             // Show victory screen
-            DrawRectangle(0, 0, screenWidth, screenHeight, { 0,0,0,125 });
+            DrawRectangle(0, 0, screenWidth, screenHeight, { 0 ,0 ,0 ,125 });
 
-            int winMessageWidth = MeasureText("CONGRATULATIONS, YOU WON", 20);
-            int winMessageHeight = 20;
+            int winMessageWidth = MeasureText("CONGRATULATIONS YOU WON!!", 60);
+            int winMessageHeight = 60;
 
-            int x = (screenWidth - winMessageWidth) / 2;
-            int y = (screenHeight - winMessageHeight) / 2;
+            float x = (screenWidth - winMessageWidth) / 2;
+            float y = (screenHeight - winMessageHeight) / 2;
 
             // Show victory messages
-            DrawText("CONGRATULATIONS, YOU WON", x, y, 20, WHITE);
+            DrawTextEx(font, "CONGRATULATIONS, YOU WON", { x + 80, y }, 60, 2, WHITE);
 
-            int retryWidth = MeasureText("Press any key to return to the menu", 20);
-            DrawText("Press any key to return to the menu", (screenWidth - retryWidth) / 2, screenHeight / 2 + 50, 20, WHITE);
+            int retryWidth = MeasureText("Press any key to return to the menu", 30);
+            DrawTextEx(font, "Press any key to return to the menu", { (float)(screenWidth - retryWidth) / 2 + 70, screenHeight / 2 + 80 }, 30, 2, WHITE);
 
             EndDrawing();
 

@@ -1,2 +1,4 @@
 ﻿  main.c++
+C:\Users\danielmo1\Documents\GitHub\Pig_Chilling_Proyecto_I\src\main.c++(528,21): warning C4244: 'inicializando': conversión de 'int' a 'float'; posible pérdida de datos
+C:\Users\danielmo1\Documents\GitHub\Pig_Chilling_Proyecto_I\src\main.c++(529,21): warning C4244: 'inicializando': conversión de 'int' a 'float'; posible pérdida de datos
   raylib-quickstart-main.vcxproj -> C:\Users\danielmo1\Documents\GitHub\Pig_Chilling_Proyecto_I\bin\Debug\raylib-quickstart-main.exe
