@@ -404,3 +404,4 @@ Makefile
 /*.sln
 /build/build_files/obj
 /build/build_files/obj
+/.vs/raylib-quickstart-main/v17
