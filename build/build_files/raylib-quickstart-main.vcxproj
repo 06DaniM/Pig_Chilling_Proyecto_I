@@ -528,7 +528,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\include\resource_dir.h" />
     <ClInclude Include="..\..\src\Enemy.h" />
   </ItemGroup>
   <ItemGroup>

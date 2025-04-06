@@ -19,7 +19,7 @@ enum PowerUpType {
 struct PowerUp {
     Rectangle rect;
     bool active;
-    PowerUpType type; // Tipo de power-up
+    PowerUpType type; // Tipo de power-up 
 };
 
 typedef struct Bullet {
