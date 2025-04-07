@@ -65,6 +65,8 @@ int screen = 1; // Levels of the game
 int maxEnemies = 5; 
 int currentEnemies = 0;
 
+Rectangle frameRec = { 0.0f, 0.0f, (float)enemy.rect.width / 6, (float)enemy.rect.height};
+
 int currentEnemyFrame = 0;
 int enemyFramesCounter = 0;
 
@@ -414,7 +416,7 @@ int main(void)
 
             if (currentEnemyFrame > 5) currentEnemyFrame = 0;
 
-            enemy.rect.x = (float)currentEnemyFrame * (float)enemy.rect.width / 2;
+            frameRec.x = (float)currentEnemyFrame * (float)enemy.rect.width / 2;
         }
 
         // Draw all the scene
@@ -482,6 +484,7 @@ int main(void)
                 Vector2 position = { (enemy.rect.x + enemy.rect.width / 2 - enemySprite.width / 2),
                     (enemy.rect.y + enemy.rect.height / 2 - enemySprite.height / 2) };
 
+                DrawTexturePro(enemySprite, frameRec, { enemy.rect.x, enemy.rect.y, enemy.rect.width * 1.5f , enemy.rect.height * 1.5f } , { enemy.rect.width / 2 , enemy.rect.height / 2 }, 0, WHITE);
                 DrawTextureEx(enemySprite, position, 0, 1.5f, WHITE);
             }
         }
