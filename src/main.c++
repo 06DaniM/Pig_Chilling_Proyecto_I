@@ -65,6 +65,9 @@ int screen = 1; // Levels of the game
 int maxEnemies = 5; 
 int currentEnemies = 0;
 
+int currentEnemyFrame = 0;
+int enemyFramesCounter = 0;
+
 std::vector<Bullet> bullets;
 std::vector<Bullet_Enemy> enemyBullets;
 
@@ -400,6 +403,18 @@ int main(void)
         if (life <= 0)
         {
             gameOver = true;
+        }
+
+        enemyFramesCounter++;
+
+        if (enemyFramesCounter >= (60))
+        {
+            enemyFramesCounter = 0;
+            currentEnemyFrame++;
+
+            if (currentEnemyFrame > 5) currentEnemyFrame = 0;
+
+            enemy.rect.x = (float)currentEnemyFrame * (float)enemy.rect.width / 2;
         }
 
         // Draw all the scene
