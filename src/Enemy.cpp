@@ -163,6 +163,7 @@ void Enemy::UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, f
 
         else if (enemy.idle && !enemy.random)
         {
+            // Añadir offset para que se muevan al mismo tiempo
             float velocity2 = 200.0f; // Movement speed
             float moveSpeed = velocity2 * deltaTime;
 
