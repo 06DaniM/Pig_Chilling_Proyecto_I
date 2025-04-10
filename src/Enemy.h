@@ -25,6 +25,7 @@ public:
     Vector2 targetIdlePosition;
     float attackPlayerPos;
     float entryTime;
+    float rotation;
     int index;
     int loopDirection;
     int currentEnemies;

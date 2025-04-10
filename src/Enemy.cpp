@@ -9,19 +9,19 @@ Bullet_Enemy::Bullet_Enemy() : rect{ 0, 0, 0, 0 }, active(false) {}
 
 // Enemy constructor
 Enemy::Enemy()
-    : rect{ 0, 0, 48, 48 }, active(true), isAttacking(false), attackTime(0.0f),
+    : rect{ 0, 0, 32, 32 }, active(true), isAttacking(false), attackTime(0.0f),
     attackingTimer(0.0f), attackCooldown(0.0f), targetPosition1{ 0.0f, 0.0f },
     targetFinalPosition{ 0.0f, 0.0f }, targetIdlePosition{ 0.0f, 0.0f },
-    attackPlayerPos(0.0f), entryTime(0.0f), index(0), loopDirection(1),
+    attackPlayerPos(0.0f), entryTime(0.0f), rotation(0.0f), index(0), loopDirection(1),
     currentEnemies(5), enemyInitialState(true), enemyLoopState(false), manual(true),
-    idle(false), random(false), right(false), playerOnRight(false), canAttack (true) {
+    idle(false), random(false), right(false), playerOnRight(false), canAttack(true) {
 }
 
 const int screenWidth = 1152;
 const int screenHeight = 896;
 
 // Function to spawn the enemies
-void Enemy::SpawnEnemies(std::vector<Enemy>& enemies, int numberEnemies, int currentEnemies,float baseHeight, float baseWidth, int direction, float targetx, float targety)
+void Enemy::SpawnEnemies(std::vector<Enemy>& enemies, int numberEnemies, int currentEnemies, float baseHeight, float baseWidth, int direction, float targetx, float targety)
 {
     enemies.clear();
     for (int i = 0; i < numberEnemies; i++)
@@ -36,7 +36,7 @@ void Enemy::SpawnEnemies(std::vector<Enemy>& enemies, int numberEnemies, int cur
         float finaltargetY = baseHeight + 20.0f; // Height after the first loop (Idle movement)
 
         Enemy newEnemy;
-        newEnemy.rect = { startX, startY, 48, 48 };
+        newEnemy.rect = { startX, startY, 52, 52 };
         newEnemy.targetPosition1 = { targetX, targetY };
         newEnemy.targetFinalPosition = { finaltargetX, finaltargetY };
         newEnemy.targetIdlePosition = { idletargetX, finaltargetY };
@@ -92,6 +92,8 @@ void Enemy::UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, f
                     float directionX = distX / distance;
                     float directionY = distY / distance;
 
+                    enemy.rotation = atan2(directionY, directionX) * (180.0f / PI) + 90; // Convertir a grados
+
                     // Mover al enemigo hacia el objetivo
                     enemy.rect.x += directionX * moveSpeed;
                     enemy.rect.y += directionY * moveSpeed;
@@ -116,8 +118,15 @@ void Enemy::UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, f
                 float t = enemy.entryTime;
                 float loopT = t * 0.5f;  // Speed of the loop movment
 
-                enemy.rect.x -= cos(loopT * PI * 2) * 5; // Movimiento en X
-                enemy.rect.y -= sin(loopT * PI * 2) * 5 * enemy.loopDirection; // Movimiento en Y
+                // Movimiento
+                float dx = -cos(loopT * PI * 2) * 5;
+                float dy = -sin(loopT * PI * 2) * 5 * enemy.loopDirection;
+
+                enemy.rect.x += dx;
+                enemy.rect.y += dy;
+
+                // Rotación (atan2 toma (y, x))
+                enemy.rotation = atan2(dy, dx) * (180.0f / PI) + 90;
 
                 if (enemy.entryTime > 4.5f)
                 {
@@ -138,6 +147,8 @@ void Enemy::UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, f
                     // Normalize the direction
                     float directionX = distX / distance;
                     float directionY = distY / distance;
+
+                    enemy.rotation = atan2(directionY, directionX) * (180.0f / PI) + 90; // Convertir a grados
 
                     // Move the enemy to the objective
                     enemy.rect.x += directionX * moveSpeed;
@@ -163,6 +174,8 @@ void Enemy::UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, f
 
         else if (enemy.idle && !enemy.random)
         {
+            enemy.rotation = 0;
+
             // Añadir offset para que se muevan al mismo tiempo
             float velocity2 = 200.0f; // Movement speed
             float moveSpeed = velocity2 * deltaTime;
@@ -178,7 +191,7 @@ void Enemy::UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, f
             float directionX2 = distX2 / distance2;
 
             // === Logic for movint the enemy to the right and left automatically ===
-            if (!enemy.right) 
+            if (!enemy.right)
             {
                 if (distance1 > moveSpeed)
                 {
@@ -240,30 +253,24 @@ void Enemy::UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, f
 
             if (enemy.attackingTimer <= 1.2f)
             {
-                if (enemy.attackingTimer <= 0.7f)
-                {
-                    // Charging attack: 1st state
-                    enemy.rect.x += cos(loopT * PI * 2.5f) * 5; // Movement in X
-                    enemy.rect.y -= sin(loopT * PI * 2.5f) * 2.5f; // Movement in Y
-                }
+                float dx = cos(loopT * PI * 2.5f) * 5;
+                float dy = -sin(loopT * PI * 2.5f) * 2.5f;
 
-                else
-                {
-                    // Charging attack: 2nd state
-                    enemy.rect.x += cos(loopT * PI * 2.5f) * 5;
-                    enemy.rect.y -= sin(loopT * PI * 2.5f) * 2.5f;
-                }
+                // Movimiento
+                enemy.rect.x += dx;
+                enemy.rect.y += dy;
 
-                // Move to the side the player is
+                // Rotación
+                enemy.rotation = atan2(dy, dx) * (180.0f / PI) + 90;
+
                 if (enemy.rect.x < player.x)
                 {
                     enemy.playerOnRight = false;
                 }
-
                 else enemy.playerOnRight = true;
 
-                enemy.attackPlayerPos = player.x; // Storage the player position
-                enemy.enemyLoopState = true; // Finish attack loop state
+                enemy.attackPlayerPos = player.x;
+                enemy.enemyLoopState = true;
             }
 
             else
@@ -282,7 +289,7 @@ void Enemy::UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, f
                 float distY2 = enemy.targetFinalPosition.y - enemy.rect.y;
                 float distance2 = sqrt(distX2 * distX2 + distY2 * distY2); // Total distance to the objective
 
-                if (enemy.attackingTimer >= 2.5f && enemy.canAttack )
+                if (enemy.attackingTimer >= 2.5f && enemy.canAttack)
                 {
                     // === Enemy shooter manager ===
 
@@ -302,6 +309,8 @@ void Enemy::UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, f
                     float directionX = distX1 / distance1;
                     float directionY = distY1 / distance1;
 
+                    enemy.rotation = atan2(directionY, directionX) * (180.0f / PI) + 90;
+
                     // Move the enemy to the objective
                     enemy.rect.x += directionX * moveSpeed;
                     enemy.rect.y += directionY * moveSpeed;
@@ -319,6 +328,8 @@ void Enemy::UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, f
                         // Normalize the direction
                         float directionX = distX2 / distance2;
                         float directionY = distY2 / distance2;
+
+                        enemy.rotation = atan2(directionY, directionX) * (180.0f / PI) + 90; // Convertir a grados
 
                         // Move the enemy to the objective
                         enemy.rect.x += directionX * moveSpeed;

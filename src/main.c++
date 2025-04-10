@@ -1,4 +1,32 @@
-﻿#include "raylib.h"
+﻿/*
+﻿MIT License
+
+
+Copyright(c)[year][fullname]
+
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files(the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and /or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions :
+
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
+#include "raylib.h"
 #include <vector>
 #include <string>
 #include <algorithm>
@@ -65,7 +93,7 @@ int screen = 1; // Levels of the game
 int maxEnemies = 5; 
 int currentEnemies = 0;
 
-Rectangle frameRec = { 0.0f, 0.0f, (float)enemy.rect.width / 6, (float)enemy.rect.height};
+Rectangle frameRec = { 0.0f, 0.0f, (float)enemy.rect.width, (float)enemy.rect.height};
 
 int currentEnemyFrame = 0;
 int enemyFramesCounter = 0;
@@ -221,7 +249,7 @@ int main(void)
 
                 // === FOR THE 2nd ASSIGNMENT
 
-                bullets.push_back({ { player.x + player.width / 2, player.y, bulletWidth/2-7, bulletHeight }, true }); // Shooting
+                bullets.push_back({ { player.x + player.width / 2, player.y, bulletWidth/2-16, bulletHeight }, true }); // Shooting
 
                 // === FOR THE FINAL GAME
                 /*if (doubleShot)
@@ -409,14 +437,14 @@ int main(void)
 
         enemyFramesCounter++;
 
-        if (enemyFramesCounter >= (60))
+        if (enemyFramesCounter >= (30))
         {
             enemyFramesCounter = 0;
             currentEnemyFrame++;
 
-            if (currentEnemyFrame > 5) currentEnemyFrame = 0;
+            if (currentEnemyFrame > 1) currentEnemyFrame = 0;
 
-            frameRec.x = (float)currentEnemyFrame * (float)enemy.rect.width / 2;
+            frameRec.x = (float)currentEnemyFrame * (float)enemy.rect.width;
         }
 
         // Draw all the scene
@@ -430,9 +458,9 @@ int main(void)
             if (bullet.active)
             {
                 // Draw the bullet
-                DrawTexture(bulletSprite,
-                    (int)(bullet.rect.x + bullet.rect.width / 2 - bulletSprite.width / 2),
-                    (int)(bullet.rect.y + bullet.rect.height / 2 - bulletSprite.height / 2),
+                DrawTextureEx(bulletSprite,
+                    { (bullet.rect.x + bullet.rect.width / 2 - bulletSprite.width / 2),
+                    (bullet.rect.y + bullet.rect.height / 2 - bulletSprite.height / 2) }, 0, 2,
                     WHITE);
             }
         }
@@ -442,9 +470,9 @@ int main(void)
         {
             if (bullet.active)
             {
-                DrawTexture(bulletEnemySprite,
-                    (int)(bullet.rect.x + bullet.rect.width / 2 - bulletSprite.width / 2),
-                    (int)(bullet.rect.y + bullet.rect.height / 2 - bulletSprite.height / 2),
+                DrawTextureEx(bulletEnemySprite,
+                    { (bullet.rect.x + bullet.rect.width / 2 - bulletSprite.width / 2),
+                    (bullet.rect.y + bullet.rect.height / 2 - bulletSprite.height / 2) },0 , 2,
                     WHITE);
             }
         }
@@ -481,11 +509,20 @@ int main(void)
         {
             if (enemy.active)
             {
-                Vector2 position = { (enemy.rect.x + enemy.rect.width / 2 - enemySprite.width / 2),
-                    (enemy.rect.y + enemy.rect.height / 2 - enemySprite.height / 2) };
+                float scale = 1;
 
-                DrawTexturePro(enemySprite, frameRec, { enemy.rect.x, enemy.rect.y, enemy.rect.width * 1.5f , enemy.rect.height * 1.5f } , { enemy.rect.width / 2 , enemy.rect.height / 2 }, 0, WHITE);
-                DrawTextureEx(enemySprite, position, 0, 1.5f, WHITE);
+                Rectangle source = frameRec;
+
+                Rectangle dest = {
+                    enemy.rect.x + enemy.rect.width / 2.0f,
+                    enemy.rect.y + enemy.rect.height / 2.0f,
+                    enemy.rect.width * scale,
+                    enemy.rect.height * scale
+                };
+
+                Vector2 origin = { dest.width / 2.0f, dest.height / 2.0f };
+
+                DrawTexturePro(enemySprite, source, dest, origin, enemy.rotation, WHITE);
             }
         }
 
