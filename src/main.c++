@@ -98,11 +98,17 @@ Rectangle enemyFrameRec = { 0.0f, 0.0f, (float)enemy.rect.width, (float)enemy.re
 int currentEnemyFrame = 0;
 int enemyFramesCounter = 0;
 
-Rectangle backgroundFrameRec = { 0.0f, 0.0f, (float)screenWidth, (float)screenHeight };
+Rectangle backgroundMenuFrameRec = { 0.0f, 0.0f, (float)screenWidth, (float)screenHeight };
 
 int currentBackgrounMenuFrameX = 0;
 int currentBackgrounMenuFrameY = 0;
 int backgrounMenuFramesCounter = 0;
+
+Rectangle backgroundGameFrameRec = { 0.0f, 0.0f, (float)screenWidth, (float)screenHeight };
+
+int currentBackgrounGameFrameX = 0;
+int currentBackgrounGameFrameY = 0;
+int backgrounGameFramesCounter = 0;
 
 std::vector<Bullet> bullets;
 std::vector<Bullet_Enemy> enemyBullets;
@@ -145,7 +151,6 @@ int main(void)
 
     Font font = LoadFontEx("Font/Data 70 Regular.otf", 64, 0, 0);
 
-    int back = 0;
     bool doubleShot = false, shield = false, canAct = false;
     bool pause = false, gameOver = false, hasWon = false;
     bool inMenu = true;
@@ -196,42 +201,37 @@ int main(void)
             else ResumeMusicStream(music);
         }
 
-        backgrounMenuFramesCounter++;
-
-        if (backgrounMenuFramesCounter >= (2))
-        {
-            backgrounMenuFramesCounter = 0;
-            currentBackgrounMenuFrameX++;
-
-            if (currentBackgrounMenuFrameX > 6)
-            {
-                currentBackgrounMenuFrameX = 0;
-                currentBackgrounMenuFrameY++;
-            }
-
-            cout << back << endl;
-            back++;
-
-            if (currentBackgrounMenuFrameX > 4 && currentBackgrounMenuFrameY > 5)
-            {
-                currentBackgrounMenuFrameX = 0;
-                currentBackgrounMenuFrameY = 0;
-                back = 0;
-                cout << back << endl;
-            }
-
-            backgroundFrameRec.x = (float)currentBackgrounMenuFrameX * (float)screenWidth;
-            backgroundFrameRec.y = (float)currentBackgrounMenuFrameY * (float)screenHeight;
-        }
-
         // Menu manager
         if (inMenu)
         {
             int textWidth;
 
+            backgrounMenuFramesCounter++;
+
+            if (backgrounMenuFramesCounter >= 2)
+            {
+                backgrounMenuFramesCounter = 0;
+                currentBackgrounMenuFrameX++;
+
+                if (currentBackgrounMenuFrameX >= 6) // máximo índice = 5
+                {
+                    currentBackgrounMenuFrameX = 0;
+                    currentBackgrounMenuFrameY++;
+
+                    if (currentBackgrounMenuFrameY >= 4) // máximo índice = 4
+                    {
+                        currentBackgrounMenuFrameY = 0;
+                    }
+                }
+
+                backgroundMenuFrameRec.x = currentBackgrounMenuFrameX * screenWidth;
+                backgroundMenuFrameRec.y = currentBackgrounMenuFrameY * screenHeight;
+            }
+
+
             BeginDrawing();
             ClearBackground(BLACK);
-            DrawTextureRec(menuBackground, backgroundFrameRec, { 0,0 }, WHITE);
+            DrawTextureRec(menuBackground, backgroundMenuFrameRec, { 0,0 }, WHITE);
             //DrawTexture(menuBackground, 0, 0, WHITE); // Draw the background
 
             DrawTextEx(font, "SCORE", { 100, 30 }, 34, 2, WHITE);
@@ -262,6 +262,28 @@ int main(void)
         // Game manager 
         if (!pause)
         {
+            backgrounGameFramesCounter++;
+
+            if (backgrounGameFramesCounter >= 2)
+            {
+                backgrounGameFramesCounter = 0;
+                currentBackgrounGameFrameX++;
+
+                if (currentBackgrounGameFrameX >= 6)
+                {
+                    currentBackgrounGameFrameX = 0;
+                    currentBackgrounGameFrameY++;
+
+                    if (currentBackgrounGameFrameY >= 4)
+                    {
+                        currentBackgrounGameFrameY = 0;
+                    }
+                }
+
+                backgroundGameFrameRec.x = currentBackgrounGameFrameX * screenWidth;
+                backgroundGameFrameRec.y = currentBackgrounGameFrameY * screenHeight;
+            }
+
             // Movement of the ship
             if (IsKeyDown(KEY_D) && canAct) player.x += PLAYER_SPEED;
             if (IsKeyDown(KEY_A) && canAct) player.x -= PLAYER_SPEED;
@@ -483,7 +505,7 @@ int main(void)
         // Draw all the scene
         BeginDrawing();
         ClearBackground(BLACK);
-        DrawTexture(gamePlayBackground, 0, 0, WHITE);
+        DrawTextureRec(gamePlayBackground, backgroundGameFrameRec,{0, 0}, WHITE);
 
         // Draw the bullets
         for (const Bullet& bullet : bullets)
