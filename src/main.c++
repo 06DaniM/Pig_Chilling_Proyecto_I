@@ -93,10 +93,16 @@ int screen = 1; // Levels of the game
 int maxEnemies = 5; 
 int currentEnemies = 0;
 
-Rectangle frameRec = { 0.0f, 0.0f, (float)enemy.rect.width, (float)enemy.rect.height};
+Rectangle enemyFrameRec = { 0.0f, 0.0f, (float)enemy.rect.width, (float)enemy.rect.height};
 
 int currentEnemyFrame = 0;
 int enemyFramesCounter = 0;
+
+Rectangle backgroundFrameRec = { 0.0f, 0.0f, (float)screenWidth, (float)screenHeight };
+
+int currentBackgrounMenuFrameX = 0;
+int currentBackgrounMenuFrameY = 0;
+int backgrounMenuFramesCounter = 0;
 
 std::vector<Bullet> bullets;
 std::vector<Bullet_Enemy> enemyBullets;
@@ -130,9 +136,8 @@ int main(void)
     Texture2D bulletEnemySprite = LoadTexture("resources/bullets/Disparo_Regular_Enemy.png");
     Texture2D bulletBossSprite = LoadTexture("resources/bullets/Disparo_Boss.png");
 
-    Texture2D menuBackground = LoadTexture("resources/backgrounds/Menu.png");
-    Texture2D shipMenuBackground = LoadTexture("resources/backgrounds/Nave Back.png");
-    Texture2D gamePlayBackground = LoadTexture("resources/backgrounds/FONDO_GALAGA.png");
+    Texture2D menuBackground = LoadTexture("resources/backgrounds/Menu Background.png");
+    Texture2D gamePlayBackground = LoadTexture("resources/backgrounds/Gameplay Background.png");
 
     Texture2D logo = LoadTexture("resources/backgrounds/Logo Game.png");
 
@@ -140,6 +145,7 @@ int main(void)
 
     Font font = LoadFontEx("Font/Data 70 Regular.otf", 64, 0, 0);
 
+    int back = 0;
     bool doubleShot = false, shield = false, canAct = false;
     bool pause = false, gameOver = false, hasWon = false;
     bool inMenu = true;
@@ -190,6 +196,34 @@ int main(void)
             else ResumeMusicStream(music);
         }
 
+        backgrounMenuFramesCounter++;
+
+        if (backgrounMenuFramesCounter >= (2))
+        {
+            backgrounMenuFramesCounter = 0;
+            currentBackgrounMenuFrameX++;
+
+            if (currentBackgrounMenuFrameX > 6)
+            {
+                currentBackgrounMenuFrameX = 0;
+                currentBackgrounMenuFrameY++;
+            }
+
+            cout << back << endl;
+            back++;
+
+            if (currentBackgrounMenuFrameX > 4 && currentBackgrounMenuFrameY > 5)
+            {
+                currentBackgrounMenuFrameX = 0;
+                currentBackgrounMenuFrameY = 0;
+                back = 0;
+                cout << back << endl;
+            }
+
+            backgroundFrameRec.x = (float)currentBackgrounMenuFrameX * (float)screenWidth;
+            backgroundFrameRec.y = (float)currentBackgrounMenuFrameY * (float)screenHeight;
+        }
+
         // Menu manager
         if (inMenu)
         {
@@ -197,9 +231,8 @@ int main(void)
 
             BeginDrawing();
             ClearBackground(BLACK);
-            DrawTexture(menuBackground, 0, 0, WHITE); // Draw the background
-            DrawTexture(shipMenuBackground, screenWidth / 2, 450, WHITE); // Draw the background
-            DrawTexture(logo, screenWidth/2 - 590/2, 100, WHITE); // Draw the logo
+            DrawTextureRec(menuBackground, backgroundFrameRec, { 0,0 }, WHITE);
+            //DrawTexture(menuBackground, 0, 0, WHITE); // Draw the background
 
             DrawTextEx(font, "SCORE", { 100, 30 }, 34, 2, WHITE);
             DrawTextEx(font, "0", { 100, 60 }, 34, 2, WHITE);
@@ -444,7 +477,7 @@ int main(void)
 
             if (currentEnemyFrame > 1) currentEnemyFrame = 0;
 
-            frameRec.x = (float)currentEnemyFrame * (float)enemy.rect.width;
+            enemyFrameRec.x = (float)currentEnemyFrame * (float)enemy.rect.width;
         }
 
         // Draw all the scene
@@ -511,7 +544,7 @@ int main(void)
             {
                 float scale = 1;
 
-                Rectangle source = frameRec;
+                Rectangle source = enemyFrameRec;
 
                 Rectangle dest = {
                     enemy.rect.x + enemy.rect.width / 2.0f,
