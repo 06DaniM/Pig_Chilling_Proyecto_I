@@ -408,3 +408,5 @@ Makefile
 /.vs
 /.vs
 /.vs/raylib-quickstart-main
+.vs/raylib-quickstart-main/v17/Solution.VC.db
+/.vs

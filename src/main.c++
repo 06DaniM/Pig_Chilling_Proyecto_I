@@ -33,6 +33,7 @@ SOFTWARE.
 #include <cmath>
 #include <iostream>
 #include "Enemy.h"
+#include "Timer.h"
 
 using namespace std;
 
@@ -109,6 +110,9 @@ Rectangle backgroundGameFrameRec = { 0.0f, 0.0f, (float)screenWidth, (float)scre
 int currentBackgrounGameFrameX = 0;
 int currentBackgrounGameFrameY = 0;
 int backgrounGameFramesCounter = 0;
+
+Timer winDelayTimer;
+bool isWinTimerStarted = false;
 
 std::vector<Bullet> bullets;
 std::vector<Bullet_Enemy> enemyBullets;
@@ -319,6 +323,16 @@ int main(void)
                 }*/
             }
 
+            if (isWinTimerStarted) 
+            {
+                winDelayTimer.Update(GetFrameTime());  // Actualiza el temporizador
+
+                if (winDelayTimer.IsFinished()) 
+                {
+                    isWinTimerStarted = false;
+                    hasWon = true;  // Solo se marca como ganado al terminar el temporizador
+                }
+            }
 
             // Update the bullets
             for (Bullet& bullet : bullets)
@@ -452,7 +466,11 @@ int main(void)
             // === Ends the first screen after destroying all enemies ===
             else if (currentEnemies == 0 && currentWave >= 3)
             {
-                hasWon = true;
+                if (!hasWon && !isWinTimerStarted)
+                {
+                    winDelayTimer.Start(1.0f); // Wait 1 second for the winning screen
+                    isWinTimerStarted = true;
+                }
             }
 
             for (PowerUp& powerUp : powerUps)

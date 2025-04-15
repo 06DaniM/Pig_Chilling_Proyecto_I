@@ -5,6 +5,14 @@
     {
       "AbsoluteMoniker": "D:0:0:{7223710C-5E1D-9A5E-478A-306F332300CB}|build\\build_files\\raylib-quickstart-main.vcxproj|C:\\Users\\Pc\\OneDrive\\Escritorio\\Universidad\\Pig_Chilling_Proyecto_I\\src\\main.c\u002B\u002B||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{7223710C-5E1D-9A5E-478A-306F332300CB}|build\\build_files\\raylib-quickstart-main.vcxproj|solutionrelative:src\\main.c\u002B\u002B||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7223710C-5E1D-9A5E-478A-306F332300CB}|build\\build_files\\raylib-quickstart-main.vcxproj|C:\\Users\\Pc\\OneDrive\\Escritorio\\Universidad\\Pig_Chilling_Proyecto_I\\src\\Timer.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{7223710C-5E1D-9A5E-478A-306F332300CB}|build\\build_files\\raylib-quickstart-main.vcxproj|solutionrelative:src\\Timer.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7223710C-5E1D-9A5E-478A-306F332300CB}|build\\build_files\\raylib-quickstart-main.vcxproj|C:\\Users\\Pc\\OneDrive\\Escritorio\\Universidad\\Pig_Chilling_Proyecto_I\\src\\Timer.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{7223710C-5E1D-9A5E-478A-306F332300CB}|build\\build_files\\raylib-quickstart-main.vcxproj|solutionrelative:src\\Timer.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     }
   ],
   "DocumentGroupContainers": [
@@ -14,8 +22,34 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 0,
+          "SelectedChildIndex": 2,
           "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Timer.h",
+              "DocumentMoniker": "C:\\Users\\Pc\\OneDrive\\Escritorio\\Universidad\\Pig_Chilling_Proyecto_I\\src\\Timer.h",
+              "RelativeDocumentMoniker": "src\\Timer.h",
+              "ToolTip": "C:\\Users\\Pc\\OneDrive\\Escritorio\\Universidad\\Pig_Chilling_Proyecto_I\\src\\Timer.h",
+              "RelativeToolTip": "src\\Timer.h",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAowBMAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2025-04-15T10:54:10.767Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Timer.cpp",
+              "DocumentMoniker": "C:\\Users\\Pc\\OneDrive\\Escritorio\\Universidad\\Pig_Chilling_Proyecto_I\\src\\Timer.cpp",
+              "RelativeDocumentMoniker": "src\\Timer.cpp",
+              "ToolTip": "C:\\Users\\Pc\\OneDrive\\Escritorio\\Universidad\\Pig_Chilling_Proyecto_I\\src\\Timer.cpp",
+              "RelativeToolTip": "src\\Timer.cpp",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAowBwAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2025-04-15T10:54:09.792Z",
+              "EditorCaption": ""
+            },
             {
               "$type": "Document",
               "DocumentIndex": 0,
@@ -24,7 +58,7 @@
               "RelativeDocumentMoniker": "src\\main.c\u002B\u002B",
               "ToolTip": "C:\\Users\\Pc\\OneDrive\\Escritorio\\Universidad\\Pig_Chilling_Proyecto_I\\src\\main.c\u002B\u002B",
               "RelativeToolTip": "src\\main.c\u002B\u002B",
-              "ViewState": "AgIAAPwAAAAAAAAAAAAYwBkBAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAABsAAAAAAAAAAAAAADgAAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
               "WhenOpened": "2025-04-06T08:47:59.199Z",
               "EditorCaption": ""
