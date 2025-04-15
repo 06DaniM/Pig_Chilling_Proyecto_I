@@ -449,7 +449,7 @@ int main(void)
             {
                 if (enemy.active)
                 {
-                    enemy.UpdateEnemy(enemyBullets, enemy, GetFrameTime(), player);
+                    enemy.UpdateEnemy(enemyBullets, enemy, GetFrameTime(), player, gameOver);
                 }
             }
 

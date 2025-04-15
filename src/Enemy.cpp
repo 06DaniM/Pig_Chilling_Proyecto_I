@@ -49,7 +49,7 @@ void Enemy::SpawnEnemies(std::vector<Enemy>& enemies, int numberEnemies, int cur
     currentEnemies = numberEnemies; // Will be change to += when wave timer is applied
 }
 
-void Enemy::UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, float deltaTime, Rectangle& player)
+void Enemy::UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, float deltaTime, Rectangle& player, bool gameOver)
 {
     if (!enemy.gotHit)
     {
@@ -222,25 +222,28 @@ void Enemy::UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, f
                 }
 
                 // === Attacing manager ===
-                if (enemy.attackCooldown >= 1.5f)
+                if (!gameOver)
                 {
-                    enemy.attackTime = GetRandomValue(1, 5000); // Random attack time
-
-                    if (enemy.attackTime <= 10)
+                    if (enemy.attackCooldown >= 1.5f)
                     {
-                        // End random state
+                        enemy.attackTime = GetRandomValue(1, 5000); // Random attack time
 
-                        enemy.attackCooldown = 0; // Reset the cooldown
-                        enemy.canAttack = true;
-                        enemy.random = true;
+                        if (enemy.attackTime <= 10)
+                        {
+                            // End random state
 
-                        // Start attacing patrol
+                            enemy.attackCooldown = 0; // Reset the cooldown
+                            enemy.canAttack = true;
+                            enemy.random = true;
+
+                            // Start attacing patrol
+                        }
                     }
-                }
 
-                else if (enemy.attackCooldown < 1.5f)
-                {
-                    enemy.attackCooldown += deltaTime;
+                    else if (enemy.attackCooldown < 1.5f)
+                    {
+                        enemy.attackCooldown += deltaTime;
+                    }
                 }
             }
 
