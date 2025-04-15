@@ -182,12 +182,12 @@ void Enemy::UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, f
                 float velocity2 = 200.0f; // Movement speed
                 float moveSpeed = velocity2 * deltaTime;
 
-                float distX1 = enemy.targetIdlePosition.x - enemy.rect.x;
+                float distX1 = (enemy.targetIdlePosition.x - enemy.rect.x);
 
                 float distance1 = sqrt(distX1 * distX1); // Total distance to the objective
                 float directionX1 = distX1 / distance1;
 
-                float distX2 = enemy.targetFinalPosition.x - enemy.rect.x;
+                float distX2 = (enemy.targetFinalPosition.x - enemy.rect.x);
 
                 float distance2 = sqrt(distX2 * distX2); // Total distance to the objective
                 float directionX2 = distX2 / distance2;

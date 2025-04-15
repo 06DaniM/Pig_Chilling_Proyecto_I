@@ -35,8 +35,7 @@
               "ViewState": "AgIAABIAAAAAAAAAAAAAACoAAAAMAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
               "WhenOpened": "2025-04-15T16:43:44.936Z",
-              "IsPinned": true,
-              "EditorCaption": ""
+              "IsPinned": true
             },
             {
               "$type": "Document",
@@ -44,9 +43,9 @@
               "Title": "Enemy.cpp",
               "DocumentMoniker": "C:\\Users\\Pc\\OneDrive\\Escritorio\\Universidad\\Pig_Chilling_Proyecto_I\\src\\Enemy.cpp",
               "RelativeDocumentMoniker": "src\\Enemy.cpp",
-              "ToolTip": "C:\\Users\\Pc\\OneDrive\\Escritorio\\Universidad\\Pig_Chilling_Proyecto_I\\src\\Enemy.cpp*",
-              "RelativeToolTip": "src\\Enemy.cpp*",
-              "ViewState": "AgIAAM4AAAAAAAAAAAAtwPUAAAAVAAAAAAAAAA==",
+              "ToolTip": "C:\\Users\\Pc\\OneDrive\\Escritorio\\Universidad\\Pig_Chilling_Proyecto_I\\src\\Enemy.cpp",
+              "RelativeToolTip": "src\\Enemy.cpp",
+              "ViewState": "AgIAAL8AAAAAAAAAAAAowMcAAAA6AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
               "WhenOpened": "2025-04-15T16:43:56.235Z",
               "EditorCaption": ""
@@ -59,10 +58,9 @@
               "RelativeDocumentMoniker": "src\\main.c\u002B\u002B",
               "ToolTip": "C:\\Users\\Pc\\OneDrive\\Escritorio\\Universidad\\Pig_Chilling_Proyecto_I\\src\\main.c\u002B\u002B",
               "RelativeToolTip": "src\\main.c\u002B\u002B",
-              "ViewState": "AgIAAK4BAAAAAAAAAAAYwL4BAAAhAAAAAAAAAA==",
+              "ViewState": "AgIAAG4CAAAAAAAAAAAYwL4BAAAhAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
-              "WhenOpened": "2025-04-06T08:47:59.199Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-04-06T08:47:59.199Z"
             }
           ]
         }
