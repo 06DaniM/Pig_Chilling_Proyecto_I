@@ -58,6 +58,13 @@ typedef struct Bullet {
 
 Enemy enemy;
 
+Timer winDelayTimer;
+bool isWinTimerStarted = false;
+
+Timer deathDelayTimer;
+bool isDeathTimerStarted = false;
+bool isHitTimerStarted = false;
+
 const int screenWidth = 1152;
 const int screenHeight = 896;
 
@@ -71,6 +78,11 @@ Rectangle enemyFrameRec = { 0.0f, 0.0f, (float)enemy.rect.width, (float)enemy.re
 int currentEnemyFrame = 0;
 int enemyFramesCounter = 0;
 
+Rectangle enemyDeathFrameRec = { 0.0f, 0.0f, (float)enemy.rect.width, (float)enemy.rect.height };
+
+int currentEnemyDeathFrame = 0;
+int enemyDeathFramesCounter = 0;
+
 Rectangle backgroundMenuFrameRec = { 0.0f, 0.0f, (float)screenWidth, (float)screenHeight };
 
 int currentBackgrounMenuFrameX = 0;
@@ -82,9 +94,6 @@ Rectangle backgroundGameFrameRec = { 0.0f, 0.0f, (float)screenWidth, (float)scre
 int currentBackgrounGameFrameX = 0;
 int currentBackgrounGameFrameY = 0;
 int backgrounGameFramesCounter = 0;
-
-Timer winDelayTimer;
-bool isWinTimerStarted = false;
 
 Sound shotSound[4] = { 0 };
 int currentShotSound;
@@ -102,6 +111,11 @@ int main(void)
 
     Rectangle player = { (screenWidth - 74) / 2.0f, screenHeight / 1.5f, 64, 64 }; // PositionX, PositionY, ColliderX, ColliderY
 
+    Rectangle playerDieFrameRec = { 0,0 , 58, 58};
+
+    int currentPlayerDieFrame = 0;
+    int playerDieFramesCounter = 0;
+
     std::vector<Enemy> enemies; // Vector to manage the generated enemies 
     std::vector<PowerUp> powerUps; // Vector to manage the generated power ups 
 
@@ -114,8 +128,10 @@ int main(void)
     Texture2D shipSpriteDouble = LoadTexture("resources/ship/NAVE 2DS 64X64.png");
     Texture2D shipSpriteBuble = LoadTexture("resources/ship/Nave Bubble 0.png");
     Texture2D shipSpriteDoubleandBuble = LoadTexture("resources/ship/Nave 2S Bubble 0.png");
+    Texture2D shipSpriteDeathAnim = LoadTexture("resources/ship/PlayerExplosion.png");
 
     Texture2D enemySprite = LoadTexture("resources/enemies/nave draconoida.png");
+    Texture2D enemySpriteDeathAnim = LoadTexture("resources/enemies/deathEnemyAnim.png");
 
     Texture2D doubleShotSprite = LoadTexture("resources/powerUps/DobleShot_PowerUp.png");
     Texture2D shieldSprite = LoadTexture("resources/powerUps/Shield_PowerUp.png");
@@ -151,7 +167,7 @@ int main(void)
     }
     currentEnemyDestroySound = 0;
 
-    bool doubleShot = false, shield = false, canAct = false;
+    bool doubleShot = false, shield = false, canAct = false, isVisible = true, beenhitten = false;
     bool pause = false, gameOver = false, hasWon = false;
     bool inMenu = true;
     int score = 0;
@@ -255,6 +271,7 @@ int main(void)
                 currentWave = 0;
                 inMenu = false;
                 canAct = true;
+                isVisible = true;
             }
             continue; // Avoid the code is still executing in the menu
         }
@@ -332,6 +349,27 @@ int main(void)
                 {
                     isWinTimerStarted = false;
                     hasWon = true;  // Solo se marca como ganado al terminar el temporizador
+                }
+            }
+
+            if (isDeathTimerStarted)
+            {
+                deathDelayTimer.Update(GetFrameTime());  // Actualiza el temporizador
+
+                if (deathDelayTimer.IsFinished())
+                {
+                    isDeathTimerStarted = false;
+                    beenhitten = false;
+                    playerDieFramesCounter = 0;
+                    currentPlayerDieFrame = 0;
+                    if (life <= 0) gameOver = true;  // Solo se marca como ganado al terminar el temporizador
+                    else
+                    {
+                        player.x = (screenWidth - 74) / 2.0f;
+                        player.y = screenHeight / 1.5f;
+                        isVisible = true;
+                        canAct = true;
+                    }
                 }
             }
 
@@ -421,11 +459,14 @@ int main(void)
                 if (bullet.active)
                 {
                     bullet.rect.y += BULLET_SPEED;
-                    if (CheckCollisionRecs(player, bullet.rect) && !shield)
+                    if (CheckCollisionRecs(player, bullet.rect) && !shield && canAct && isVisible)
                     {
                         PlaySound(deathPlayerSound);
+                        beenhitten = true;
+                        canAct = false;
                         bullet.active = false;
                         life--;
+
                         break;
                     }
 
@@ -434,6 +475,36 @@ int main(void)
                         shield = false;
                         bullet.active = false;
                         break;
+                    }
+                }
+            }
+
+            if (beenhitten)
+            {
+                if (isVisible)
+                {
+                    // Actualizar frame rect
+                    playerDieFrameRec.x = currentPlayerDieFrame * 58;
+
+                    // Solo avanzar si no terminamos la animación
+                    if (currentPlayerDieFrame < 4)
+                    {
+                        playerDieFramesCounter++;
+
+                        if (playerDieFramesCounter >= 15)
+                        {
+                            playerDieFramesCounter = 0;
+                            currentPlayerDieFrame++;
+
+                            // Si la animación termina, iniciar delay y ocultar sprite
+                            if (currentPlayerDieFrame >= 4 && !gameOver && !isHitTimerStarted)
+                            {
+                                currentPlayerDieFrame = 0;
+                                deathDelayTimer.Start(1.0f);
+                                isDeathTimerStarted = true;
+                                isVisible = false;
+                            }
+                        }
                     }
                 }
             }
@@ -510,10 +581,43 @@ int main(void)
         }
 
         // Game Over when is dead
-        if (life <= 0)
-        {
-            gameOver = true;
-        }
+        //if (life <= 0)
+        //{
+        //    canAct = false;
+
+        //    if (isVisible)
+        //    {
+        //        // Actualizar frame rect
+        //        playerDieFrameRec.x = currentPlayerDieFrameX * 56;
+        //        playerDieFrameRec.y = currentPlayerDieFrameY * 56;
+
+        //        // Solo avanzar si no terminamos la animación
+        //        if (currentPlayerDieFrameY < 2)
+        //        {
+        //            playerDieFramesCounter++;
+
+        //            if (playerDieFramesCounter >= 15)
+        //            {
+        //                playerDieFramesCounter = 0;
+        //                currentPlayerDieFrameX++;
+
+        //                if (currentPlayerDieFrameX >= 2)
+        //                {
+        //                    currentPlayerDieFrameX = 0;
+        //                    currentPlayerDieFrameY++;
+        //                }
+
+        //                // Si la animación termina, iniciar delay y ocultar sprite
+        //                if (currentPlayerDieFrameY >= 2 && !gameOver && !isDeathTimerStarted)
+        //                {
+        //                    isVisible = false; // ← Ocultar sprite
+        //                    deathDelayTimer.Start(1.0f);
+        //                    isDeathTimerStarted = true;
+        //                }
+        //            }
+        //        }
+        //    }
+        //}
 
         enemyFramesCounter++;
 
@@ -526,6 +630,22 @@ int main(void)
 
             enemyFrameRec.x = (float)currentEnemyFrame * (float)enemy.rect.width;
         }
+
+        if (enemy.gotHit)
+        {
+            enemyDeathFramesCounter++;
+
+            if (enemyDeathFramesCounter >= (30))
+            {
+                enemyDeathFramesCounter = 0;
+                currentEnemyDeathFrame++;
+
+                if (currentEnemyDeathFrame > 1) currentEnemyDeathFrame = 0;
+
+                enemyDeathFrameRec.x = (float)currentEnemyDeathFrame * (float)enemy.rect.width;
+            }
+        }
+        
 
         // Draw all the scene
         BeginDrawing();
@@ -558,24 +678,41 @@ int main(void)
         }
 
         // Draw the ship
-        if (doubleShot && !shield)
+        if (isVisible)
         {
-            DrawTexture(shipSpriteDouble, (int)player.x, (int)player.y, WHITE);
-        }
+            if (beenhitten)
+            {
+                Rectangle dest = {
+                        player.x + player.width / 2.0f,
+                        player.y + player.height / 2.0f,
+                        player.width * 2,
+                        player.height * 2
+                };
 
-        else if (shield && !doubleShot)
-        {
-            DrawTexture(shipSpriteBuble, (int)player.x, (int)player.y, WHITE);
-        }
+                Vector2 origin = { dest.width / 2.0f, dest.height / 2.0f };
 
-        else if (doubleShot && shield)
-        {
-            DrawTexture(shipSpriteDoubleandBuble, (int)player.x, (int)player.y, WHITE);
-        }
+                DrawTexturePro(shipSpriteDeathAnim, playerDieFrameRec, dest, origin, 0, WHITE);
+            }
 
-        else
-        {
-            DrawTextureEx(shipSpriteBase, { player.x, player.y }, 0, 2, WHITE);
+            else if (doubleShot && !shield)
+            {
+                DrawTexture(shipSpriteDouble, (int)player.x, (int)player.y, WHITE);
+            }
+
+            else if (shield && !doubleShot)
+            {
+                DrawTexture(shipSpriteBuble, (int)player.x, (int)player.y, WHITE);
+            }
+
+            else if (doubleShot && shield)
+            {
+                DrawTexture(shipSpriteDoubleandBuble, (int)player.x, (int)player.y, WHITE);
+            }
+
+            else
+            {
+                DrawTextureEx(shipSpriteBase, { player.x, player.y }, 0, 2, WHITE);
+            }
         }
 
         // Draw the lifes of the ship

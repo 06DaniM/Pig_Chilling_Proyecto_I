@@ -37,6 +37,7 @@ public:
     bool right;
     bool playerOnRight;
     bool canAttack;
+    bool gotHit;
 
     // Constructor
     Enemy();
