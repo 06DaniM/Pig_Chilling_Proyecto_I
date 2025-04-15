@@ -56,34 +56,6 @@ typedef struct Bullet {
     bool active;
 } Bullet;
 
-//typedef struct Enemy {
-//    Rectangle rect;
-//    bool active;
-//    bool isAttacking;
-//    float attackTime;
-//    float attackingTimer;
-//    float attackCooldown;
-//    Vector2 targetPosition1; // Start Loop position
-//    Vector2 targetFinalPosition; // Final position of the Loop
-//    Vector2 targetIdlePosition; // Idle position after loop
-//    float attackPlayerPos; // Position of the player when attack
-//    float entryTime; // Tiempo de entrada
-//    int index; // Índice del enemigo en la fila
-//    int loopDirection; // 1 = Right | -1 = Left
-//    bool enemyInitialState;
-//    bool enemyLoopState;
-//    bool manual;
-//    bool idle;
-//    bool random;
-//    bool right;
-//    bool playerOnRight;
-//} Enemy;
-//
-//typedef struct Bullet_Enemy {
-//    Rectangle rect;
-//    bool active;
-//} Bullet_Enemy;
-
 Enemy enemy;
 
 const int screenWidth = 1152;
@@ -113,6 +85,12 @@ int backgrounGameFramesCounter = 0;
 
 Timer winDelayTimer;
 bool isWinTimerStarted = false;
+
+Sound shotSound[4] = { 0 };
+int currentShotSound;
+
+Sound enemyDestroySound[4] = { 0 };
+int currentEnemyDestroySound;
 
 std::vector<Bullet> bullets;
 std::vector<Bullet_Enemy> enemyBullets;
@@ -153,14 +131,32 @@ int main(void)
 
     Music music = LoadMusicStream("resources/music/02 Regular Stage Theme.ogg");
 
-    Font font = LoadFontEx("Font/Data 70 Regular.otf", 64, 0, 0);
+    Font font = LoadFontEx("font/Data 70 Regular.otf", 64, 0, 0);
+
+    Sound deathPlayerSound = LoadSound("resources/soundEffects/fighter_destroyed.mp3");
+
+    shotSound[0] = LoadSound("resources/soundEffects/laser_default.mp3");
+
+    for (int i = 1; i < 4; i++)
+    {
+        shotSound[i] = LoadSoundAlias(shotSound[0]);        // Load an alias of the sound into slots 1-9. These do not own the sound data, but can be played
+    }
+    currentShotSound = 0;
+
+    enemyDestroySound[0] = LoadSound("resources/soundEffects/galaga_destroyed.mp3");
+
+    for (int i = 1; i < 4; i++)
+    {
+        enemyDestroySound[i] = LoadSoundAlias(enemyDestroySound[0]);        // Load an alias of the sound into slots 1-9. These do not own the sound data, but can be played
+    }
+    currentEnemyDestroySound = 0;
 
     bool doubleShot = false, shield = false, canAct = false;
     bool pause = false, gameOver = false, hasWon = false;
     bool inMenu = true;
     int score = 0;
     int life = 3;
-    float scale = 1.4f; // Reduce a 50% the scale of the sprites
+    float scale = 1.4f; // Reduce the scale of the sprites
 
     float shotCooldown = 0.3f;  // Time between shots
     float shotTimer = 0.0f;     // Timer for counting seconds
@@ -310,6 +306,11 @@ int main(void)
 
                 bullets.push_back({ { player.x + player.width / 2, player.y, bulletWidth/2-16, bulletHeight }, true }); // Shooting
 
+                PlaySound(shotSound[currentShotSound]);            // play the next open sound slot
+                currentShotSound++;                                 // increment the sound slot
+
+                if (currentShotSound >= 4) currentShotSound = 0;
+
                 // === FOR THE FINAL GAME
                 /*if (doubleShot)
                 {
@@ -347,6 +348,11 @@ int main(void)
                         {
                             if (CheckCollisionRecs(bullet.rect, enemy.rect)) // If collision with an enemy
                             {
+                                PlaySound(enemyDestroySound[currentEnemyDestroySound]);            // play the next open sound slot
+                                currentEnemyDestroySound++;                                 // increment the sound slot
+
+                                if (currentEnemyDestroySound >= 4) currentEnemyDestroySound = 0;
+
                                 bullet.active = false;
                                 enemy.active = false;
                                 score += 100;
@@ -417,6 +423,7 @@ int main(void)
                     bullet.rect.y += BULLET_SPEED;
                     if (CheckCollisionRecs(player, bullet.rect) && !shield)
                     {
+                        PlaySound(deathPlayerSound);
                         bullet.active = false;
                         life--;
                         break;

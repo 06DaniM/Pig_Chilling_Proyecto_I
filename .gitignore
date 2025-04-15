@@ -410,3 +410,5 @@ Makefile
 /.vs/raylib-quickstart-main
 .vs/raylib-quickstart-main/v17/Solution.VC.db
 /.vs
+.vs/raylib-quickstart-main/v17/Browse.VC.db
+.vs/raylib-quickstart-main/v17/ipch/AutoPCH/ffea95fca3289c2d/MAIN.ipch
