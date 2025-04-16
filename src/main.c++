@@ -392,7 +392,7 @@ int main(void)
                                 if (currentEnemyDestroySound >= 4) currentEnemyDestroySound = 0;
 
                                 bullet.active = false;
-                                enemy.active = false;
+                                enemy.gotHit = true;
                                 score += 100;
                                 currentEnemies--;
 
@@ -443,41 +443,6 @@ int main(void)
             // Delete the inactive bullets
             bullets.erase(std::remove_if(bullets.begin(), bullets.end(),
                 [](const Bullet& b) { return !b.active || b.rect.y < 0; }), bullets.end());
-
-            // Update the enemeis
-            for (Enemy& enemy : enemies)
-            {
-                if (enemy.active)
-                {
-                    enemy.UpdateEnemy(enemyBullets, enemy, GetFrameTime(), player, gameOver);
-                }
-            }
-
-            // Update enemies bullets
-            for (Bullet_Enemy& bullet : enemyBullets)
-            {
-                if (bullet.active)
-                {
-                    bullet.rect.y += BULLET_SPEED;
-                    if (CheckCollisionRecs(player, bullet.rect) && !shield && canAct && isVisible)
-                    {
-                        PlaySound(deathPlayerSound);
-                        beenhitten = true;
-                        canAct = false;
-                        bullet.active = false;
-                        life--;
-
-                        break;
-                    }
-
-                    else if (CheckCollisionRecs(player, bullet.rect) && shield)
-                    {
-                        shield = false;
-                        bullet.active = false;
-                        break;
-                    }
-                }
-            }
 
             if (beenhitten)
             {
@@ -631,21 +596,37 @@ int main(void)
             enemyFrameRec.x = (float)currentEnemyFrame * (float)enemy.rect.width;
         }
 
-        if (enemy.gotHit)
+        // Update the enemeis
+        for (Enemy& enemy : enemies)
         {
-            enemyDeathFramesCounter++;
-
-            if (enemyDeathFramesCounter >= (30))
-            {
-                enemyDeathFramesCounter = 0;
-                currentEnemyDeathFrame++;
-
-                if (currentEnemyDeathFrame > 1) currentEnemyDeathFrame = 0;
-
-                enemyDeathFrameRec.x = (float)currentEnemyDeathFrame * (float)enemy.rect.width;
-            }
+            enemy.UpdateEnemy(enemyBullets, enemy, GetFrameTime(), player, gameOver);
         }
-        
+
+        // Update enemies bullets
+        for (Bullet_Enemy& bullet : enemyBullets)
+        {
+            if (bullet.active)
+            {
+                bullet.rect.y += BULLET_SPEED;
+                if (CheckCollisionRecs(player, bullet.rect) && !shield && canAct && isVisible)
+                {
+                    PlaySound(deathPlayerSound);
+                    beenhitten = true;
+                    canAct = false;
+                    bullet.active = false;
+                    life--;
+
+                    break;
+                }
+
+                else if (CheckCollisionRecs(player, bullet.rect) && shield)
+                {
+                    shield = false;
+                    bullet.active = false;
+                    break;
+                }
+            }
+        }        
 
         // Draw all the scene
         BeginDrawing();
@@ -739,7 +720,24 @@ int main(void)
 
                 Vector2 origin = { dest.width / 2.0f, dest.height / 2.0f };
 
-                DrawTexturePro(enemySprite, source, dest, origin, enemy.rotation, WHITE);
+                if(!enemy.gotHit) DrawTexturePro(enemySprite, source, dest, origin, enemy.rotation, WHITE);
+                else
+                {
+                    float scale = 1;
+
+                    Rectangle source = enemy.enemyDeathFrameRec;
+                    cout << "in";
+                    Rectangle dest = {
+                        enemy.rect.x + 54 / 2.0f,
+                        enemy.rect.y + 54 / 2.0f,
+                        54 * scale,
+                        54 * scale
+                    };
+
+                    Vector2 origin = { dest.width / 2.0f, dest.height / 2.0f };
+
+                    DrawTexturePro(enemySpriteDeathAnim, source, dest, origin, 0, WHITE);
+                }
             }
         }
 

@@ -15,6 +15,7 @@ public:
 class Enemy {
 public:
     Rectangle rect;
+    Rectangle enemyDeathFrameRec;
     bool active;
     bool isAttacking;
     float attackTime;
@@ -38,6 +39,9 @@ public:
     bool playerOnRight;
     bool canAttack;
     bool gotHit;
+    int enemyDeathFramesCounter;
+    int currentEnemyDeathFrame;
+
 
     // Constructor
     Enemy();

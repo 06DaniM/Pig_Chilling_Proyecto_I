@@ -9,12 +9,13 @@ Bullet_Enemy::Bullet_Enemy() : rect{ 0, 0, 0, 0 }, active(false) {}
 
 // Enemy constructor
 Enemy::Enemy()
-    : rect{ 0, 0, 32, 32 }, active(true), isAttacking(false), attackTime(0.0f),
+    : rect{ 0, 0, 32, 32 }, enemyDeathFrameRec{ 0, 0, 52, 52 }, active(true), isAttacking(false), attackTime(0.0f),
     attackingTimer(0.0f), attackCooldown(0.0f), targetPosition1{ 0.0f, 0.0f },
     targetFinalPosition{ 0.0f, 0.0f }, targetIdlePosition{ 0.0f, 0.0f },
     attackPlayerPos(0.0f), entryTime(0.0f), rotation(0.0f), index(0), loopDirection(1),
     currentEnemies(5), enemyInitialState(true), enemyLoopState(false), manual(true),
-    idle(false), random(false), right(false), playerOnRight(false), canAttack(true), gotHit(false) {
+    idle(false), random(false), right(false), playerOnRight(false), canAttack(true), 
+    gotHit(false), enemyDeathFramesCounter(0), currentEnemyDeathFrame(0) {
 }
 
 const int screenWidth = 1152;
@@ -51,7 +52,22 @@ void Enemy::SpawnEnemies(std::vector<Enemy>& enemies, int numberEnemies, int cur
 
 void Enemy::UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, float deltaTime, Rectangle& player, bool gameOver)
 {
-    if (!enemy.gotHit)
+    if (enemy.gotHit)
+    {
+        enemy.enemyDeathFramesCounter++;
+
+        if (enemy.enemyDeathFramesCounter >= (10))
+        {
+            enemy.enemyDeathFramesCounter = 0;
+            enemy.currentEnemyDeathFrame++;
+
+            if (enemy.currentEnemyDeathFrame > 3) enemy.active = false;
+
+            enemy.enemyDeathFrameRec.x = (float)enemy.currentEnemyDeathFrame * 52;
+        }
+    }
+
+    else 
     {
         float midX = screenWidth / 2.0f; // Middle of the screen in X axis
 
