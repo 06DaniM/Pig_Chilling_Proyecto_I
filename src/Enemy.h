@@ -42,12 +42,11 @@ public:
     int enemyDeathFramesCounter;
     int currentEnemyDeathFrame;
 
-
     // Constructor
     Enemy();
 
     // Método para actualizar la posición del enemigo
-    void UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, float deltaTime, Rectangle& player, bool gameOver);
+    void UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, std::vector<Enemy>& enemies, Enemy& enemy, float deltaTime, Rectangle& player, bool gameOver, int maxEnemies);
     void SpawnEnemies(std::vector<Enemy>& enemies, int numberEnemies, int currentEnemies,float baseHeight, float baseWidth, int direction, float targetX, float targetY);
 };
 

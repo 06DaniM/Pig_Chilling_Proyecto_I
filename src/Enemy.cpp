@@ -9,7 +9,7 @@ Bullet_Enemy::Bullet_Enemy() : rect{ 0, 0, 0, 0 }, active(false) {}
 
 // Enemy constructor
 Enemy::Enemy()
-    : rect{ 0, 0, 32, 32 }, enemyDeathFrameRec{ 0, 0, 52, 52 }, active(true), isAttacking(false), attackTime(0.0f),
+    : rect{ 0, 0, 32, 32 }, enemyDeathFrameRec{ 0, 0, 54, 54 }, active(true), isAttacking(false), attackTime(0.0f),
     attackingTimer(0.0f), attackCooldown(0.0f), targetPosition1{ 0.0f, 0.0f },
     targetFinalPosition{ 0.0f, 0.0f }, targetIdlePosition{ 0.0f, 0.0f },
     attackPlayerPos(0.0f), entryTime(0.0f), rotation(0.0f), index(0), loopDirection(1),
@@ -20,6 +20,17 @@ Enemy::Enemy()
 
 const int screenWidth = 1152;
 const int screenHeight = 896;
+
+// Variables globales (fuera del bucle principal y de la clase Enemy)
+float globalEnemyOffsetX = 0.0f;
+float globalEnemyDirection = 1.0f;
+float maxEnemyOffset = 100.0f;
+float enemyMoveSpeed = 30.0f; // píxeles por segundo
+
+float Lerp(float a, float b, float t)
+{
+    return a + (b - a) * t;
+}
 
 // Function to spawn the enemies
 void Enemy::SpawnEnemies(std::vector<Enemy>& enemies, int numberEnemies, int currentEnemies, float baseHeight, float baseWidth, int direction, float targetx, float targety)
@@ -32,8 +43,8 @@ void Enemy::SpawnEnemies(std::vector<Enemy>& enemies, int numberEnemies, int cur
         float startY = baseHeight; // Start Y point
         float targetX = targetx; // Target X for the first loop
         float targetY = targety; // Target Y for the first loop
-        float idletargetX = screenWidth / 6.0f * (i + 0.75f) + 50; // First target X after the first loop (Idle movement)
-        float finaltargetX = screenWidth / 6.0f * (i + 0.75f) - 50; // Seconds target X after the first loop (Idle movement)
+        float idletargetX = screenWidth / 6.0f * (i + 0.75f) -25; // First target X after the first loop (Idle movement)
+        float finaltargetX = screenWidth / 6.0f * (i + 0.75f) + 25; // Seconds target X after the first loop (Idle movement)
         float finaltargetY = baseHeight + 20.0f; // Height after the first loop (Idle movement)
 
         Enemy newEnemy;
@@ -50,27 +61,40 @@ void Enemy::SpawnEnemies(std::vector<Enemy>& enemies, int numberEnemies, int cur
     currentEnemies = numberEnemies; // Will be change to += when wave timer is applied
 }
 
-void Enemy::UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, float deltaTime, Rectangle& player, bool gameOver)
+void Enemy::UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, std::vector<Enemy>& enemies, Enemy& enemy, float deltaTime, Rectangle& player, bool gameOver, int maxEnemies)
 {
+
+    globalEnemyOffsetX += globalEnemyDirection * enemyMoveSpeed * deltaTime;
+
+    if (globalEnemyOffsetX > maxEnemyOffset)
+    {
+        globalEnemyOffsetX = maxEnemyOffset;
+        globalEnemyDirection *= -1;
+    }
+    else if (globalEnemyOffsetX < -maxEnemyOffset)
+    {
+        globalEnemyOffsetX = -maxEnemyOffset;
+        globalEnemyDirection *= -1;
+    }
+
     if (enemy.gotHit)
     {
         enemy.enemyDeathFramesCounter++;
 
-        if (enemy.enemyDeathFramesCounter >= (10))
+        if (enemy.enemyDeathFramesCounter >= (3))
         {
             enemy.enemyDeathFramesCounter = 0;
             enemy.currentEnemyDeathFrame++;
 
             if (enemy.currentEnemyDeathFrame > 3) enemy.active = false;
 
-            enemy.enemyDeathFrameRec.x = (float)enemy.currentEnemyDeathFrame * 52;
+            enemy.enemyDeathFrameRec.x = (float)enemy.currentEnemyDeathFrame * 54;
         }
     }
 
     else 
     {
         float midX = screenWidth / 2.0f; // Middle of the screen in X axis
-
         enemy.entryTime += deltaTime; // Timer when the enemy has started moving
 
         // === NEW ENEMY MOVEMENT ===
@@ -155,7 +179,7 @@ void Enemy::UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, f
                 // === FINAL STATE ==
                 else if (!enemy.enemyInitialState && !enemy.enemyLoopState)
                 {
-                    float distX = enemy.targetFinalPosition.x - enemy.rect.x; // X Distance to the final position of patrol movement
+                    float distX = enemy.targetFinalPosition.x + globalEnemyOffsetX - enemy.rect.x; // X Distance to the final position of patrol movement
                     float distY = enemy.targetFinalPosition.y - enemy.rect.y; // Y Distance to the final position of patrol movement
 
                     float distance = sqrt(distX * distX + distY * distY); // Total distance to the objective
@@ -176,8 +200,6 @@ void Enemy::UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, f
                     else
                     {
                         // Finishin patrol state
-
-                        enemy.rect.x = enemy.targetFinalPosition.x;
                         enemy.rect.y = enemy.targetFinalPosition.y;
 
                         enemy.manual = false;
@@ -192,48 +214,19 @@ void Enemy::UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, f
 
             else if (enemy.idle && !enemy.random)
             {
-                enemy.rotation = 0;
+                enemy.rotation = Lerp(enemy.rotation, 0.0f, 0.2f);
 
-                // Añadir offset para que se muevan al mismo tiempo
-                float velocity2 = 200.0f; // Movement speed
-                float moveSpeed = velocity2 * deltaTime;
+                if (fabs(enemy.rotation) < 0.02f)
+                    enemy.rotation = 0.0f;
 
-                float distX1 = (enemy.targetIdlePosition.x - enemy.rect.x);
+                // Dentro del bucle de actualización del juego
 
-                float distance1 = sqrt(distX1 * distX1); // Total distance to the objective
-                float directionX1 = distX1 / distance1;
-
-                float distX2 = (enemy.targetFinalPosition.x - enemy.rect.x);
-
-                float distance2 = sqrt(distX2 * distX2); // Total distance to the objective
-                float directionX2 = distX2 / distance2;
-
-                // === Logic for movint the enemy to the right and left automatically ===
-                if (!enemy.right)
+                // Actualizar la posición de todos los enemigos a la vez
+                for (Enemy& enemy : enemies)
                 {
-                    if (distance1 > moveSpeed)
+                    if (!enemy.random && enemy.idle)
                     {
-                        // Move the enemy to the objective
-                        enemy.rect.x += directionX1 * moveSpeed;
-                    }
-
-                    else
-                    {
-                        enemy.right = true;
-                    }
-                }
-
-                else
-                {
-                    if (distance2 > moveSpeed)
-                    {
-                        // Move the enemy to the objective
-                        enemy.rect.x += directionX2 * moveSpeed;
-                    }
-
-                    else
-                    {
-                        enemy.right = false;
+                        enemy.rect.x = enemy.targetFinalPosition.x + globalEnemyOffsetX;
                     }
                 }
 
@@ -242,7 +235,7 @@ void Enemy::UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, f
                 {
                     if (enemy.attackCooldown >= 1.5f)
                     {
-                        enemy.attackTime = GetRandomValue(1, 5000); // Random attack time
+                        enemy.attackTime = (float)GetRandomValue(1, 5000); // Random attack time
 
                         if (enemy.attackTime <= 10)
                         {
@@ -263,7 +256,7 @@ void Enemy::UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, f
                 }
             }
 
-            else if (enemy.random)
+            else if (enemy.idle && enemy.random)
             {
                 float velocity2 = 300.0f; // Movement speed
                 float moveSpeed = velocity2 * deltaTime;
@@ -300,13 +293,13 @@ void Enemy::UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, Enemy& enemy, f
 
                     // Move the enemy to the target
 
-                    if (enemy.playerOnRight) distX1 = enemy.targetIdlePosition.x - 400 - enemy.rect.x;
-                    else distX1 = enemy.targetIdlePosition.x + 400 - enemy.rect.x;
+                    if (enemy.playerOnRight) distX1 = enemy.targetFinalPosition.x - 400 - enemy.rect.x;
+                    else distX1 = enemy.targetFinalPosition.x + 400 - enemy.rect.x;
 
                     float distY1 = player.y - 100 - enemy.rect.y;
                     float distance1 = sqrt(distX1 * distX1 + distY1 * distY1); // Total distance to the objective
 
-                    float distX2 = enemy.targetIdlePosition.x - enemy.rect.x;
+                    float distX2 = enemy.targetFinalPosition.x + globalEnemyOffsetX - enemy.rect.x;
                     float distY2 = enemy.targetFinalPosition.y - enemy.rect.y;
                     float distance2 = sqrt(distX2 * distX2 + distY2 * distY2); // Total distance to the objective
 

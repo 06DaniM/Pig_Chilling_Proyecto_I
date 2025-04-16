@@ -65,6 +65,9 @@ Timer deathDelayTimer;
 bool isDeathTimerStarted = false;
 bool isHitTimerStarted = false;
 
+Timer spawnDelayTimer;
+bool isSpawnDelayTimerStarted = false;
+
 const int screenWidth = 1152;
 const int screenHeight = 896;
 
@@ -167,8 +170,8 @@ int main(void)
     }
     currentEnemyDestroySound = 0;
 
-    bool doubleShot = false, shield = false, canAct = false, isVisible = true, beenhitten = false;
-    bool pause = false, gameOver = false, hasWon = false;
+    bool doubleShot = false, shield = false, canAct = false, isVisible = true, playerGotHit = false;
+    bool pause = false, gameOver = false, hasWon = false, canSpawn = false;
     bool inMenu = true;
     int score = 0;
     int life = 3;
@@ -186,7 +189,7 @@ int main(void)
         UpdateMusicStream(music);
 
         // === HACKS FOR TESTING ===
-        if (IsKeyPressed(KEY_R))
+        /*if (IsKeyPressed(KEY_R))
         {
             doubleShot = !doubleShot;
         }
@@ -194,14 +197,15 @@ int main(void)
         if (IsKeyPressed(KEY_F))
         {
             shield = !shield;
+        }*/
+
+        if (IsKeyPressed(KEY_BACKSPACE)) // Change to when life is <= 0
+        {
+            life -= 1;
+            if (life <= 0) gameOver = true;
         }
 
         if (IsKeyPressed(KEY_ENTER)) // Change to when life is <= 0
-        {
-            life -= 1;
-        }
-
-        if (IsKeyPressed(KEY_BACKSPACE)) // Change to when life is <= 0
         {
             hasWon = true;
         }
@@ -266,9 +270,12 @@ int main(void)
 
             if (GetKeyPressed() != 0) // Detect any key
             {
+                enemies.clear();
                 // Reset the values
                 life = 3;
                 currentWave = 0;
+                currentEnemies = 0;
+
                 inMenu = false;
                 canAct = true;
                 isVisible = true;
@@ -359,7 +366,7 @@ int main(void)
                 if (deathDelayTimer.IsFinished())
                 {
                     isDeathTimerStarted = false;
-                    beenhitten = false;
+                    playerGotHit = false;
                     playerDieFramesCounter = 0;
                     currentPlayerDieFrame = 0;
                     if (life <= 0) gameOver = true;  // Solo se marca como ganado al terminar el temporizador
@@ -370,6 +377,17 @@ int main(void)
                         isVisible = true;
                         canAct = true;
                     }
+                }
+            }
+
+            if (isSpawnDelayTimerStarted)
+            {
+                spawnDelayTimer.Update(GetFrameTime());  // Actualiza el temporizador
+
+                if (spawnDelayTimer.IsFinished())
+                {
+                    canSpawn = true;  // Solo se marca como ganado al terminar el temporizador
+                    isSpawnDelayTimerStarted = false;
                 }
             }
 
@@ -384,7 +402,7 @@ int main(void)
                     {
                         if (enemy.active)
                         {
-                            if (CheckCollisionRecs(bullet.rect, enemy.rect)) // If collision with an enemy
+                            if (CheckCollisionRecs(bullet.rect, enemy.rect) && !enemy.gotHit) // If collision with an enemy
                             {
                                 PlaySound(enemyDestroySound[currentEnemyDestroySound]);            // play the next open sound slot
                                 currentEnemyDestroySound++;                                 // increment the sound slot
@@ -444,7 +462,7 @@ int main(void)
             bullets.erase(std::remove_if(bullets.begin(), bullets.end(),
                 [](const Bullet& b) { return !b.active || b.rect.y < 0; }), bullets.end());
 
-            if (beenhitten)
+            if (playerGotHit)
             {
                 if (isVisible)
                 {
@@ -456,7 +474,7 @@ int main(void)
                     {
                         playerDieFramesCounter++;
 
-                        if (playerDieFramesCounter >= 15)
+                        if (playerDieFramesCounter >= 5)
                         {
                             playerDieFramesCounter = 0;
                             currentPlayerDieFrame++;
@@ -479,7 +497,13 @@ int main(void)
                 [](const Bullet_Enemy& b) { return !b.active || b.rect.y < 0; }), enemyBullets.end());
 
             // === WAVES ===
-            if (currentWave < totalWaves)
+            if (currentWave < totalWaves && currentEnemies == 0 && !isSpawnDelayTimerStarted)
+            {
+                spawnDelayTimer.Start(1);
+                isSpawnDelayTimerStarted = true;
+            }
+
+            if (canSpawn)
             {
                 // === Wave 1 ===
                 if (currentEnemies == 0 && currentWave == 0)
@@ -504,14 +528,14 @@ int main(void)
                     enemy.SpawnEnemies(enemies, maxEnemies, currentEnemies, 150.0f, screenWidth + 100, -1, screenWidth / 2, screenHeight / 2); // Wave 3
                     currentWave++;
                 }
+                canSpawn = false;
             }
-
             // === Ends the first screen after destroying all enemies ===
             else if (currentEnemies == 0 && currentWave >= 3)
             {
                 if (!hasWon && !isWinTimerStarted)
                 {
-                    winDelayTimer.Start(1.0f); // Wait 1 second for the winning screen
+                    winDelayTimer.Start(1); // Wait 1 second for the winning screen
                     isWinTimerStarted = true;
                 }
             }
@@ -599,7 +623,7 @@ int main(void)
         // Update the enemeis
         for (Enemy& enemy : enemies)
         {
-            enemy.UpdateEnemy(enemyBullets, enemy, GetFrameTime(), player, gameOver);
+            enemy.UpdateEnemy(enemyBullets,enemies, enemy, GetFrameTime(), player, gameOver, maxEnemies);
         }
 
         // Update enemies bullets
@@ -611,7 +635,7 @@ int main(void)
                 if (CheckCollisionRecs(player, bullet.rect) && !shield && canAct && isVisible)
                 {
                     PlaySound(deathPlayerSound);
-                    beenhitten = true;
+                    playerGotHit = true;
                     canAct = false;
                     bullet.active = false;
                     life--;
@@ -661,7 +685,7 @@ int main(void)
         // Draw the ship
         if (isVisible)
         {
-            if (beenhitten)
+            if (playerGotHit)
             {
                 Rectangle dest = {
                         player.x + player.width / 2.0f,
@@ -726,7 +750,7 @@ int main(void)
                     float scale = 1;
 
                     Rectangle source = enemy.enemyDeathFrameRec;
-                    cout << "in";
+
                     Rectangle dest = {
                         enemy.rect.x + 54 / 2.0f,
                         enemy.rect.y + 54 / 2.0f,
@@ -782,7 +806,7 @@ int main(void)
                 bullets.clear();
                 score = 0;
                 currentWave = 0;
-                enemy.SpawnEnemies(enemies, maxEnemies, currentEnemies, 100.0f, -100.0f, 1, screenWidth / 1.5f, screenHeight / 2.5f);
+                currentEnemies = 0;
             }
             continue; // Avoid the code is still executing in the menu
         }
