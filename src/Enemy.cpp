@@ -15,8 +15,7 @@ Enemy::Enemy()
     attackPlayerPos(0.0f), entryTime(0.0f), rotation(0.0f), index(0), loopDirection(1),
     currentEnemies(0), enemyInitialState(true), enemyLoopState(false), manual(true),
     idle(false), random(false), right(false), playerOnRight(false), canAttack(true), 
-    gotHit(false), enemyDeathFramesCounter(0), currentEnemyDeathFrame(0) {
-}
+    gotHit(false), enemyDeathFramesCounter(0), currentEnemyDeathFrame(0){}
 
 const int screenWidth = 1152;
 const int screenHeight = 896;

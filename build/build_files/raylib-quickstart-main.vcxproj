@@ -528,10 +528,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\src\Bullet.h" />
     <ClInclude Include="..\..\src\Enemy.h" />
     <ClInclude Include="..\..\src\Timer.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\src\Bullet.cpp" />
     <ClCompile Include="..\..\src\Enemy.cpp" />
     <ClCompile Include="..\..\src\main.c++" />
     <ClCompile Include="..\..\src\Timer.cpp" />

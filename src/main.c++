@@ -33,6 +33,7 @@ SOFTWARE.
 #include <cmath>
 #include <iostream>
 #include "Enemy.h"
+#include "Bullet.h"
 #include "Timer.h"
 
 using namespace std;
@@ -45,16 +46,16 @@ enum PowerUpType {
     Shield
 };
 
-struct PowerUp {
-    Rectangle rect;
-    bool active;
-    PowerUpType type; // Tipo de power-up 
-};
+//struct PowerUp {
+//    Rectangle rect;
+//    bool active;
+//    PowerUpType type; // Tipo de power-up 
+//};
 
-typedef struct Bullet {
+/*typedef struct Bullet {
     Rectangle rect;
     bool active;
-} Bullet;
+} Bullet*/;
 
 Enemy enemy;
 
@@ -123,7 +124,7 @@ int main(void)
     int playerDieFramesCounter = 0;
 
     std::vector<Enemy> enemies; // Vector to manage the generated enemies 
-    std::vector<PowerUp> powerUps; // Vector to manage the generated power ups 
+    //std::vector<PowerUp> powerUps; // Vector to manage the generated power ups 
 
     int totalWaves = 4; // Number of waves per screen
     float waveTimer = 0.0f; // Time to start the next wave
@@ -591,33 +592,33 @@ int main(void)
                 }
             }
 
-            for (PowerUp& powerUp : powerUps)
-            {
-                if (powerUp.active)
-                {
-                    powerUp.rect.y += 2; // Velocity to down
+            //for (PowerUp& powerUp : powerUps)
+            //{
+            //    if (powerUp.active)
+            //    {
+            //        powerUp.rect.y += 2; // Velocity to down
 
-                    // Activate the double shot if collsion between the ship and the item
-                    if (CheckCollisionRecs(player, powerUp.rect))
-                    {
-                        if (powerUp.type == Double_shot)
-                        {
-                            doubleShot = true; // Activate double shoot power-up 
-                        }
+            //        // Activate the double shot if collsion between the ship and the item
+            //        if (CheckCollisionRecs(player, powerUp.rect))
+            //        {
+            //            if (powerUp.type == Double_shot)
+            //            {
+            //                doubleShot = true; // Activate double shoot power-up 
+            //            }
 
-                        else if (powerUp.type == Shield)
-                        {
-                            shield = true; // Activate shield power-up
-                        }
+            //            else if (powerUp.type == Shield)
+            //            {
+            //                shield = true; // Activate shield power-up
+            //            }
 
-                        // powerUp.active = false; // Desactivate the power up // Innecesario, creo
-                    }
-                }
-            }
+            //            // powerUp.active = false; // Desactivate the power up // Innecesario, creo
+            //        }
+            //    }
+            //}
 
-            // Eliminar power-ups inactivos
-            powerUps.erase(std::remove_if(powerUps.begin(), powerUps.end(),
-                [](const PowerUp& p) { return !p.active || p.rect.y > screenHeight; }), powerUps.end());
+            //// Eliminar power-ups inactivos
+            //powerUps.erase(std::remove_if(powerUps.begin(), powerUps.end(),
+            //    [](const PowerUp& p) { return !p.active || p.rect.y > screenHeight; }), powerUps.end());
         }
 
         // Game Over when is dead
@@ -903,18 +904,18 @@ int main(void)
             continue; // Avoid the code is still executing in the victory menu
         }
 
-        for (const PowerUp& powerUp : powerUps)
-        {
-            if (powerUp.active && powerUp.type == Double_shot)
-            {
-                DrawTexture(doubleShotSprite, (int)powerUp.rect.x, (int)powerUp.rect.y, WHITE); // Draw the double shot item
-            }
+        //for (const PowerUp& powerUp : powerUps)
+        //{
+        //    if (powerUp.active && powerUp.type == Double_shot)
+        //    {
+        //        DrawTexture(doubleShotSprite, (int)powerUp.rect.x, (int)powerUp.rect.y, WHITE); // Draw the double shot item
+        //    }
 
-            else if (powerUp.active && powerUp.type == Shield)
-            {
-                DrawTexture(shieldSprite, (int)powerUp.rect.x, (int)powerUp.rect.y, WHITE); // Cambiar al sprite del escudo cuando esté hecho
-            }
-        }
+        //    else if (powerUp.active && powerUp.type == Shield)
+        //    {
+        //        DrawTexture(shieldSprite, (int)powerUp.rect.x, (int)powerUp.rect.y, WHITE); // Cambiar al sprite del escudo cuando esté hecho
+        //    }
+        //}
 
         EndDrawing();
     }
