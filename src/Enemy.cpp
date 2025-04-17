@@ -13,7 +13,7 @@ Enemy::Enemy()
     attackingTimer(0.0f), attackCooldown(0.0f), targetPosition1{ 0.0f, 0.0f },
     targetFinalPosition{ 0.0f, 0.0f }, targetIdlePosition{ 0.0f, 0.0f },
     attackPlayerPos(0.0f), entryTime(0.0f), rotation(0.0f), index(0), loopDirection(1),
-    currentEnemies(5), enemyInitialState(true), enemyLoopState(false), manual(true),
+    currentEnemies(0), enemyInitialState(true), enemyLoopState(false), manual(true),
     idle(false), random(false), right(false), playerOnRight(false), canAttack(true), 
     gotHit(false), enemyDeathFramesCounter(0), currentEnemyDeathFrame(0) {
 }
@@ -24,26 +24,42 @@ const int screenHeight = 896;
 // Variables globales (fuera del bucle principal y de la clase Enemy)
 float globalEnemyOffsetX = 0.0f;
 float globalEnemyDirection = 1.0f;
-float maxEnemyOffset = 100.0f;
-float enemyMoveSpeed = 30.0f; // píxeles por segundo
+float maxEnemyOffset = 80.0f;
+float enemyMoveSpeed = 150.0f; // píxeles por segundo
 
 float Lerp(float a, float b, float t)
 {
     return a + (b - a) * t;
 }
 
-// Function to spawn the enemies
-void Enemy::SpawnEnemies(std::vector<Enemy>& enemies, int numberEnemies, int currentEnemies, float baseHeight, float baseWidth, int direction, float targetx, float targety)
+void Enemy::UpdateEnemyOffset(float deltaTime)
 {
-    enemies.clear();
+    globalEnemyOffsetX += globalEnemyDirection * enemyMoveSpeed * deltaTime;
+
+    if (globalEnemyOffsetX > maxEnemyOffset)
+    {
+        globalEnemyOffsetX = maxEnemyOffset;
+        globalEnemyDirection *= -1;
+    }
+    else if (globalEnemyOffsetX < -maxEnemyOffset)
+    {
+        globalEnemyOffsetX = -maxEnemyOffset;
+        globalEnemyDirection *= -1;
+    }
+}
+
+// Function to spawn the enemies
+void Enemy::SpawnEnemies(std::vector<Enemy>& enemies, int numberEnemies, float baseHeight, float baseWidth, int direction, float targetx, float targety, int currentEnemies)
+{
     for (int i = 0; i < numberEnemies; i++)
     {
+        //enemies.clear();
         float delay = i * 0.35f; // Delay entry of the enemies
         float startX = baseWidth; // Start X point
         float startY = baseHeight; // Start Y point
         float targetX = targetx; // Target X for the first loop
         float targetY = targety; // Target Y for the first loop
-        float idletargetX = screenWidth / 6.0f * (i + 0.75f) -25; // First target X after the first loop (Idle movement)
+        float idletargetX = screenWidth / 6.0f * (i + 0.75f) - 25; // First target X after the first loop (Idle movement)
         float finaltargetX = screenWidth / 6.0f * (i + 0.75f) + 25; // Seconds target X after the first loop (Idle movement)
         float finaltargetY = baseHeight + 20.0f; // Height after the first loop (Idle movement)
 
@@ -58,25 +74,17 @@ void Enemy::SpawnEnemies(std::vector<Enemy>& enemies, int numberEnemies, int cur
 
         enemies.push_back(newEnemy);
     }
-    currentEnemies = numberEnemies; // Will be change to += when wave timer is applied
+    // === SEE WHY THE SPEED CHANGES 'CAUSE OF THE ENEMY AMOUNT
+    //cout << enemies.size();
+    //// Recalculate the speed
+    //if (enemies.size() == 5) enemyMoveSpeed = 30;
+    //else if (enemies.size() == 15) enemyMoveSpeed = 11;
+    //else if (enemies.size() == 20) enemyMoveSpeed = 8;
+    //else if (enemies.size() == 35) enemyMoveSpeed = 5;
 }
 
-void Enemy::UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, std::vector<Enemy>& enemies, Enemy& enemy, float deltaTime, Rectangle& player, bool gameOver, int maxEnemies)
+void Enemy::UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, std::vector<Enemy>& enemies, Enemy& enemy, float deltaTime, Rectangle& player, bool gameOver)
 {
-
-    globalEnemyOffsetX += globalEnemyDirection * enemyMoveSpeed * deltaTime;
-
-    if (globalEnemyOffsetX > maxEnemyOffset)
-    {
-        globalEnemyOffsetX = maxEnemyOffset;
-        globalEnemyDirection *= -1;
-    }
-    else if (globalEnemyOffsetX < -maxEnemyOffset)
-    {
-        globalEnemyOffsetX = -maxEnemyOffset;
-        globalEnemyDirection *= -1;
-    }
-
     if (enemy.gotHit)
     {
         enemy.enemyDeathFramesCounter++;
@@ -161,8 +169,8 @@ void Enemy::UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, std::vector<Ene
                     float loopT = t * 0.5f;  // Speed of the loop movment
 
                     // Movimiento
-                    float dx = -cos(loopT * PI * 2) * 5;
-                    float dy = -sin(loopT * PI * 2) * 5 * enemy.loopDirection;
+                    float dx = cos(loopT * PI * 2) * 5 * enemy.loopDirection;
+                    float dy = sin(loopT * PI * 2) * 5;
 
                     enemy.rect.x += dx;
                     enemy.rect.y += dy;
@@ -170,7 +178,7 @@ void Enemy::UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, std::vector<Ene
                     // Rotación (atan2 toma (y, x))
                     enemy.rotation = atan2(dy, dx) * (180.0f / PI) + 90;
 
-                    if (enemy.entryTime > 4.5f)
+                    if (enemy.entryTime > 3.5f)
                     {
                         enemy.enemyLoopState = false; // End the loop
                     }

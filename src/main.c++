@@ -58,6 +58,9 @@ typedef struct Bullet {
 
 Enemy enemy;
 
+Timer menuDelayTimer;
+bool isMenuTimerStarted = false;
+
 Timer winDelayTimer;
 bool isWinTimerStarted = false;
 
@@ -122,10 +125,10 @@ int main(void)
     std::vector<Enemy> enemies; // Vector to manage the generated enemies 
     std::vector<PowerUp> powerUps; // Vector to manage the generated power ups 
 
-    int totalWaves = 3; // Number of waves per screen
+    int totalWaves = 4; // Number of waves per screen
     float waveTimer = 0.0f; // Time to start the next wave
     float waveDelay = 10.0f; // Seconds between waves
-    int currentWave; // Last wave played
+    int currentWave = 0; // Last wave played
 
     Texture2D shipSpriteBase = LoadTexture("resources/ship/Nave Base.png");
     Texture2D shipSpriteDouble = LoadTexture("resources/ship/NAVE 2DS 64X64.png");
@@ -171,7 +174,7 @@ int main(void)
     currentEnemyDestroySound = 0;
 
     bool doubleShot = false, shield = false, canAct = false, isVisible = true, playerGotHit = false;
-    bool pause = false, gameOver = false, hasWon = false, canSpawn = false;
+    bool canStart = false, pause = false, gameOver = false, hasWon = false, canSpawn = false;
     bool inMenu = true;
     int score = 0;
     int life = 3;
@@ -221,9 +224,25 @@ int main(void)
             else ResumeMusicStream(music);
         }
 
+        if (isMenuTimerStarted)
+        {
+            menuDelayTimer.Update(GetFrameTime());
+
+            if (menuDelayTimer.IsFinished())
+            {
+                isMenuTimerStarted = false;
+                canStart = true;
+            }
+        }
+
         // Menu manager
         if (inMenu)
         {
+            if (!isMenuTimerStarted) {
+                menuDelayTimer.Start(3);        // Inicia el temporizador solo una vez
+                isMenuTimerStarted = true;
+            }
+
             int textWidth;
 
             backgrounMenuFramesCounter++;
@@ -268,7 +287,7 @@ int main(void)
 
             EndDrawing();
 
-            if (GetKeyPressed() != 0) // Detect any key
+            if (GetKeyPressed() != 0 && canStart) // Detect any key
             {
                 enemies.clear();
                 // Reset the values
@@ -276,6 +295,8 @@ int main(void)
                 currentWave = 0;
                 currentEnemies = 0;
 
+                isMenuTimerStarted = false;
+                canStart = false;
                 inMenu = false;
                 canAct = true;
                 isVisible = true;
@@ -496,46 +517,76 @@ int main(void)
             enemyBullets.erase(std::remove_if(enemyBullets.begin(), enemyBullets.end(),
                 [](const Bullet_Enemy& b) { return !b.active || b.rect.y < 0; }), enemyBullets.end());
 
-            // === WAVES ===
-            if (currentWave < totalWaves && currentEnemies == 0 && !isSpawnDelayTimerStarted)
+            // === WAVES DELAY ===
+            if (currentWave < totalWaves && currentEnemies == 0 && currentWave == 0 && !isSpawnDelayTimerStarted)
             {
                 spawnDelayTimer.Start(1);
                 isSpawnDelayTimerStarted = true;
             }
 
+            else if (currentWave < totalWaves && currentEnemies <= 7 && currentWave == 1 && !isSpawnDelayTimerStarted)
+            {
+                spawnDelayTimer.Start(1);
+                isSpawnDelayTimerStarted = true;
+            }
+
+            else if (currentWave < totalWaves && currentEnemies <= 3 && currentWave == 2 && !isSpawnDelayTimerStarted)
+            {
+                spawnDelayTimer.Start(1);
+                isSpawnDelayTimerStarted = true;
+            }
+
+            else if (currentWave < totalWaves && currentEnemies == 0 && currentWave == 3 && !isSpawnDelayTimerStarted)
+            {
+                spawnDelayTimer.Start(1);
+                isSpawnDelayTimerStarted = true;
+            }
+
+            // === WAVES MANAGER ===
             if (canSpawn)
             {
                 // === Wave 1 ===
                 if (currentEnemies == 0 && currentWave == 0)
                 {
-                    currentEnemies = maxEnemies;
-                    enemy.SpawnEnemies(enemies, maxEnemies, currentEnemies, 100.0f, -100.0f, 1, screenWidth / 1.5f, screenHeight / 2.5f); // Wave 1
+                    currentEnemies += 5;
+                    enemy.SpawnEnemies(enemies, maxEnemies, 100.0f, -100.0f, 1, screenWidth / 1.5f, screenHeight / 2.5f, currentEnemies); // Left
                     currentWave++;
                 }
-
                 // === Wave 2 ===
-                else if (currentEnemies == 0 && currentWave == 1)
+                else if (currentEnemies <= 2 && currentWave == 1)
                 {
-                    currentEnemies = maxEnemies;
-                    enemy.SpawnEnemies(enemies, maxEnemies, currentEnemies, 150.0f, screenWidth + 100, -1, screenWidth / 2, screenHeight / 2); // Wave 2
+                    currentEnemies += 10;
+                    enemy.SpawnEnemies(enemies, maxEnemies, 160.0f, -100.0f, -1, screenWidth / 2.0f - 80, screenHeight / 2.0f + 50, currentEnemies); // Left
+                    enemy.SpawnEnemies(enemies, maxEnemies, 220.0f, screenWidth + 100.0f, 1, screenWidth / 2.0f + 80, screenHeight / 2.0f + 50, currentEnemies); // Right
                     currentWave++;
                 }
 
                 // === Wave 3 ===
-                else if (currentEnemies == 0 && currentWave == 2)
+                else if (currentEnemies <= 3 && currentWave == 2)
                 {
-                    currentEnemies = maxEnemies;
-                    enemy.SpawnEnemies(enemies, maxEnemies, currentEnemies, 150.0f, screenWidth + 100, -1, screenWidth / 2, screenHeight / 2); // Wave 3
+                    currentEnemies += 5;
+                    enemy.SpawnEnemies(enemies, maxEnemies, 220.0f, screenWidth + 100, 1, screenWidth / 2.0f, screenHeight / 1.8f, currentEnemies); // Right
+                    currentWave++;
+                }
+
+                // === Wave 4 ===
+                else if (currentEnemies == 0 && currentWave == 3)
+                {
+                    currentEnemies = 15;
+                    enemy.SpawnEnemies(enemies, maxEnemies, 100.0f, -100.0f, -1, screenWidth / 2 - 100, screenHeight / 2.3f, currentEnemies); // Left
+                    enemy.SpawnEnemies(enemies, maxEnemies, 160.0f, screenWidth + 100, 1, screenWidth / 2 + 100, screenHeight / 2.3f, currentEnemies); // Right
+                    enemy.SpawnEnemies(enemies, maxEnemies, 220.0f, screenWidth + 100, -1, screenWidth / 2 + 40, screenHeight / 3.5f, currentEnemies); // Right
                     currentWave++;
                 }
                 canSpawn = false;
             }
+
             // === Ends the first screen after destroying all enemies ===
-            else if (currentEnemies == 0 && currentWave >= 3)
+            else if (currentEnemies == 0 && currentWave >= totalWaves)
             {
                 if (!hasWon && !isWinTimerStarted)
                 {
-                    winDelayTimer.Start(1); // Wait 1 second for the winning screen
+                    winDelayTimer.Start(1.5f); // Wait 1 second for the winning screen
                     isWinTimerStarted = true;
                 }
             }
@@ -619,11 +670,12 @@ int main(void)
 
             enemyFrameRec.x = (float)currentEnemyFrame * (float)enemy.rect.width;
         }
+        enemy.UpdateEnemyOffset(GetFrameTime());
 
         // Update the enemeis
         for (Enemy& enemy : enemies)
         {
-            enemy.UpdateEnemy(enemyBullets,enemies, enemy, GetFrameTime(), player, gameOver, maxEnemies);
+            enemy.UpdateEnemy(enemyBullets,enemies, enemy, GetFrameTime(), player, gameOver);
         }
 
         // Update enemies bullets
@@ -747,7 +799,7 @@ int main(void)
                 if(!enemy.gotHit) DrawTexturePro(enemySprite, source, dest, origin, enemy.rotation, WHITE);
                 else
                 {
-                    float scale = 1;
+                    float scale = 1.8f;
 
                     Rectangle source = enemy.enemyDeathFrameRec;
 
@@ -767,9 +819,6 @@ int main(void)
 
         // Display the score
         DrawTextEx(font, TextFormat("SCORE: %i", score), { 10, 10 }, 34, 2, WHITE);
-
-        // Display wave and enemy count
-        DrawTextEx(font, TextFormat("Wave %i / %i", currentWave, totalWaves), { screenWidth - 200, 10 }, 34, 2, WHITE); // Quitar cuando esté acabado el manager
 
         // Draw pause
         if (pause)
@@ -798,6 +847,7 @@ int main(void)
             if (GetKeyPressed() != 0) // Detect any key
             {
                 // Restart the game
+                isMenuTimerStarted = true;
                 inMenu = true;
                 gameOver = false;
 
@@ -835,6 +885,7 @@ int main(void)
             if (GetKeyPressed() != 0) // Detect any key
             {
                 // Reset the initial states
+                isMenuTimerStarted = true;
                 hasWon = false; // Reset the variable
                 inMenu = true; // Return to menu
                 score = 0; // Reset the score
