@@ -65,6 +65,9 @@ bool isMenuTimerStarted = false;
 Timer winDelayTimer;
 bool isWinTimerStarted = false;
 
+Timer nextScreenTimer;
+bool isNextScreenTimerStarted = false;
+
 Timer deathDelayTimer;
 bool isDeathTimerStarted = false;
 bool isHitTimerStarted = false;
@@ -121,7 +124,7 @@ int main(void)
 
     Rectangle player = { (screenWidth - 74) / 2.0f, screenHeight / 1.5f, 64, 64 }; // PositionX, PositionY, ColliderX, ColliderY
 
-    Rectangle playerDieFrameRec = { 0,0 , 58, 58};
+    Rectangle playerDieFrameRec = { 0,0 , 58, 58 };
 
     int currentPlayerDieFrame = 0;
     int playerDieFramesCounter = 0;
@@ -178,7 +181,7 @@ int main(void)
     currentEnemyDestroySound = 0;
 
     bool doubleShot = false, shield = false, canAct = false, isVisible = true, playerGotHit = false;
-    bool canStart = false, pause = false, gameOver = false, hasWon = false, canSpawn = false;
+    bool canStart = false, canPass = false,pause = false, gameOver = false, hasWon = false, canSpawn = false;
     bool inMenu = true;
     int score = 0;
     int life = 3;
@@ -353,7 +356,7 @@ int main(void)
 
                 // === FOR THE 2nd ASSIGNMENT
 
-                bullets.push_back({ { player.x + player.width / 2, player.y, bulletWidth/2-16, bulletHeight }, true }); // Shooting
+                bullets.push_back({ { player.x + player.width / 2, player.y, bulletWidth / 2 - 16, bulletHeight }, true }); // Shooting
 
                 PlaySound(shotSound[currentShotSound]);            // play the next open sound slot
                 currentShotSound++;                                 // increment the sound slot
@@ -373,11 +376,22 @@ int main(void)
                 }*/
             }
 
-            if (isWinTimerStarted) 
+            if (isNextScreenTimerStarted)
+            {
+                nextScreenTimer.Update(GetFrameTime());  // Actualiza el temporizador
+
+                if (nextScreenTimer.IsFinished())
+                {
+                    isNextScreenTimerStarted = false;
+                    canPass = true;  // Solo se marca como ganado al terminar el temporizador
+                }
+            }
+
+            if (isWinTimerStarted)
             {
                 winDelayTimer.Update(GetFrameTime());  // Actualiza el temporizador
 
-                if (winDelayTimer.IsFinished()) 
+                if (winDelayTimer.IsFinished())
                 {
                     isWinTimerStarted = false;
                     hasWon = true;  // Solo se marca como ganado al terminar el temporizador
@@ -692,8 +706,8 @@ int main(void)
 
                 break;
             }
-            
-            enemy.UpdateEnemy(enemyBullets,enemies, enemy, GetFrameTime(), player, gameOver);
+
+            enemy.UpdateEnemy(enemyBullets, enemies, enemy, GetFrameTime(), player, gameOver);
         }
 
         // Update enemies bullets
@@ -720,7 +734,7 @@ int main(void)
                     break;
                 }
             }
-        }   
+        }
 
         if (isInvencibilityDelayTimerStarted)
         {
@@ -735,7 +749,7 @@ int main(void)
         // Draw all the scene
         BeginDrawing();
         ClearBackground(BLACK);
-        DrawTextureRec(gamePlayBackground, backgroundGameFrameRec,{0, 0}, WHITE);
+        DrawTextureRec(gamePlayBackground, backgroundGameFrameRec, { 0, 0 }, WHITE);
 
         // Draw the bullets
         for (const Bullet& bullet : bullets)
@@ -757,7 +771,7 @@ int main(void)
             {
                 DrawTextureEx(bulletEnemySprite,
                     { (bullet.rect.x + bullet.rect.width / 2 - bulletSprite.width / 2),
-                    (bullet.rect.y + bullet.rect.height / 2 - bulletSprite.height / 2) },0 , 2,
+                    (bullet.rect.y + bullet.rect.height / 2 - bulletSprite.height / 2) }, 0, 2,
                     WHITE);
             }
         }
@@ -823,7 +837,7 @@ int main(void)
 
                 Vector2 origin = { dest.width / 2.0f, dest.height / 2.0f };
 
-                if(!enemy.gotHit) DrawTexturePro(enemySprite, source, dest, origin, enemy.rotation, WHITE);
+                if (!enemy.gotHit) DrawTexturePro(enemySprite, source, dest, origin, enemy.rotation, WHITE);
                 else
                 {
                     float scale = 1.8f;
@@ -857,6 +871,11 @@ int main(void)
         // Game Over manager
         if (gameOver)
         {
+            if (!isNextScreenTimerStarted) {
+                nextScreenTimer.Start(1);        // Inicia el temporizador solo una vez
+                isNextScreenTimerStarted = true;
+            }
+
             // Show the GAME OVER screen
             BeginDrawing();
             DrawRectangle(0, 0, screenWidth, screenHeight, { 0, 0, 0, 120 });
@@ -871,10 +890,12 @@ int main(void)
 
             canAct = false;
 
-            if (GetKeyPressed() != 0) // Detect any key
+            isNextScreenTimerStarted = true;
+
+            if (GetKeyPressed() != 0 && canPass) // Detect any key
             {
                 // Restart the game
-                isMenuTimerStarted = true;
+                isNextScreenTimerStarted = false;
                 inMenu = true;
                 gameOver = false;
 
@@ -890,6 +911,11 @@ int main(void)
 
         if (hasWon)
         {
+            if (!isNextScreenTimerStarted) {
+                nextScreenTimer.Start(1);        // Inicia el temporizador solo una vez
+                isNextScreenTimerStarted = true;
+            }
+
             // Show victory screen
             DrawRectangle(0, 0, screenWidth, screenHeight, { 0 ,0 ,0 ,125 });
 
@@ -909,9 +935,10 @@ int main(void)
 
             canAct = false;
 
-            if (GetKeyPressed() != 0) // Detect any key
+            if (GetKeyPressed() != 0 && canPass) // Detect any key
             {
                 // Reset the initial states
+                isNextScreenTimerStarted = false;
                 isMenuTimerStarted = true;
                 hasWon = false; // Reset the variable
                 inMenu = true; // Return to menu
