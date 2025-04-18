@@ -72,6 +72,9 @@ bool isHitTimerStarted = false;
 Timer spawnDelayTimer;
 bool isSpawnDelayTimerStarted = false;
 
+Timer invencibilityTimer;
+bool isInvencibilityDelayTimerStarted = false;
+
 const int screenWidth = 1152;
 const int screenHeight = 896;
 
@@ -240,7 +243,7 @@ int main(void)
         if (inMenu)
         {
             if (!isMenuTimerStarted) {
-                menuDelayTimer.Start(3);        // Inicia el temporizador solo una vez
+                menuDelayTimer.Start(2);        // Inicia el temporizador solo una vez
                 isMenuTimerStarted = true;
             }
 
@@ -253,12 +256,12 @@ int main(void)
                 backgrounMenuFramesCounter = 0;
                 currentBackgrounMenuFrameX++;
 
-                if (currentBackgrounMenuFrameX >= 6) // máximo índice = 5
+                if (currentBackgrounMenuFrameX >= 6)
                 {
                     currentBackgrounMenuFrameX = 0;
                     currentBackgrounMenuFrameY++;
 
-                    if (currentBackgrounMenuFrameY >= 4) // máximo índice = 4
+                    if (currentBackgrounMenuFrameY >= 4)
                     {
                         currentBackgrounMenuFrameY = 0;
                     }
@@ -387,14 +390,18 @@ int main(void)
 
                 if (deathDelayTimer.IsFinished())
                 {
+                    invencibilityTimer.Start(2);
+                    isInvencibilityDelayTimerStarted = true;
+
                     isDeathTimerStarted = false;
                     playerGotHit = false;
+
                     playerDieFramesCounter = 0;
                     currentPlayerDieFrame = 0;
                     if (life <= 0) gameOver = true;  // Solo se marca como ganado al terminar el temporizador
                     else
                     {
-                        player.x = (screenWidth - 74) / 2.0f;
+                        player.x = (screenWidth - player.width) / 2.0f;
                         player.y = screenHeight / 1.5f;
                         isVisible = true;
                         canAct = true;
@@ -531,13 +538,13 @@ int main(void)
                 isSpawnDelayTimerStarted = true;
             }
 
-            else if (currentWave < totalWaves && currentEnemies <= 3 && currentWave == 2 && !isSpawnDelayTimerStarted)
+            else if (currentWave < totalWaves && currentEnemies == 0 && currentWave == 2 && !isSpawnDelayTimerStarted)
             {
-                spawnDelayTimer.Start(1);
+                spawnDelayTimer.Start(0.5f);
                 isSpawnDelayTimerStarted = true;
             }
 
-            else if (currentWave < totalWaves && currentEnemies == 0 && currentWave == 3 && !isSpawnDelayTimerStarted)
+            else if (currentWave < totalWaves && currentEnemies <= 3 && currentWave == 3 && !isSpawnDelayTimerStarted)
             {
                 spawnDelayTimer.Start(1);
                 isSpawnDelayTimerStarted = true;
@@ -550,33 +557,33 @@ int main(void)
                 if (currentEnemies == 0 && currentWave == 0)
                 {
                     currentEnemies += 5;
-                    enemy.SpawnEnemies(enemies, maxEnemies, 100.0f, -100.0f, 1, screenWidth / 1.5f, screenHeight / 2.5f, currentEnemies); // Left
+                    enemy.SpawnEnemies(enemies, maxEnemies, 60.0f, -100.0f, 1, -1, 3.5f, screenWidth / 1.5f, screenHeight / 2.5f, currentEnemies); // Left
                     currentWave++;
                 }
                 // === Wave 2 ===
                 else if (currentEnemies <= 2 && currentWave == 1)
                 {
                     currentEnemies += 10;
-                    enemy.SpawnEnemies(enemies, maxEnemies, 160.0f, -100.0f, -1, screenWidth / 2.0f - 80, screenHeight / 2.0f + 50, currentEnemies); // Left
-                    enemy.SpawnEnemies(enemies, maxEnemies, 220.0f, screenWidth + 100.0f, 1, screenWidth / 2.0f + 80, screenHeight / 2.0f + 50, currentEnemies); // Right
+                    enemy.SpawnEnemies(enemies, maxEnemies, 120.0f, -100.0f, -1, -1, 3.5f, screenWidth / 2.0f - 80, screenHeight / 2.0f + 50, currentEnemies); // Left
+                    enemy.SpawnEnemies(enemies, maxEnemies, 180.0f, screenWidth + 100.0f, 1, -1, 3.5f, screenWidth / 2.0f + 80, screenHeight / 2.0f + 50, currentEnemies); // Right
                     currentWave++;
                 }
 
                 // === Wave 3 ===
-                else if (currentEnemies <= 3 && currentWave == 2)
+                else if (currentEnemies == 0 && currentWave == 2)
                 {
                     currentEnemies += 5;
-                    enemy.SpawnEnemies(enemies, maxEnemies, 220.0f, screenWidth + 100, 1, screenWidth / 2.0f, screenHeight / 1.8f, currentEnemies); // Right
+                    enemy.SpawnEnemies(enemies, maxEnemies, 60.0f, screenWidth + 100, 1, 1, 2.5f, screenWidth / 2.0f, screenHeight / 1.8f, currentEnemies); // Right
                     currentWave++;
                 }
 
                 // === Wave 4 ===
-                else if (currentEnemies == 0 && currentWave == 3)
+                else if (currentEnemies <= 3 && currentWave == 3)
                 {
                     currentEnemies = 15;
-                    enemy.SpawnEnemies(enemies, maxEnemies, 100.0f, -100.0f, -1, screenWidth / 2 - 100, screenHeight / 2.3f, currentEnemies); // Left
-                    enemy.SpawnEnemies(enemies, maxEnemies, 160.0f, screenWidth + 100, 1, screenWidth / 2 + 100, screenHeight / 2.3f, currentEnemies); // Right
-                    enemy.SpawnEnemies(enemies, maxEnemies, 220.0f, screenWidth + 100, -1, screenWidth / 2 + 40, screenHeight / 3.5f, currentEnemies); // Right
+                    enemy.SpawnEnemies(enemies, maxEnemies, 120.0f, -100.0f, -1, -1, 2.5f, screenWidth / 2 - 100, screenHeight / 2.3f, currentEnemies); // Left
+                    enemy.SpawnEnemies(enemies, maxEnemies, 180.0f, screenWidth + 100, 1, 1, 2.5f, screenWidth / 2 + 100, screenHeight / 2.3f, currentEnemies); // Right
+                    enemy.SpawnEnemies(enemies, maxEnemies, 240.0f, screenWidth + 100, -1, 1, 2.5f, screenWidth / 2 + 40, screenHeight / 3.5f, currentEnemies); // Right
                     currentWave++;
                 }
                 canSpawn = false;
@@ -676,6 +683,16 @@ int main(void)
         // Update the enemeis
         for (Enemy& enemy : enemies)
         {
+            if (CheckCollisionRecs(player, enemy.rect) && !shield && canAct && isVisible && !isInvencibilityDelayTimerStarted)
+            {
+                PlaySound(deathPlayerSound);
+                playerGotHit = true;
+                canAct = false;
+                life--;
+
+                break;
+            }
+            
             enemy.UpdateEnemy(enemyBullets,enemies, enemy, GetFrameTime(), player, gameOver);
         }
 
@@ -685,7 +702,7 @@ int main(void)
             if (bullet.active)
             {
                 bullet.rect.y += BULLET_SPEED;
-                if (CheckCollisionRecs(player, bullet.rect) && !shield && canAct && isVisible)
+                if (CheckCollisionRecs(player, bullet.rect) && !shield && canAct && isVisible && !isInvencibilityDelayTimerStarted)
                 {
                     PlaySound(deathPlayerSound);
                     playerGotHit = true;
@@ -703,7 +720,17 @@ int main(void)
                     break;
                 }
             }
-        }        
+        }   
+
+        if (isInvencibilityDelayTimerStarted)
+        {
+            invencibilityTimer.Update(GetFrameTime());  // Actualiza el temporizador
+
+            if (invencibilityTimer.IsFinished())
+            {
+                isInvencibilityDelayTimerStarted = false;
+            }
+        }
 
         // Draw all the scene
         BeginDrawing();
@@ -752,7 +779,7 @@ int main(void)
                 DrawTexturePro(shipSpriteDeathAnim, playerDieFrameRec, dest, origin, 0, WHITE);
             }
 
-            else if (doubleShot && !shield)
+            /*else if (doubleShot && !shield)
             {
                 DrawTexture(shipSpriteDouble, (int)player.x, (int)player.y, WHITE);
             }
@@ -765,12 +792,11 @@ int main(void)
             else if (doubleShot && shield)
             {
                 DrawTexture(shipSpriteDoubleandBuble, (int)player.x, (int)player.y, WHITE);
-            }
+            }*/
 
-            else
-            {
-                DrawTextureEx(shipSpriteBase, { player.x, player.y }, 0, 2, WHITE);
-            }
+            else if (isInvencibilityDelayTimerStarted) DrawTextureEx(shipSpriteBase, { player.x, player.y }, 0, 2, { 255, 255, 255, 120 });
+
+            else if (!isInvencibilityDelayTimerStarted) DrawTextureEx(shipSpriteBase, { player.x, player.y }, 0, 2, WHITE);
         }
 
         // Draw the lifes of the ship

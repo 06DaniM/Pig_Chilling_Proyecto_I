@@ -28,7 +28,9 @@ public:
     float entryTime;
     float rotation;
     int index;
-    int loopDirection;
+    int loopDirectionX;
+    int loopDirectionY;
+    float loopTime;
     int currentEnemies;
     bool enemyInitialState;
     bool enemyLoopState;
@@ -47,7 +49,7 @@ public:
 
     // Método para actualizar la posición del enemigo
     void UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, std::vector<Enemy>& enemies, Enemy& enemy, float deltaTime, Rectangle& player, bool gameOver);
-    void SpawnEnemies(std::vector<Enemy>& enemies, int numberEnemies,float baseHeight, float baseWidth, int direction, float targetX, float targetY, int currentEnemies);
+    void SpawnEnemies(std::vector<Enemy>& enemies, int numberEnemies,float baseHeight, float baseWidth, int directionX, int directionY, float loopTime, float targetX, float targetY, int currentEnemies);
     void UpdateEnemyOffset(float deltaTime);
 };
 

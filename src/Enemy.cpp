@@ -10,12 +10,11 @@ Bullet_Enemy::Bullet_Enemy() : rect{ 0, 0, 0, 0 }, active(false) {}
 // Enemy constructor
 Enemy::Enemy()
     : rect{ 0, 0, 32, 32 }, enemyDeathFrameRec{ 0, 0, 54, 54 }, active(true), isAttacking(false), attackTime(0.0f),
-    attackingTimer(0.0f), attackCooldown(0.0f), targetPosition1{ 0.0f, 0.0f },
-    targetFinalPosition{ 0.0f, 0.0f }, targetIdlePosition{ 0.0f, 0.0f },
-    attackPlayerPos(0.0f), entryTime(0.0f), rotation(0.0f), index(0), loopDirection(1),
-    currentEnemies(0), enemyInitialState(true), enemyLoopState(false), manual(true),
-    idle(false), random(false), right(false), playerOnRight(false), canAttack(true), 
-    gotHit(false), enemyDeathFramesCounter(0), currentEnemyDeathFrame(0){}
+    attackingTimer(0.0f), attackCooldown(0.0f), targetPosition1{ 0.0f, 0.0f }, targetFinalPosition{ 0.0f, 0.0f }, 
+    targetIdlePosition{ 0.0f, 0.0f },attackPlayerPos(0.0f), entryTime(0.0f), rotation(0.0f), index(0), 
+    loopDirectionX(0), loopDirectionY(0), loopTime(0.0f), currentEnemies(0), enemyInitialState(true), 
+    enemyLoopState(false), manual(true), idle(false), random(false), right(false), playerOnRight(false), 
+    canAttack(true), gotHit(false), enemyDeathFramesCounter(0), currentEnemyDeathFrame(0){}
 
 const int screenWidth = 1152;
 const int screenHeight = 896;
@@ -23,7 +22,7 @@ const int screenHeight = 896;
 // Variables globales (fuera del bucle principal y de la clase Enemy)
 float globalEnemyOffsetX = 0.0f;
 float globalEnemyDirection = 1.0f;
-float maxEnemyOffset = 80.0f;
+float maxEnemyOffset = 60.0f;
 float enemyMoveSpeed = 150.0f; // píxeles por segundo
 
 float Lerp(float a, float b, float t)
@@ -48,7 +47,7 @@ void Enemy::UpdateEnemyOffset(float deltaTime)
 }
 
 // Function to spawn the enemies
-void Enemy::SpawnEnemies(std::vector<Enemy>& enemies, int numberEnemies, float baseHeight, float baseWidth, int direction, float targetx, float targety, int currentEnemies)
+void Enemy::SpawnEnemies(std::vector<Enemy>& enemies, int numberEnemies, float baseHeight, float baseWidth, int directionX, int directionY, float loopTime, float targetx, float targety, int currentEnemies)
 {
     for (int i = 0; i < numberEnemies; i++)
     {
@@ -68,18 +67,13 @@ void Enemy::SpawnEnemies(std::vector<Enemy>& enemies, int numberEnemies, float b
         newEnemy.targetFinalPosition = { finaltargetX, finaltargetY };
         newEnemy.targetIdlePosition = { idletargetX, finaltargetY };
         newEnemy.index = i;
-        newEnemy.loopDirection = direction;
+        newEnemy.loopDirectionX = directionX;
+        newEnemy.loopDirectionY = directionY;
+        newEnemy.loopTime = loopTime;
         newEnemy.entryTime = -delay;
 
         enemies.push_back(newEnemy);
     }
-    // === SEE WHY THE SPEED CHANGES 'CAUSE OF THE ENEMY AMOUNT
-    //cout << enemies.size();
-    //// Recalculate the speed
-    //if (enemies.size() == 5) enemyMoveSpeed = 30;
-    //else if (enemies.size() == 15) enemyMoveSpeed = 11;
-    //else if (enemies.size() == 20) enemyMoveSpeed = 8;
-    //else if (enemies.size() == 35) enemyMoveSpeed = 5;
 }
 
 void Enemy::UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, std::vector<Enemy>& enemies, Enemy& enemy, float deltaTime, Rectangle& player, bool gameOver)
@@ -168,8 +162,8 @@ void Enemy::UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, std::vector<Ene
                     float loopT = t * 0.5f;  // Speed of the loop movment
 
                     // Movimiento
-                    float dx = cos(loopT * PI * 2) * 5 * enemy.loopDirection;
-                    float dy = sin(loopT * PI * 2) * 5;
+                    float dx = cos(loopT * PI * 2) * 5 * enemy.loopDirectionX;
+                    float dy = -sin(loopT * PI * 2) * 5 * enemy.loopDirectionY;
 
                     enemy.rect.x += dx;
                     enemy.rect.y += dy;
@@ -177,7 +171,7 @@ void Enemy::UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, std::vector<Ene
                     // Rotación (atan2 toma (y, x))
                     enemy.rotation = atan2(dy, dx) * (180.0f / PI) + 90;
 
-                    if (enemy.entryTime > 3.5f)
+                    if (enemy.entryTime > enemy.loopTime)
                     {
                         enemy.enemyLoopState = false; // End the loop
                     }
@@ -300,8 +294,8 @@ void Enemy::UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, std::vector<Ene
 
                     // Move the enemy to the target
 
-                    if (enemy.playerOnRight) distX1 = enemy.targetFinalPosition.x - 400 - enemy.rect.x;
-                    else distX1 = enemy.targetFinalPosition.x + 400 - enemy.rect.x;
+                    if (enemy.playerOnRight) distX1 = enemy.targetFinalPosition.x - 200 - enemy.rect.x;
+                    else distX1 = enemy.targetFinalPosition.x + 200 - enemy.rect.x;
 
                     float distY1 = player.y - 100 - enemy.rect.y;
                     float distance1 = sqrt(distX1 * distX1 + distY1 * distY1); // Total distance to the objective
