@@ -613,6 +613,71 @@ int main(void)
                 }
             }
 
+            enemyFramesCounter++;
+
+            if (enemyFramesCounter >= (30))
+            {
+                enemyFramesCounter = 0;
+                currentEnemyFrame++;
+
+                if (currentEnemyFrame > 1) currentEnemyFrame = 0;
+
+                enemyFrameRec.x = (float)currentEnemyFrame * (float)enemy.rect.width;
+            }
+            enemy.UpdateEnemyOffset(GetFrameTime());
+
+            // Update the enemeis
+            for (Enemy& enemy : enemies)
+            {
+                if (CheckCollisionRecs(player, enemy.rect) && !shield && canAct && isVisible && !isInvencibilityDelayTimerStarted)
+                {
+                    PlaySound(deathPlayerSound);
+                    playerGotHit = true;
+                    canAct = false;
+                    life--;
+
+                    break;
+                }
+
+                enemy.UpdateEnemy(enemyBullets, enemies, enemy, GetFrameTime(), player, gameOver);
+            }
+
+            // Update enemies bullets
+            for (Bullet_Enemy& bullet : enemyBullets)
+            {
+                if (bullet.active)
+                {
+                    bullet.rect.y += BULLET_SPEED;
+                    if (CheckCollisionRecs(player, bullet.rect) && !shield && canAct && isVisible && !isInvencibilityDelayTimerStarted)
+                    {
+                        PlaySound(deathPlayerSound);
+                        playerGotHit = true;
+                        canAct = false;
+                        bullet.active = false;
+                        life--;
+
+                        break;
+                    }
+
+                    else if (CheckCollisionRecs(player, bullet.rect) && shield)
+                    {
+                        shield = false;
+                        bullet.active = false;
+                        break;
+                    }
+                }
+            }
+
+            if (isInvencibilityDelayTimerStarted)
+            {
+                invencibilityTimer.Update(GetFrameTime());  // Actualiza el temporizador
+
+                if (invencibilityTimer.IsFinished())
+                {
+                    isInvencibilityDelayTimerStarted = false;
+                }
+            }
+
             //for (PowerUp& powerUp : powerUps)
             //{
             //    if (powerUp.active)
@@ -680,71 +745,6 @@ int main(void)
         //        }
         //    }
         //}
-
-        enemyFramesCounter++;
-
-        if (enemyFramesCounter >= (30))
-        {
-            enemyFramesCounter = 0;
-            currentEnemyFrame++;
-
-            if (currentEnemyFrame > 1) currentEnemyFrame = 0;
-
-            enemyFrameRec.x = (float)currentEnemyFrame * (float)enemy.rect.width;
-        }
-        enemy.UpdateEnemyOffset(GetFrameTime());
-
-        // Update the enemeis
-        for (Enemy& enemy : enemies)
-        {
-            if (CheckCollisionRecs(player, enemy.rect) && !shield && canAct && isVisible && !isInvencibilityDelayTimerStarted)
-            {
-                PlaySound(deathPlayerSound);
-                playerGotHit = true;
-                canAct = false;
-                life--;
-
-                break;
-            }
-
-            enemy.UpdateEnemy(enemyBullets, enemies, enemy, GetFrameTime(), player, gameOver);
-        }
-
-        // Update enemies bullets
-        for (Bullet_Enemy& bullet : enemyBullets)
-        {
-            if (bullet.active)
-            {
-                bullet.rect.y += BULLET_SPEED;
-                if (CheckCollisionRecs(player, bullet.rect) && !shield && canAct && isVisible && !isInvencibilityDelayTimerStarted)
-                {
-                    PlaySound(deathPlayerSound);
-                    playerGotHit = true;
-                    canAct = false;
-                    bullet.active = false;
-                    life--;
-
-                    break;
-                }
-
-                else if (CheckCollisionRecs(player, bullet.rect) && shield)
-                {
-                    shield = false;
-                    bullet.active = false;
-                    break;
-                }
-            }
-        }
-
-        if (isInvencibilityDelayTimerStarted)
-        {
-            invencibilityTimer.Update(GetFrameTime());  // Actualiza el temporizador
-
-            if (invencibilityTimer.IsFinished())
-            {
-                isInvencibilityDelayTimerStarted = false;
-            }
-        }
 
         // Draw all the scene
         BeginDrawing();
@@ -896,6 +896,7 @@ int main(void)
             {
                 // Restart the game
                 isNextScreenTimerStarted = false;
+                isInvencibilityDelayTimerStarted = false;
                 inMenu = true;
                 gameOver = false;
 
