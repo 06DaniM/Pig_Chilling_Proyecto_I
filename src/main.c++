@@ -594,7 +594,7 @@ int main(void)
                 // === Wave 4 ===
                 else if (currentEnemies <= 3 && currentWave == 3)
                 {
-                    currentEnemies = 15;
+                    currentEnemies += 15;
                     enemy.SpawnEnemies(enemies, maxEnemies, 120.0f, -100.0f, -1, -1, 2.5f, screenWidth / 2 - 100, screenHeight / 2.3f, currentEnemies); // Left
                     enemy.SpawnEnemies(enemies, maxEnemies, 180.0f, screenWidth + 100, 1, 1, 2.5f, screenWidth / 2 + 100, screenHeight / 2.3f, currentEnemies); // Right
                     enemy.SpawnEnemies(enemies, maxEnemies, 240.0f, screenWidth + 100, -1, 1, 2.5f, screenWidth / 2 + 40, screenHeight / 3.5f, currentEnemies); // Right
