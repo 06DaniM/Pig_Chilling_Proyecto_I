@@ -119,7 +119,7 @@ std::vector<Bullet_Enemy> enemyBullets;
 
 int main(void)
 {
-    InitWindow(screenWidth, screenHeight, "Space Attacks!");
+    InitWindow(screenWidth, screenHeight, "Galaga");
     InitAudioDevice();
 
     Rectangle player = { (screenWidth - 74) / 2.0f, screenHeight / 1.5f, 64, 64 }; // PositionX, PositionY, ColliderX, ColliderY
@@ -160,7 +160,7 @@ int main(void)
 
     Music music = LoadMusicStream("resources/music/02 Regular Stage Theme.ogg");
 
-    Font font = LoadFontEx("font/Data 70 Regular.otf", 64, 0, 0);
+    Font font = LoadFontEx("resources/font/Data 70 Regular.otf", 64, 0, 0);
 
     Sound deathPlayerSound = LoadSound("resources/soundEffects/fighter_destroyed.mp3");
 
@@ -209,16 +209,16 @@ int main(void)
             shield = !shield;
         }*/
 
-        if (IsKeyPressed(KEY_BACKSPACE)) // Change to when life is <= 0
-        {
-            life -= 1;
-            if (life <= 0) gameOver = true;
-        }
+        //if (IsKeyPressed(KEY_BACKSPACE)) // Change to when life is <= 0
+        //{
+        //    life -= 1;
+        //    if (life <= 0) gameOver = true;
+        //}
 
-        if (IsKeyPressed(KEY_ENTER)) // Change to when life is <= 0
-        {
-            hasWon = true;
-        }
+        //if (IsKeyPressed(KEY_ENTER)) // Change to when life is <= 0
+        //{
+        //    hasWon = true;
+        //}
 
         // === BEGINING GAME CODE
 
