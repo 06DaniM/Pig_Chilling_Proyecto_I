@@ -12,8 +12,16 @@ public:
     Bullet_Enemy();
 };
 
+enum EnemyClass {
+    Draconoida,
+    Mantis,
+    Squid,
+    Kraken
+};
+
 class Enemy {
 public:
+    EnemyClass enemyClass;
     Rectangle rect;
     Rectangle enemyDeathFrameRec;
     bool active;
@@ -49,7 +57,7 @@ public:
 
     // Método para actualizar la posición del enemigo
     void UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, std::vector<Enemy>& enemies, Enemy& enemy, float deltaTime, Rectangle& player, bool gameOver);
-    void SpawnEnemies(std::vector<Enemy>& enemies, int numberEnemies,float baseHeight, float baseWidth, int directionX, int directionY, float loopTime, float targetX, float targetY, int currentEnemies);
+    void SpawnEnemies(std::vector<Enemy>& enemies, int numberEnemies, float baseHeight, float baseWidth, int directionX, int directionY, float loopTime, float targetX, float targetY, int currentEnemies, int enemyPreset);
     void UpdateEnemyOffset(float deltaTime);
 };
 

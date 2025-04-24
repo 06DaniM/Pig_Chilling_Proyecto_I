@@ -46,16 +46,11 @@ enum PowerUpType {
     Shield
 };
 
-//struct PowerUp {
-//    Rectangle rect;
-//    bool active;
-//    PowerUpType type; // Tipo de power-up 
-//};
-
-/*typedef struct Bullet {
+struct PowerUp {
     Rectangle rect;
     bool active;
-} Bullet*/;
+    PowerUpType type; // Tipo de power-up 
+};
 
 Enemy enemy;
 
@@ -130,29 +125,45 @@ int main(void)
     int playerDieFramesCounter = 0;
 
     std::vector<Enemy> enemies; // Vector to manage the generated enemies 
-    //std::vector<PowerUp> powerUps; // Vector to manage the generated power ups 
+    std::vector<PowerUp> powerUps; // Vector to manage the generated power ups 
 
     int totalWaves = 4; // Number of waves per screen
     float waveTimer = 0.0f; // Time to start the next wave
     float waveDelay = 10.0f; // Seconds between waves
     int currentWave = 0; // Last wave played
 
+    // === SHIP SPRITES === //
     Texture2D shipSpriteBase = LoadTexture("resources/ship/Nave Base.png");
     Texture2D shipSpriteDouble = LoadTexture("resources/ship/NAVE 2DS 64X64.png");
     Texture2D shipSpriteBuble = LoadTexture("resources/ship/Nave Bubble 0.png");
     Texture2D shipSpriteDoubleandBuble = LoadTexture("resources/ship/Nave 2S Bubble 0.png");
     Texture2D shipSpriteDeathAnim = LoadTexture("resources/ship/PlayerExplosion.png");
 
-    Texture2D enemySprite = LoadTexture("resources/enemies/nave draconoida.png");
-    Texture2D enemySpriteDeathAnim = LoadTexture("resources/enemies/deathEnemyAnim.png");
+    // === ENEMIES SPRITES === //
+    Texture2D draconoida = LoadTexture("resources/enemies/nave draconoida.png");
+    Texture2D draconoidaDeathAnim = LoadTexture("resources/enemies/deathEnemyAnim.png");
+
+    Texture2D mantis = LoadTexture("resources/enemies/nave mantis.png");
+    Texture2D mantisDeathAnim = LoadTexture("resources/enemies/deathEnemyAnim.png");
+
+    Texture2D squid = LoadTexture("resources/enemies/nave squid.png");
+    Texture2D squidDeathAnim = LoadTexture("resources/enemies/deathEnemyAnim.png");
+
+    Texture2D kraken = LoadTexture("resources/enemies/nave kraken.png");
+    Texture2D krakenDeathAnim = LoadTexture("resources/enemies/deathEnemyAnim.png");
+
+    Texture2D boss = LoadTexture("resources/enemies/BOSS.png");
+    Texture2D bossDeathAnim = LoadTexture("resources/enemies/deathEnemyAnim.png");
 
     Texture2D doubleShotSprite = LoadTexture("resources/powerUps/DobleShot_PowerUp.png");
     Texture2D shieldSprite = LoadTexture("resources/powerUps/Shield_PowerUp.png");
 
+    // === BULLETS SPRITES === //
     Texture2D bulletSprite = LoadTexture("resources/bullets/Disparo_Spaceship.png");
     Texture2D bulletEnemySprite = LoadTexture("resources/bullets/Disparo_Regular_Enemy.png");
     Texture2D bulletBossSprite = LoadTexture("resources/bullets/Disparo_Boss.png");
 
+    // === MENU SPRITES === //
     Texture2D menuBackground = LoadTexture("resources/backgrounds/Menu Background.png");
     Texture2D gamePlayBackground = LoadTexture("resources/backgrounds/Gameplay Background.png");
 
@@ -185,7 +196,7 @@ int main(void)
     bool inMenu = true;
     int score = 0;
     int life = 3;
-    float scale = 1.4f; // Reduce the scale of the sprites
+    float scale = 0.75f; // Reduce the scale of the sprites
 
     float shotCooldown = 0.3f;  // Time between shots
     float shotTimer = 0.0f;     // Timer for counting seconds
@@ -199,7 +210,7 @@ int main(void)
         UpdateMusicStream(music);
 
         // === HACKS FOR TESTING ===
-        /*if (IsKeyPressed(KEY_R))
+        if (IsKeyPressed(KEY_R))
         {
             doubleShot = !doubleShot;
         }
@@ -207,18 +218,18 @@ int main(void)
         if (IsKeyPressed(KEY_F))
         {
             shield = !shield;
-        }*/
+        }
 
-        //if (IsKeyPressed(KEY_BACKSPACE)) // Change to when life is <= 0
-        //{
-        //    life -= 1;
-        //    if (life <= 0) gameOver = true;
-        //}
+        if (IsKeyPressed(KEY_BACKSPACE)) // Change to when life is <= 0
+        {
+            life -= 1;
+            if (life <= 0) gameOver = true;
+        }
 
-        //if (IsKeyPressed(KEY_ENTER)) // Change to when life is <= 0
-        //{
-        //    hasWon = true;
-        //}
+        if (IsKeyPressed(KEY_ENTER)) // Change to when life is <= 0
+        {
+            hasWon = true;
+        }
 
         // === BEGINING GAME CODE
 
@@ -278,7 +289,6 @@ int main(void)
             BeginDrawing();
             ClearBackground(BLACK);
             DrawTextureRec(menuBackground, backgroundMenuFrameRec, { 0,0 }, WHITE);
-            //DrawTexture(menuBackground, 0, 0, WHITE); // Draw the background
 
             DrawTextEx(font, "SCORE", { 100, 30 }, 34, 2, WHITE);
             DrawTextEx(font, "0", { 100, 60 }, 34, 2, WHITE);
@@ -356,15 +366,13 @@ int main(void)
 
                 // === FOR THE 2nd ASSIGNMENT
 
-                bullets.push_back({ { player.x + player.width / 2, player.y, bulletWidth / 2 - 16, bulletHeight }, true }); // Shooting
-
                 PlaySound(shotSound[currentShotSound]);            // play the next open sound slot
                 currentShotSound++;                                 // increment the sound slot
 
                 if (currentShotSound >= 4) currentShotSound = 0;
 
                 // === FOR THE FINAL GAME
-                /*if (doubleShot)
+                if (doubleShot)
                 {
                     bullets.push_back({ { player.x + player.width / 2 - 15, player.y + player.height / 2, bulletWidth, bulletHeight }, true });
                     bullets.push_back({ { player.x + player.width / 2 + 15, player.y + player.height / 2, bulletWidth, bulletHeight }, true });
@@ -373,7 +381,7 @@ int main(void)
                 else
                 {
                     bullets.push_back({ { player.x + player.width / 2, player.y, bulletWidth, bulletHeight }, true });
-                }*/
+                }
             }
 
             if (isNextScreenTimerStarted)
@@ -457,42 +465,41 @@ int main(void)
                                 score += 100;
                                 currentEnemies--;
 
-                                // === FOR THE FINAL GAME
                                 // 20% to generate the item/object
-                                //if (GetRandomValue(1, 100) < 20) // 20% de probabilidad de generar un power-up
-                                //{
-                                //    // Lista de power-ups disponibles según los estados actuales y los que ya están en pantalla
-                                //    std::vector<PowerUpType> availablePowerUps;
+                                if (GetRandomValue(1, 100) < 5) // 20% de probabilidad de generar un power-up
+                                {
+                                    // Lista de power-ups disponibles según los estados actuales y los que ya están en pantalla
+                                    std::vector<PowerUpType> availablePowerUps;
 
-                                //    PowerUp newPowerUp;
+                                    PowerUp newPowerUp;
 
-                                //    bool doubleShotOnScreen = false;
-                                //    bool shieldOnScreen = false;
+                                    bool doubleShotOnScreen = false;
+                                    bool shieldOnScreen = false;
 
-                                //    // Verificar si ya hay un power-up de cada tipo en pantalla
-                                //    for (const auto& powerUp : powerUps)
-                                //    {
-                                //        if (powerUp.type == Double_shot) doubleShotOnScreen = true;
-                                //        if (powerUp.type == Shield) shieldOnScreen = true;
-                                //    }
+                                    // Verificar si ya hay un power-up de cada tipo en pantalla
+                                    for (const auto& powerUp : powerUps)
+                                    {
+                                        if (powerUp.type == Double_shot) doubleShotOnScreen = true;
+                                        if (powerUp.type == Shield) shieldOnScreen = true;
+                                    }
 
-                                //    // Solo añadir si el power-up no está activo ni en pantalla
-                                //    if (!doubleShot && !doubleShotOnScreen) availablePowerUps.push_back(Double_shot);
-                                //    if (!shield && !shieldOnScreen) availablePowerUps.push_back(Shield);
+                                    // Solo añadir si el power-up no está activo ni en pantalla
+                                    if (!doubleShot && !doubleShotOnScreen) availablePowerUps.push_back(Double_shot);
+                                    if (!shield && !shieldOnScreen) availablePowerUps.push_back(Shield);
 
-                                //    // Solo generamos un power-up si hay disponibles
-                                //    if (!availablePowerUps.empty())
-                                //    {
-                                //        newPowerUp.rect = { enemy.rect.x + enemy.rect.width / 2, enemy.rect.y + enemy.rect.height / 2, 20, 20 };
+                                    // Solo generamos un power-up si hay disponibles
+                                    if (!availablePowerUps.empty())
+                                    {
+                                        newPowerUp.rect = { enemy.rect.x + enemy.rect.width / 2, enemy.rect.y + enemy.rect.height / 2, 20, 20 };
 
-                                //        // Convertir size_t a int de forma segura
-                                //        int maxIndex = static_cast<int>(availablePowerUps.size()) - 1;
-                                //        newPowerUp.type = availablePowerUps[GetRandomValue(0, maxIndex)];
+                                        // Convertir size_t a int de forma segura
+                                        int maxIndex = static_cast<int>(availablePowerUps.size()) - 1;
+                                        newPowerUp.type = availablePowerUps[GetRandomValue(0, maxIndex)];
 
-                                //        powerUps.push_back(newPowerUp);
-                                //    }
-                                //    newPowerUp.active = true;
-                                //}
+                                        powerUps.push_back(newPowerUp);
+                                    }
+                                    newPowerUp.active = true;
+                                }
 
                                 break;
                             }
@@ -564,6 +571,14 @@ int main(void)
                 isSpawnDelayTimerStarted = true;
             }
 
+            // === ENEMY PRESETS ===
+            // 1: Draconoide, Mantis, Draconoide, Mantis, Draconoide
+            // 2: Draconoide, Mantis, Mantis, Mantis, Draconoide
+            // 3: Squid, Draconoide, Mantis, Draconoide, Squid
+            // 4: Kraken, Kraken, Squid, Kraken, Kraken
+            // 5: Kraken, Draconoide, Mantis, Draconoide, Mantis
+            // 6: Squid, Mantis, Squid, Mantis, Squid
+
             // === WAVES MANAGER ===
             if (canSpawn)
             {
@@ -571,15 +586,15 @@ int main(void)
                 if (currentEnemies == 0 && currentWave == 0)
                 {
                     currentEnemies += 5;
-                    enemy.SpawnEnemies(enemies, maxEnemies, 60.0f, -100.0f, 1, -1, 3.5f, screenWidth / 1.5f, screenHeight / 2.5f, currentEnemies); // Left
+                    enemy.SpawnEnemies(enemies, maxEnemies, 60.0f, -100.0f, 1, -1, 3.5f, screenWidth / 1.5f, screenHeight / 2.5f, currentEnemies, 1); // Left
                     currentWave++;
                 }
                 // === Wave 2 ===
                 else if (currentEnemies <= 2 && currentWave == 1)
                 {
                     currentEnemies += 10;
-                    enemy.SpawnEnemies(enemies, maxEnemies, 120.0f, -100.0f, -1, -1, 3.5f, screenWidth / 2.0f - 80, screenHeight / 2.0f + 50, currentEnemies); // Left
-                    enemy.SpawnEnemies(enemies, maxEnemies, 180.0f, screenWidth + 100.0f, 1, -1, 3.5f, screenWidth / 2.0f + 80, screenHeight / 2.0f + 50, currentEnemies); // Right
+                    enemy.SpawnEnemies(enemies, maxEnemies, 120.0f, -100.0f, -1, -1, 3.5f, screenWidth / 2.0f - 80, screenHeight / 2.0f + 50, currentEnemies, 1); // Left
+                    enemy.SpawnEnemies(enemies, maxEnemies, 180.0f, screenWidth + 100.0f, 1, -1, 3.5f, screenWidth / 2.0f + 80, screenHeight / 2.0f + 50, currentEnemies, 1); // Right
                     currentWave++;
                 }
 
@@ -587,7 +602,7 @@ int main(void)
                 else if (currentEnemies == 0 && currentWave == 2)
                 {
                     currentEnemies += 5;
-                    enemy.SpawnEnemies(enemies, maxEnemies, 60.0f, screenWidth + 100, 1, 1, 2.5f, screenWidth / 2.0f, screenHeight / 1.8f, currentEnemies); // Right
+                    enemy.SpawnEnemies(enemies, maxEnemies, 60.0f, screenWidth + 100, 1, 1, 2.5f, screenWidth / 2.0f, screenHeight / 1.8f, currentEnemies, 1); // Right
                     currentWave++;
                 }
 
@@ -595,9 +610,9 @@ int main(void)
                 else if (currentEnemies <= 3 && currentWave == 3)
                 {
                     currentEnemies += 15;
-                    enemy.SpawnEnemies(enemies, maxEnemies, 120.0f, -100.0f, -1, -1, 2.5f, screenWidth / 2 - 100, screenHeight / 2.3f, currentEnemies); // Left
-                    enemy.SpawnEnemies(enemies, maxEnemies, 180.0f, screenWidth + 100, 1, 1, 2.5f, screenWidth / 2 + 100, screenHeight / 2.3f, currentEnemies); // Right
-                    enemy.SpawnEnemies(enemies, maxEnemies, 240.0f, screenWidth + 100, -1, 1, 2.5f, screenWidth / 2 + 40, screenHeight / 3.5f, currentEnemies); // Right
+                    enemy.SpawnEnemies(enemies, maxEnemies, 120.0f, -100.0f, -1, -1, 2.5f, screenWidth / 2 - 100, screenHeight / 2.3f, currentEnemies, 1); // Left
+                    enemy.SpawnEnemies(enemies, maxEnemies, 180.0f, screenWidth + 100, 1, 1, 2.5f, screenWidth / 2 + 100, screenHeight / 2.3f, currentEnemies, 1); // Right
+                    enemy.SpawnEnemies(enemies, maxEnemies, 240.0f, screenWidth + 100, -1, 1, 2.5f, screenWidth / 2 + 40, screenHeight / 3.5f, currentEnemies, 1); // Right
                     currentWave++;
                 }
                 canSpawn = false;
@@ -678,73 +693,34 @@ int main(void)
                 }
             }
 
-            //for (PowerUp& powerUp : powerUps)
-            //{
-            //    if (powerUp.active)
-            //    {
-            //        powerUp.rect.y += 2; // Velocity to down
+            for (PowerUp& powerUp : powerUps)
+            {
+                if (powerUp.active)
+                {
+                    powerUp.rect.y += 2; // Velocity to down
 
-            //        // Activate the double shot if collsion between the ship and the item
-            //        if (CheckCollisionRecs(player, powerUp.rect))
-            //        {
-            //            if (powerUp.type == Double_shot)
-            //            {
-            //                doubleShot = true; // Activate double shoot power-up 
-            //            }
+                    // Activate the double shot if collsion between the ship and the item
+                    if (CheckCollisionRecs(player, powerUp.rect))
+                    {
+                        if (powerUp.type == Double_shot)
+                        {
+                            doubleShot = true; // Activate double shoot power-up 
+                        }
 
-            //            else if (powerUp.type == Shield)
-            //            {
-            //                shield = true; // Activate shield power-up
-            //            }
+                        else if (powerUp.type == Shield)
+                        {
+                            shield = true; // Activate shield power-up
+                        }
 
-            //            // powerUp.active = false; // Desactivate the power up // Innecesario, creo
-            //        }
-            //    }
-            //}
+                        powerUp.active = false; // Desactivate the power up // Innecesario, creo
+                    }
+                }
+            }
 
-            //// Eliminar power-ups inactivos
-            //powerUps.erase(std::remove_if(powerUps.begin(), powerUps.end(),
-            //    [](const PowerUp& p) { return !p.active || p.rect.y > screenHeight; }), powerUps.end());
+            // Eliminar power-ups inactivos
+            powerUps.erase(std::remove_if(powerUps.begin(), powerUps.end(),
+                [](const PowerUp& p) { return !p.active || p.rect.y > screenHeight; }), powerUps.end());
         }
-
-        // Game Over when is dead
-        //if (life <= 0)
-        //{
-        //    canAct = false;
-
-        //    if (isVisible)
-        //    {
-        //        // Actualizar frame rect
-        //        playerDieFrameRec.x = currentPlayerDieFrameX * 56;
-        //        playerDieFrameRec.y = currentPlayerDieFrameY * 56;
-
-        //        // Solo avanzar si no terminamos la animación
-        //        if (currentPlayerDieFrameY < 2)
-        //        {
-        //            playerDieFramesCounter++;
-
-        //            if (playerDieFramesCounter >= 15)
-        //            {
-        //                playerDieFramesCounter = 0;
-        //                currentPlayerDieFrameX++;
-
-        //                if (currentPlayerDieFrameX >= 2)
-        //                {
-        //                    currentPlayerDieFrameX = 0;
-        //                    currentPlayerDieFrameY++;
-        //                }
-
-        //                // Si la animación termina, iniciar delay y ocultar sprite
-        //                if (currentPlayerDieFrameY >= 2 && !gameOver && !isDeathTimerStarted)
-        //                {
-        //                    isVisible = false; // ← Ocultar sprite
-        //                    deathDelayTimer.Start(1.0f);
-        //                    isDeathTimerStarted = true;
-        //                }
-        //            }
-        //        }
-        //    }
-        //}
 
         // Draw all the scene
         BeginDrawing();
@@ -759,7 +735,7 @@ int main(void)
                 // Draw the bullet
                 DrawTextureEx(bulletSprite,
                     { (bullet.rect.x + bullet.rect.width / 2 - bulletSprite.width / 2),
-                    (bullet.rect.y + bullet.rect.height / 2 - bulletSprite.height / 2) }, 0, 2,
+                    (bullet.rect.y + bullet.rect.height / 2 - bulletSprite.height / 2) }, 0, 1,
                     WHITE);
             }
         }
@@ -771,7 +747,7 @@ int main(void)
             {
                 DrawTextureEx(bulletEnemySprite,
                     { (bullet.rect.x + bullet.rect.width / 2 - bulletSprite.width / 2),
-                    (bullet.rect.y + bullet.rect.height / 2 - bulletSprite.height / 2) }, 0, 2,
+                    (bullet.rect.y + bullet.rect.height / 2 - bulletSprite.height / 2) }, 0, 1,
                     WHITE);
             }
         }
@@ -793,9 +769,10 @@ int main(void)
                 DrawTexturePro(shipSpriteDeathAnim, playerDieFrameRec, dest, origin, 0, WHITE);
             }
 
-            /*else if (doubleShot && !shield)
+            else if (doubleShot && !shield)
             {
-                DrawTexture(shipSpriteDouble, (int)player.x, (int)player.y, WHITE);
+                if (isInvencibilityDelayTimerStarted) DrawTextureEx(shipSpriteDouble, { player.x, player.y }, 0, 1, { 255, 255, 255, 120 });
+                else DrawTexture(shipSpriteDouble, (int)player.x, (int)player.y, WHITE);
             }
 
             else if (shield && !doubleShot)
@@ -806,11 +783,10 @@ int main(void)
             else if (doubleShot && shield)
             {
                 DrawTexture(shipSpriteDoubleandBuble, (int)player.x, (int)player.y, WHITE);
-            }*/
+            }
 
-            else if (isInvencibilityDelayTimerStarted) DrawTextureEx(shipSpriteBase, { player.x, player.y }, 0, 2, { 255, 255, 255, 120 });
-
-            else if (!isInvencibilityDelayTimerStarted) DrawTextureEx(shipSpriteBase, { player.x, player.y }, 0, 2, WHITE);
+            else if (isInvencibilityDelayTimerStarted) DrawTextureEx(shipSpriteBase, { player.x, player.y }, 0, 1, { 255, 255, 255, 120 });
+            else DrawTextureEx(shipSpriteBase, { player.x, player.y }, 0, 1, WHITE);
         }
 
         // Draw the lifes of the ship
@@ -837,7 +813,14 @@ int main(void)
 
                 Vector2 origin = { dest.width / 2.0f, dest.height / 2.0f };
 
-                if (!enemy.gotHit) DrawTexturePro(enemySprite, source, dest, origin, enemy.rotation, WHITE);
+                if (!enemy.gotHit)
+                {
+                    if (enemy.enemyClass == Draconoida) DrawTexturePro(draconoida, source, dest, origin, enemy.rotation, WHITE);
+                    else if (enemy.enemyClass == Mantis) DrawTexturePro(mantis, source, dest, origin, enemy.rotation, WHITE);
+                    else if (enemy.enemyClass == Squid) DrawTexturePro(squid, source, dest, origin, enemy.rotation, WHITE);
+                    else DrawTexturePro(kraken, source, dest, origin, enemy.rotation, WHITE);
+                }
+
                 else
                 {
                     float scale = 1.8f;
@@ -853,7 +836,10 @@ int main(void)
 
                     Vector2 origin = { dest.width / 2.0f, dest.height / 2.0f };
 
-                    DrawTexturePro(enemySpriteDeathAnim, source, dest, origin, 0, WHITE);
+                    if(enemy.enemyClass == Draconoida) DrawTexturePro(draconoidaDeathAnim, source, dest, origin, 0, WHITE);
+                    else if (enemy.enemyClass == Mantis) DrawTexturePro(mantisDeathAnim, source, dest, origin, 0, WHITE);
+                    else if (enemy.enemyClass == Squid) DrawTexturePro(squidDeathAnim, source, dest, origin, 0, WHITE);
+                    else DrawTexturePro(krakenDeathAnim, source, dest, origin, 0, WHITE);
                 }
             }
         }
@@ -958,18 +944,18 @@ int main(void)
             continue; // Avoid the code is still executing in the victory menu
         }
 
-        //for (const PowerUp& powerUp : powerUps)
-        //{
-        //    if (powerUp.active && powerUp.type == Double_shot)
-        //    {
-        //        DrawTexture(doubleShotSprite, (int)powerUp.rect.x, (int)powerUp.rect.y, WHITE); // Draw the double shot item
-        //    }
+        for (const PowerUp& powerUp : powerUps)
+        {
+            if (powerUp.active && powerUp.type == Double_shot)
+            {
+                DrawTexture(doubleShotSprite, (int)powerUp.rect.x, (int)powerUp.rect.y, WHITE); // Draw the double shot item
+            }
 
-        //    else if (powerUp.active && powerUp.type == Shield)
-        //    {
-        //        DrawTexture(shieldSprite, (int)powerUp.rect.x, (int)powerUp.rect.y, WHITE); // Cambiar al sprite del escudo cuando esté hecho
-        //    }
-        //}
+            else if (powerUp.active && powerUp.type == Shield)
+            {
+                DrawTexture(shieldSprite, (int)powerUp.rect.x, (int)powerUp.rect.y, WHITE); // Cambiar al sprite del escudo cuando esté hecho
+            }
+        }
 
         EndDrawing();
     }
@@ -977,7 +963,7 @@ int main(void)
     // Unload resources
     UnloadTexture(shipSpriteBase);
     UnloadTexture(shipSpriteDouble);
-    UnloadTexture(enemySprite);
+    UnloadTexture(draconoida);
     UnloadTexture(bulletSprite);
     UnloadTexture(gamePlayBackground);
     UnloadTexture(menuBackground);

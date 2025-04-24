@@ -9,7 +9,7 @@ Bullet_Enemy::Bullet_Enemy() : rect{ 0, 0, 0, 0 }, active(false) {}
 
 // Enemy constructor
 Enemy::Enemy()
-    : rect{ 0, 0, 32, 32 }, enemyDeathFrameRec{ 0, 0, 54, 54 }, active(true), isAttacking(false), attackTime(0.0f),
+    : enemyClass(), rect{ 0, 0, 64, 64 }, enemyDeathFrameRec{ 0, 0, 54, 54 }, active(true), isAttacking(false), attackTime(0.0f),
     attackingTimer(0.0f), attackCooldown(0.0f), targetPosition1{ 0.0f, 0.0f }, targetFinalPosition{ 0.0f, 0.0f }, 
     targetIdlePosition{ 0.0f, 0.0f },attackPlayerPos(0.0f), entryTime(0.0f), rotation(0.0f), index(0), 
     loopDirectionX(0), loopDirectionY(0), loopTime(0.0f), currentEnemies(0), enemyInitialState(true), 
@@ -46,12 +46,19 @@ void Enemy::UpdateEnemyOffset(float deltaTime)
     }
 }
 
+// === ENEMY PRESETS ===
+// 1: Draconoida, Mantis, Draconoida, Mantis, Draconoida
+// 2: Draconoida, Mantis, Mantis, Mantis, Draconoida
+// 3: Squid, Draconoida, Mantis, Draconoida, Squid
+// 4: Kraken, Kraken, Squid, Kraken, Kraken
+// 5: Kraken, Draconoida, Mantis, Draconoida, Mantis
+// 6: Squid, Mantis, Squid, Mantis, Squid
+
 // Function to spawn the enemies
-void Enemy::SpawnEnemies(std::vector<Enemy>& enemies, int numberEnemies, float baseHeight, float baseWidth, int directionX, int directionY, float loopTime, float targetx, float targety, int currentEnemies)
+void Enemy::SpawnEnemies(std::vector<Enemy>& enemies, int numberEnemies, float baseHeight, float baseWidth, int directionX, int directionY, float loopTime, float targetx, float targety, int currentEnemies, int enemyPreset)
 {
     for (int i = 0; i < numberEnemies; i++)
     {
-        //enemies.clear();
         float delay = i * 0.35f; // Delay entry of the enemies
         float startX = baseWidth; // Start X point
         float startY = baseHeight; // Start Y point
@@ -62,7 +69,62 @@ void Enemy::SpawnEnemies(std::vector<Enemy>& enemies, int numberEnemies, float b
         float finaltargetY = baseHeight + 20.0f; // Height after the first loop (Idle movement)
 
         Enemy newEnemy;
-        newEnemy.rect = { startX, startY, 52, 52 };
+
+        if (enemyPreset == 1)
+        {
+            if(i == 0) newEnemy.enemyClass = Draconoida;
+            else if (i == 1) newEnemy.enemyClass = Mantis;
+            else if (i == 2) newEnemy.enemyClass = Draconoida;
+            else if (i == 3) newEnemy.enemyClass = Mantis;
+            else newEnemy.enemyClass = Draconoida;
+        }
+
+        if (enemyPreset == 2)
+        {
+            if (i == 0) newEnemy.enemyClass = Draconoida;
+            else if (i == 1) newEnemy.enemyClass = Mantis;
+            else if (i == 2) newEnemy.enemyClass = Mantis;
+            else if (i == 3) newEnemy.enemyClass = Mantis;
+            else newEnemy.enemyClass = Draconoida;
+        }
+
+        if (enemyPreset == 3)
+        {
+            if (i == 0) newEnemy.enemyClass = Squid;
+            else if (i == 1) newEnemy.enemyClass = Draconoida;
+            else if (i == 2) newEnemy.enemyClass = Mantis;
+            else if (i == 3) newEnemy.enemyClass = Draconoida;
+            else newEnemy.enemyClass = Squid;
+        }
+
+        if (enemyPreset == 4)
+        {
+            if (i == 0) newEnemy.enemyClass = Kraken;
+            else if (i == 1) newEnemy.enemyClass = Kraken;
+            else if (i == 2) newEnemy.enemyClass = Squid;
+            else if (i == 3) newEnemy.enemyClass = Kraken;
+            else newEnemy.enemyClass = Kraken;
+        }
+
+        if (enemyPreset == 5)
+        {
+            if (i == 0) newEnemy.enemyClass = Kraken;
+            else if (i == 1) newEnemy.enemyClass = Draconoida;
+            else if (i == 2) newEnemy.enemyClass = Mantis;
+            else if (i == 3) newEnemy.enemyClass = Draconoida;
+            else newEnemy.enemyClass = Mantis;
+        }
+
+        if (enemyPreset == 6)
+        {
+            if (i == 0) newEnemy.enemyClass = Squid;
+            else if (i == 1) newEnemy.enemyClass = Mantis;
+            else if (i == 2) newEnemy.enemyClass = Squid;
+            else if (i == 3) newEnemy.enemyClass = Mantis;
+            else newEnemy.enemyClass = Squid;
+        }
+
+        newEnemy.rect = { startX, startY, 64, 64 };
         newEnemy.targetPosition1 = { targetX, targetY };
         newEnemy.targetFinalPosition = { finaltargetX, finaltargetY };
         newEnemy.targetIdlePosition = { idletargetX, finaltargetY };
