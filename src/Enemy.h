@@ -49,6 +49,7 @@ public:
     bool playerOnRight;
     bool canAttack;
     bool gotHit;
+    bool hasArribed;
     int enemyDeathFramesCounter;
     int currentEnemyDeathFrame;
 

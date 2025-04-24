@@ -800,7 +800,7 @@ int main(void)
         {
             if (enemy.active)
             {
-                float scale = 1;
+                float scale = 0.9f;
 
                 Rectangle source = enemyFrameRec;
 
