@@ -11,7 +11,7 @@ Bullet_Enemy::Bullet_Enemy() : rect{ 0, 0, 0, 0 }, active(false) {}
 Enemy::Enemy()
     : enemyClass(), rect{ 0, 0, 64, 64 }, enemyDeathFrameRec{ 0, 0, 54, 54 }, active(true), isAttacking(false), attackTime(0.0f),
     attackingTimer(0.0f), attackCooldown(0.0f), targetPosition1{ 0.0f, 0.0f }, targetFinalPosition{ 0.0f, 0.0f }, 
-    targetIdlePosition{ 0.0f, 0.0f },attackPlayerPos(0.0f), entryTime(0.0f), rotation(0.0f), index(0), 
+    targetIdlePosition{ 0.0f, 0.0f }, playerPos{ 0.0f, 0.0f }, attackPlayerPos(0.0f), entryTime(0.0f), rotation(0.0f), index(0),
     loopDirectionX(0), loopDirectionY(0), loopTime(0.0f), currentEnemies(0), enemyInitialState(true), 
     enemyLoopState(false), manual(true), idle(false), random(false), right(false), playerOnRight(false), 
     canAttack(true), gotHit(false), hasArribed(false), enemyDeathFramesCounter(0), currentEnemyDeathFrame(0) { }
@@ -435,40 +435,86 @@ void Enemy::UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, std::vector<Ene
                 else if (enemy.enemyClass == Mantis)
                 {
                     float distX1;
-                    int moveSpeed = 300;
+                    float moveSpeed = 300 * deltaTime;
+                    enemy.attackingTimer += deltaTime;
+                    /*if (attackdirnum == 0) distX1 = enemy.targetFinalPosition.x - 100 - enemy.rect.x;
+                    else distX1 = enemy.targetFinalPosition.x + 100 - enemy.rect.x;*/
 
                     // Move the enemy to the target
 
                     if (attackdirnum == 0) distX1 = enemy.targetFinalPosition.x - 100 - enemy.rect.x;
                     else distX1 = enemy.targetFinalPosition.x + 100 - enemy.rect.x;
 
-                    float distY1 = player.y - enemy.rect.y;
+                    float distY1 = screenHeight / 2 - enemy.rect.y;
                     float distance1 = sqrt(distX1 * distX1 + distY1 * distY1); // Total distance to the objective
 
-                    // Normalize the direction
-                    float directionX = distX1 / distance1;
-                    float directionY = distY1 / distance1;
+                    float distX2 = enemy.targetFinalPosition.x + globalEnemyOffsetX - enemy.rect.x;
+                    float distY2 = enemy.targetFinalPosition.y - enemy.rect.y;
+                    float distance2 = sqrt(distX2 * distX2 + distY2 * distY2); // Total distance to the objective
 
-                    float playerPosX;
-                    float playerPosY;
-
-                    if (enemy.rect.x == distX1)
+                    if (enemy.attackingTimer <= 1)
                     {
-                        playerPosX = player.x;
-                        playerPosY = player.y;
-                        enemy.hasArribed = true;
-                    }
+                        // Normalize the direction
+                        float directionX = distX1 / distance1;
+                        float directionY = distY1 / distance1;
 
-                    else 
-                    {
+                        enemy.rotation = atan2(directionY, directionX) * (180.0f / PI) + 90; // Convertir a grados
+
+                        // Move the enemy to the objective
                         enemy.rect.x += directionX * moveSpeed;
                         enemy.rect.y += directionY * moveSpeed;
+
+                        enemy.playerPos.x = player.x;
+                        enemy.playerPos.y = player.y;
                     }
 
-                    if (enemy.hasArribed)
+                    else if (enemy.attackingTimer > 1 && !enemy.hasArribed)
                     {
+                        // Normalize the direction
+                        float playerPosX = enemy.playerPos.x - enemy.rect.x;
+                        float playerPosY = enemy.playerPos.y - enemy.rect.y;
+                        float distanceToPlayer = sqrt(playerPosX * playerPosX + playerPosY * playerPosY);
 
+                        float directionX = playerPosX / distanceToPlayer;
+                        float directionY = playerPosY / distanceToPlayer;
+
+                        enemy.rotation = atan2(directionY, directionX) * (180.0f / PI) + 90; // Convertir a grados
+
+                        // Move the enemy to the objective
+                        enemy.rect.x += directionX * moveSpeed;
+                        enemy.rect.y += directionY * moveSpeed;
+
+                        if (enemy.rect.y >= player.y - 1) enemy.hasArribed = true;
                     }
+
+                    else if (enemy.hasArribed)
+                    {
+                        if (distance2 > moveSpeed)
+                        {
+                            // Normalize the direction
+                            float directionX = distX2 / distance2;
+                            float directionY = distY2 / distance2;
+
+                            enemy.rotation = atan2(directionY, directionX) * (180.0f / PI) + 90; // Convertir a grados
+
+                            // Move the enemy to the objective
+                            enemy.rect.x += directionX * moveSpeed;
+                            enemy.rect.y += directionY * moveSpeed;
+                        }
+
+                        else
+                        {
+                            // Ends attacking state
+
+                            enemy.random = false;
+                            enemy.attackingTimer = 0.0f;
+                            enemy.hasArribed = false;
+
+                            // Restart random state
+                        }
+                    }
+                    cout << enemy.rect.y << endl;
+                    cout << enemy.playerPos.y << endl;
                 }
             }
         }

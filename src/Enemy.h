@@ -32,6 +32,7 @@ public:
     Vector2 targetPosition1;
     Vector2 targetFinalPosition;
     Vector2 targetIdlePosition;
+    Vector2 playerPos;
     float attackPlayerPos;
     float entryTime;
     float rotation;

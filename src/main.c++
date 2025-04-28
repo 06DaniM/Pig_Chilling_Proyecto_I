@@ -326,17 +326,24 @@ int main(void)
         {
             backgrounGameFramesCounter++;
 
-            if (backgrounGameFramesCounter >= 2)
+            if (backgrounGameFramesCounter >= 4)
             {
                 backgrounGameFramesCounter = 0;
                 currentBackgrounGameFrameX++;
 
-                if (currentBackgrounGameFrameX >= 6)
+                if (currentBackgrounGameFrameX >= 3 && currentBackgrounGameFrameY >= 6)
+                {
+                    cout << "in";
+                    currentBackgrounGameFrameX = 0;
+                    currentBackgrounGameFrameY = 0;
+                }
+
+                if (currentBackgrounGameFrameX >= 8)
                 {
                     currentBackgrounGameFrameX = 0;
                     currentBackgrounGameFrameY++;
 
-                    if (currentBackgrounGameFrameY >= 4)
+                    if (currentBackgrounGameFrameY >= 7)
                     {
                         currentBackgrounGameFrameY = 0;
                     }
