@@ -333,7 +333,6 @@ int main(void)
 
                 if (currentBackgrounGameFrameX >= 3 && currentBackgrounGameFrameY >= 6)
                 {
-                    cout << "in";
                     currentBackgrounGameFrameX = 0;
                     currentBackgrounGameFrameY = 0;
                 }
@@ -593,14 +592,14 @@ int main(void)
                 if (currentEnemies == 0 && currentWave == 0)
                 {
                     currentEnemies += 5;
-                    enemy.SpawnEnemies(enemies, maxEnemies, 60.0f, -100.0f, 1, -1, 3.5f, screenWidth / 1.5f, screenHeight / 2.5f, currentEnemies, 1); // Left
+                    enemy.SpawnEnemies(enemies, maxEnemies, 60.0f, -100.0f, 1, -1, 3.5f, screenWidth / 1.5f, screenHeight / 2.5f, currentEnemies, 3); // Left
                     currentWave++;
                 }
                 // === Wave 2 ===
                 else if (currentEnemies <= 2 && currentWave == 1)
                 {
                     currentEnemies += 10;
-                    enemy.SpawnEnemies(enemies, maxEnemies, 120.0f, -100.0f, -1, -1, 3.5f, screenWidth / 2.0f - 80, screenHeight / 2.0f + 50, currentEnemies, 1); // Left
+                    enemy.SpawnEnemies(enemies, maxEnemies, 120.0f, -100.0f, -1, -1, 3.5f, screenWidth / 2.0f - 80, screenHeight / 2.0f + 50, currentEnemies, 2); // Left
                     enemy.SpawnEnemies(enemies, maxEnemies, 180.0f, screenWidth + 100.0f, 1, -1, 3.5f, screenWidth / 2.0f + 80, screenHeight / 2.0f + 50, currentEnemies, 1); // Right
                     currentWave++;
                 }
@@ -618,8 +617,8 @@ int main(void)
                 {
                     currentEnemies += 15;
                     enemy.SpawnEnemies(enemies, maxEnemies, 120.0f, -100.0f, -1, -1, 2.5f, screenWidth / 2 - 100, screenHeight / 2.3f, currentEnemies, 1); // Left
-                    enemy.SpawnEnemies(enemies, maxEnemies, 180.0f, screenWidth + 100, 1, 1, 2.5f, screenWidth / 2 + 100, screenHeight / 2.3f, currentEnemies, 1); // Right
-                    enemy.SpawnEnemies(enemies, maxEnemies, 240.0f, screenWidth + 100, -1, 1, 2.5f, screenWidth / 2 + 40, screenHeight / 3.5f, currentEnemies, 1); // Right
+                    enemy.SpawnEnemies(enemies, maxEnemies, 180.0f, screenWidth + 100, 1, 1, 2.5f, screenWidth / 2 + 100, screenHeight / 2.3f, currentEnemies, 2); // Right
+                    enemy.SpawnEnemies(enemies, maxEnemies, 240.0f, screenWidth + 100, -1, 1, 2.5f, screenWidth / 2 + 40, screenHeight / 3.5f, currentEnemies, 2); // Right
                     currentWave++;
                 }
                 canSpawn = false;
@@ -646,6 +645,7 @@ int main(void)
 
                 enemyFrameRec.x = (float)currentEnemyFrame * (float)enemy.rect.width;
             }
+            enemy.UpdateEnemyOffsetNormal(GetFrameTime());
             enemy.UpdateEnemyOffset(GetFrameTime());
 
             // Update the enemeis

@@ -20,14 +20,35 @@ const int screenWidth = 1152;
 const int screenHeight = 896;
 
 // Variables globales (fuera del bucle principal y de la clase Enemy)
+float globalEnemyOffsetXN = 0.0f;
+float globalEnemyDirectionN = 1.0f;
+float maxEnemyOffsetN = 60.0f;
+float enemyMoveSpeedN = 150.0f; // píxeles por segundo
+
 float globalEnemyOffsetX = 0.0f;
 float globalEnemyDirection = 1.0f;
-float maxEnemyOffset = 60.0f;
-float enemyMoveSpeed = 150.0f; // píxeles por segundo
+float maxEnemyOffset = 352;
+float enemyMoveSpeed = 450.0f; // píxeles por segundo
 
 float Lerp(float a, float b, float t)
 {
     return a + (b - a) * t;
+}
+
+void Enemy::UpdateEnemyOffsetNormal(float deltaTime)
+{
+    globalEnemyOffsetXN += globalEnemyDirectionN * enemyMoveSpeedN * deltaTime;
+
+    if (globalEnemyOffsetXN > maxEnemyOffsetN)
+    {
+        globalEnemyOffsetXN = maxEnemyOffsetN;
+        globalEnemyDirectionN *= -1;
+    }
+    else if (globalEnemyOffsetXN < -maxEnemyOffsetN)
+    {
+        globalEnemyOffsetXN = -maxEnemyOffsetN;
+        globalEnemyDirectionN *= -1;
+    }
 }
 
 void Enemy::UpdateEnemyOffset(float deltaTime)
@@ -57,6 +78,7 @@ void Enemy::UpdateEnemyOffset(float deltaTime)
 // Function to spawn the enemies
 void Enemy::SpawnEnemies(std::vector<Enemy>& enemies, int numberEnemies, float baseHeight, float baseWidth, int directionX, int directionY, float loopTime, float targetx, float targety, int currentEnemies, int enemyPreset)
 {
+    int j = 1;
     for (int i = 0; i < numberEnemies; i++)
     {
         float delay = i * 0.35f; // Delay entry of the enemies
@@ -67,7 +89,6 @@ void Enemy::SpawnEnemies(std::vector<Enemy>& enemies, int numberEnemies, float b
         float idletargetX = screenWidth / 6.0f * (i + 0.75f) - 25; // First target X after the first loop (Idle movement)
         float finaltargetX = screenWidth / 6.0f * (i + 0.75f) + 25; // Seconds target X after the first loop (Idle movement)
         float finaltargetY = baseHeight + 20.0f; // Height after the first loop (Idle movement)
-
         Enemy newEnemy;
 
         if (enemyPreset == 1)
@@ -124,6 +145,15 @@ void Enemy::SpawnEnemies(std::vector<Enemy>& enemies, int numberEnemies, float b
             else newEnemy.enemyClass = Squid;
         }
 
+        if (newEnemy.enemyClass == Squid)
+        {
+            startY = screenHeight / 2 - 150;
+            targetY = startY;
+
+            finaltargetX = screenWidth / 3 * (j) - 32; // Seconds target X after the first loop (Idle movement)
+            j++;
+        }
+
         newEnemy.rect = { startX, startY, 64, 64 };
         newEnemy.targetPosition1 = { targetX, targetY };
         newEnemy.targetFinalPosition = { finaltargetX, finaltargetY };
@@ -157,254 +187,339 @@ void Enemy::UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, std::vector<Ene
 
     else 
     {
-        int attackdirnum = 0;
-
-        float midX = screenWidth / 2.0f; // Middle of the screen in X axis
-        enemy.entryTime += deltaTime; // Timer when the enemy has started moving
-
-        // === NEW ENEMY MOVEMENT ===
-
-        float delayTime = 0.0f; // Delay for the enemy.entrytime
-
-        // Enemy start de movement with a delay 
-        if (enemy.entryTime >= delayTime)
+        if (enemy.enemyClass != Squid)
         {
+            int attackdirnum = 0;
+
+            float midX = screenWidth / 2.0f; // Middle of the screen in X axis
+            enemy.entryTime += deltaTime; // Timer when the enemy has started moving
+
             // === NEW ENEMY MOVEMENT ===
 
-            float radius = 150.0f;  // Radius of the loop
-            float centerX = enemy.targetPosition1.x; // Center of the X orbit
-            float centerY = enemy.targetPosition1.y + radius; // Center of the Y orbit
+            float delayTime = 0.0f; // Delay for the enemy.entrytime
 
-            // === PATROL STATE === 
-
-            if (enemy.manual)
+            // Enemy start de movement with a delay 
+            if (enemy.entryTime >= delayTime)
             {
-                // Incrementar 't' para el movimiento circular
-                float velocity = 500.0f; // Velocidad de movimiento
-                float moveSpeed = velocity * deltaTime;
+                // === NEW ENEMY MOVEMENT ===
 
-                // === 1ST OBJECTIVE ===
-                if (enemy.enemyInitialState)
+                float radius = 150.0f;  // Radius of the loop
+                float centerX = enemy.targetPosition1.x; // Center of the X orbit
+                float centerY = enemy.targetPosition1.y + radius; // Center of the Y orbit
+
+                // === PATROL STATE === 
+
+                if (enemy.manual)
                 {
-                    // Calcular la distancia entre la posición actual y el objetivo
-                    float distX = enemy.targetPosition1.x - enemy.rect.x;
-                    float distY = enemy.targetPosition1.y - enemy.rect.y;
+                    // Incrementar 't' para el movimiento circular
+                    float velocity = 500.0f; // Velocidad de movimiento
+                    float moveSpeed = velocity * deltaTime;
 
-                    float distance = sqrt(distX * distX + distY * distY); // Distancia total al objetivo
-
-                    enemy.enemyLoopState = false;
-                    if (distance > moveSpeed)
+                    // === 1ST OBJECTIVE ===
+                    if (enemy.enemyInitialState)
                     {
-                        // Normalizar la dirección
-                        float directionX = distX / distance;
-                        float directionY = distY / distance;
+                        // Calcular la distancia entre la posición actual y el objetivo
+                        float distX = enemy.targetPosition1.x - enemy.rect.x;
+                        float distY = enemy.targetPosition1.y - enemy.rect.y;
 
-                        enemy.rotation = atan2(directionY, directionX) * (180.0f / PI) + 90; // Convertir a grados
+                        float distance = sqrt(distX * distX + distY * distY); // Distancia total al objetivo
 
-                        // Mover al enemigo hacia el objetivo
-                        enemy.rect.x += directionX * moveSpeed;
-                        enemy.rect.y += directionY * moveSpeed;
-                    }
-
-                    else
-                    {
-                        // End of initial state
-
-                        enemy.enemyInitialState = false;
-                        enemy.enemyLoopState = true;
-
-                        // Starting loop
-                    }
-                }
-
-                // CORREGIR PUNTO DE INICIO DEL LOOP
-
-                // === LOOP MOVEMENT ===
-                else if (!enemy.enemyInitialState && enemy.enemyLoopState)
-                {
-                    float t = enemy.entryTime;
-                    float loopT = t * 0.5f;  // Speed of the loop movment
-
-                    // Movimiento
-                    float dx = cos(loopT * PI * 2) * 5 * enemy.loopDirectionX;
-                    float dy = -sin(loopT * PI * 2) * 5 * enemy.loopDirectionY;
-
-                    enemy.rect.x += dx;
-                    enemy.rect.y += dy;
-
-                    // Rotación (atan2 toma (y, x))
-                    enemy.rotation = atan2(dy, dx) * (180.0f / PI) + 90;
-
-                    if (enemy.entryTime > enemy.loopTime)
-                    {
-                        enemy.enemyLoopState = false; // End the loop
-                    }
-                }
-
-                // === FINAL STATE ==
-                else if (!enemy.enemyInitialState && !enemy.enemyLoopState)
-                {
-                    float distX = enemy.targetFinalPosition.x + globalEnemyOffsetX - enemy.rect.x; // X Distance to the final position of patrol movement
-                    float distY = enemy.targetFinalPosition.y - enemy.rect.y; // Y Distance to the final position of patrol movement
-
-                    float distance = sqrt(distX * distX + distY * distY); // Total distance to the objective
-
-                    if (distance > moveSpeed)
-                    {
-                        // Normalize the direction
-                        float directionX = distX / distance;
-                        float directionY = distY / distance;
-
-                        enemy.rotation = atan2(directionY, directionX) * (180.0f / PI) + 90; // Convertir a grados
-
-                        // Move the enemy to the objective
-                        enemy.rect.x += directionX * moveSpeed;
-                        enemy.rect.y += directionY * moveSpeed;
-                    }
-
-                    else
-                    {
-                        // Finishin patrol state
-                        enemy.rect.y = enemy.targetFinalPosition.y;
-
-                        enemy.manual = false;
-                        enemy.idle = true;
-
-                        //Starting idle movement
-                    }
-                }
-            }
-
-            // === RANDOM STATE
-            else if (enemy.idle && !enemy.random)
-            {
-                enemy.rotation = Lerp(enemy.rotation, 0.0f, 0.2f);
-
-                if (fabs(enemy.rotation) < 0.02f)
-                    enemy.rotation = 0.0f;
-
-                // Dentro del bucle de actualización del juego
-
-                // Actualizar la posición de todos los enemigos a la vez
-                for (Enemy& enemy : enemies)
-                {
-                    if (!enemy.random && enemy.idle)
-                    {
-                        enemy.rect.x = enemy.targetFinalPosition.x + globalEnemyOffsetX;
-                    }
-                }
-
-                // === Attacing manager ===
-                if (!gameOver)
-                {
-                    if (enemy.attackCooldown >= 1.5f)
-                    {
-                        enemy.attackTime = (float)GetRandomValue(1, 5000); // Random attack time
-
-                        if (enemy.attackTime <= 10)
+                        enemy.enemyLoopState = false;
+                        if (distance > moveSpeed)
                         {
-                            // End random state
+                            // Normalizar la dirección
+                            float directionX = distX / distance;
+                            float directionY = distY / distance;
 
-                            enemy.attackCooldown = 0; // Reset the cooldown
-                            enemy.canAttack = true;
-                            if (enemy.enemyClass == Mantis) attackdirnum = GetRandomValue(0, 1);
-                            enemy.random = true;
+                            enemy.rotation = atan2(directionY, directionX) * (180.0f / PI) + 90; // Convertir a grados
 
-                            // Start attacing patrol
+                            // Mover al enemigo hacia el objetivo
+                            enemy.rect.x += directionX * moveSpeed;
+                            enemy.rect.y += directionY * moveSpeed;
+                        }
+
+                        else
+                        {
+                            // End of initial state
+
+                            enemy.enemyInitialState = false;
+                            enemy.enemyLoopState = true;
+
+                            // Starting loop
                         }
                     }
 
-                    else if (enemy.attackCooldown < 1.5f)
+                    // CORREGIR PUNTO DE INICIO DEL LOOP
+
+                    // === LOOP MOVEMENT ===
+                    else if (!enemy.enemyInitialState && enemy.enemyLoopState)
                     {
-                        enemy.attackCooldown += deltaTime;
-                    }
-                }
-            }
-
-            // === Starts attack phase === 
-            else if (enemy.idle && enemy.random)
-            {
-                if (enemy.enemyClass == Draconoida)
-                {
-                    float velocity2 = 300.0f; // Movement speed
-                    float moveSpeed = velocity2 * deltaTime;
-                    enemy.attackingTimer += deltaTime;
-
-                    float t = enemy.attackingTimer;
-                    float loopT = t * 0.5f;
-
-                    // Mini loop
-                    if (enemy.attackingTimer <= 1.2f)
-                    {
-                        float dx = cos(loopT * PI * 2.5f) * 5;
-                        float dy = -sin(loopT * PI * 2.5f) * 2.5f;
+                        float t = enemy.entryTime;
+                        float loopT = t * 0.5f;  // Speed of the loop movment
 
                         // Movimiento
+                        float dx = cos(loopT * PI * 2) * 5 * enemy.loopDirectionX;
+                        float dy = -sin(loopT * PI * 2) * 5 * enemy.loopDirectionY;
+
                         enemy.rect.x += dx;
                         enemy.rect.y += dy;
 
-                        // Rotación
+                        // Rotación (atan2 toma (y, x))
                         enemy.rotation = atan2(dy, dx) * (180.0f / PI) + 90;
 
-                        if (enemy.rect.x < player.x)
+                        if (enemy.entryTime > enemy.loopTime)
                         {
-                            enemy.playerOnRight = false;
+                            enemy.enemyLoopState = false; // End the loop
                         }
-                        else enemy.playerOnRight = true;
-
-                        enemy.attackPlayerPos = player.x;
-                        enemy.enemyLoopState = true;
                     }
 
-                    else
+                    // === FINAL STATE ==
+                    else if (!enemy.enemyInitialState && !enemy.enemyLoopState)
+                    {
+                        float distX = enemy.targetFinalPosition.x + globalEnemyOffsetXN - enemy.rect.x; // X Distance to the final position of patrol movement
+                        float distY = enemy.targetFinalPosition.y - enemy.rect.y; // Y Distance to the final position of patrol movement
+
+                        float distance = sqrt(distX * distX + distY * distY); // Total distance to the objective
+
+                        if (distance > moveSpeed)
+                        {
+                            // Normalize the direction
+                            float directionX = distX / distance;
+                            float directionY = distY / distance;
+
+                            enemy.rotation = atan2(directionY, directionX) * (180.0f / PI) + 90; // Convertir a grados
+
+                            // Move the enemy to the objective
+                            enemy.rect.x += directionX * moveSpeed;
+                            enemy.rect.y += directionY * moveSpeed;
+                        }
+
+                        else
+                        {
+                            // Finishin patrol state
+                            enemy.rect.y = enemy.targetFinalPosition.y;
+
+                            enemy.manual = false;
+                            enemy.idle = true;
+
+                            //Starting idle movement
+                        }
+                    }
+                }
+
+                // === RANDOM STATE
+                else if (enemy.idle && !enemy.random)
+                {
+                    enemy.rotation = Lerp(enemy.rotation, 0.0f, 0.2f);
+
+                    if (fabs(enemy.rotation) < 0.02f)
+                        enemy.rotation = 0.0f;
+
+                    // Dentro del bucle de actualización del juego
+
+                    // Actualizar la posición de todos los enemigos a la vez
+                    for (Enemy& enemy : enemies)
+                    {
+                        if (!enemy.random && enemy.idle && enemy.enemyClass != Squid)
+                        {
+                            enemy.rect.x = enemy.targetFinalPosition.x + globalEnemyOffsetXN;
+                        }
+                    }
+
+                    // === Attacing manager ===
+                    if (!gameOver)
+                    {
+                        if (enemy.attackCooldown >= 1.5f)
+                        {
+                            enemy.attackTime = (float)GetRandomValue(1, 5000); // Random attack time
+
+                            if (enemy.attackTime <= 10)
+                            {
+                                // End random state
+
+                                enemy.attackCooldown = 0; // Reset the cooldown
+                                enemy.canAttack = true;
+                                if (enemy.enemyClass == Mantis) attackdirnum = GetRandomValue(0, 1);
+                                enemy.random = true;
+
+                                // Start attacing patrol
+                            }
+                        }
+
+                        else if (enemy.attackCooldown < 1.5f)
+                        {
+                            enemy.attackCooldown += deltaTime;
+                        }
+                    }
+                }
+
+                // === Starts attack phase === 
+                else if (enemy.idle && enemy.random)
+                {
+                    if (enemy.enemyClass == Draconoida)
+                    {
+                        float velocity2 = 300.0f; // Movement speed
+                        float moveSpeed = velocity2 * deltaTime;
+                        enemy.attackingTimer += deltaTime;
+
+                        float t = enemy.attackingTimer;
+                        float loopT = t * 0.5f;
+
+                        // Mini loop
+                        if (enemy.attackingTimer <= 1.2f)
+                        {
+                            float dx = cos(loopT * PI * 2.5f) * 5;
+                            float dy = -sin(loopT * PI * 2.5f) * 2.5f;
+
+                            // Movimiento
+                            enemy.rect.x += dx;
+                            enemy.rect.y += dy;
+
+                            // Rotación
+                            enemy.rotation = atan2(dy, dx) * (180.0f / PI) + 90;
+
+                            if (enemy.rect.x < player.x)
+                            {
+                                enemy.playerOnRight = false;
+                            }
+                            else enemy.playerOnRight = true;
+
+                            enemy.attackPlayerPos = player.x;
+                            enemy.enemyLoopState = true;
+                        }
+
+                        else
+                        {
+                            float distX1;
+
+                            // Move the enemy to the target
+
+                            if (enemy.playerOnRight) distX1 = enemy.targetFinalPosition.x - 200 - enemy.rect.x;
+                            else distX1 = enemy.targetFinalPosition.x + 200 - enemy.rect.x;
+
+                            float distY1 = player.y - 100 - enemy.rect.y;
+                            float distance1 = sqrt(distX1 * distX1 + distY1 * distY1); // Total distance to the objective
+
+                            float distX2 = enemy.targetFinalPosition.x + globalEnemyOffsetXN - enemy.rect.x;
+                            float distY2 = enemy.targetFinalPosition.y - enemy.rect.y;
+                            float distance2 = sqrt(distX2 * distX2 + distY2 * distY2); // Total distance to the objective
+
+                            if (enemy.attackingTimer >= 2.5f && enemy.canAttack)
+                            {
+                                // === Enemy shooter manager ===
+
+                                Bullet_Enemy newBullets_Enemy;
+
+                                newBullets_Enemy.rect = { enemy.rect.x + enemy.rect.width / 2, enemy.rect.y + enemy.rect.height / 2, 16, 12 };
+                                newBullets_Enemy.active = true;
+
+                                enemyBullets.push_back({ newBullets_Enemy });
+
+                                enemy.canAttack = false;
+                            }
+
+                            if (distance1 >= moveSpeed && enemy.enemyLoopState)
+                            {
+                                // Normalize the direction
+                                float directionX = distX1 / distance1;
+                                float directionY = distY1 / distance1;
+
+                                enemy.rotation = atan2(directionY, directionX) * (180.0f / PI) + 90;
+
+                                // Move the enemy to the objective
+                                enemy.rect.x += directionX * moveSpeed;
+                                enemy.rect.y += directionY * moveSpeed;
+
+                                if (enemy.rect.y >= player.y - 150)
+                                {
+                                    enemy.enemyLoopState = false;
+                                }
+                            }
+
+                            else if (!enemy.enemyLoopState)
+                            {
+                                if (distance2 > moveSpeed)
+                                {
+                                    // Normalize the direction
+                                    float directionX = distX2 / distance2;
+                                    float directionY = distY2 / distance2;
+
+                                    enemy.rotation = atan2(directionY, directionX) * (180.0f / PI) + 90; // Convertir a grados
+
+                                    // Move the enemy to the objective
+                                    enemy.rect.x += directionX * moveSpeed;
+                                    enemy.rect.y += directionY * moveSpeed;
+                                }
+
+                                else
+                                {
+                                    // Ends attacking state
+
+                                    enemy.random = false;
+                                    enemy.attackingTimer = 0.0f;
+
+                                    // Restart random state
+                                }
+                            }
+                        }
+                    }
+
+                    else if (enemy.enemyClass == Mantis)
                     {
                         float distX1;
+                        float moveSpeed = 300 * deltaTime;
+                        enemy.attackingTimer += deltaTime;
+                        /*if (attackdirnum == 0) distX1 = enemy.targetFinalPosition.x - 100 - enemy.rect.x;
+                        else distX1 = enemy.targetFinalPosition.x + 100 - enemy.rect.x;*/
 
                         // Move the enemy to the target
 
-                        if (enemy.playerOnRight) distX1 = enemy.targetFinalPosition.x - 200 - enemy.rect.x;
-                        else distX1 = enemy.targetFinalPosition.x + 200 - enemy.rect.x;
+                        if (attackdirnum == 0) distX1 = enemy.targetFinalPosition.x - 100 - enemy.rect.x;
+                        else distX1 = enemy.targetFinalPosition.x + 100 - enemy.rect.x;
 
-                        float distY1 = player.y - 100 - enemy.rect.y;
+                        float distY1 = screenHeight / 2 - enemy.rect.y;
                         float distance1 = sqrt(distX1 * distX1 + distY1 * distY1); // Total distance to the objective
 
-                        float distX2 = enemy.targetFinalPosition.x + globalEnemyOffsetX - enemy.rect.x;
+                        float distX2 = enemy.targetFinalPosition.x + globalEnemyOffsetXN - enemy.rect.x;
                         float distY2 = enemy.targetFinalPosition.y - enemy.rect.y;
                         float distance2 = sqrt(distX2 * distX2 + distY2 * distY2); // Total distance to the objective
 
-                        if (enemy.attackingTimer >= 2.5f && enemy.canAttack)
-                        {
-                            // === Enemy shooter manager ===
-
-                            Bullet_Enemy newBullets_Enemy;
-
-                            newBullets_Enemy.rect = { enemy.rect.x + enemy.rect.width / 2, enemy.rect.y + enemy.rect.height / 2, 16, 12 };
-                            newBullets_Enemy.active = true;
-
-                            enemyBullets.push_back({ newBullets_Enemy });
-
-                            enemy.canAttack = false;
-                        }
-
-                        if (distance1 >= moveSpeed && enemy.enemyLoopState)
+                        if (enemy.attackingTimer <= 1)
                         {
                             // Normalize the direction
                             float directionX = distX1 / distance1;
                             float directionY = distY1 / distance1;
 
-                            enemy.rotation = atan2(directionY, directionX) * (180.0f / PI) + 90;
+                            enemy.rotation = atan2(directionY, directionX) * (180.0f / PI) + 90; // Convertir a grados
 
                             // Move the enemy to the objective
                             enemy.rect.x += directionX * moveSpeed;
                             enemy.rect.y += directionY * moveSpeed;
 
-                            if (enemy.rect.y >= player.y - 150)
-                            {
-                                enemy.enemyLoopState = false;
-                            }
+                            enemy.playerPos.x = player.x;
+                            enemy.playerPos.y = player.y;
                         }
 
-                        else if (!enemy.enemyLoopState)
+                        else if (enemy.attackingTimer > 1 && !enemy.hasArribed)
+                        {
+                            // Normalize the direction
+                            float playerPosX = enemy.playerPos.x - enemy.rect.x;
+                            float playerPosY = enemy.playerPos.y - enemy.rect.y;
+                            float distanceToPlayer = sqrt(playerPosX * playerPosX + playerPosY * playerPosY);
+
+                            float directionX = playerPosX / distanceToPlayer;
+                            float directionY = playerPosY / distanceToPlayer;
+
+                            enemy.rotation = atan2(directionY, directionX) * (180.0f / PI) + 90; // Convertir a grados
+
+                            // Move the enemy to the objective
+                            enemy.rect.x += directionX * moveSpeed;
+                            enemy.rect.y += directionY * moveSpeed;
+
+                            if (enemy.rect.y >= player.y - 1) enemy.hasArribed = true;
+                        }
+
+                        else if (enemy.hasArribed)
                         {
                             if (distance2 > moveSpeed)
                             {
@@ -425,96 +540,158 @@ void Enemy::UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, std::vector<Ene
 
                                 enemy.random = false;
                                 enemy.attackingTimer = 0.0f;
+                                enemy.hasArribed = false;
 
                                 // Restart random state
                             }
                         }
                     }
+
+                    else if (enemy.enemyClass == Kraken)
+                    {
+
+                    }
+                }
+            }
+        }
+
+        else
+        {
+            enemy.entryTime += deltaTime; // Timer when the enemy has started moving
+
+            // === NEW ENEMY MOVEMENT ===
+
+            float delayTime = 0.0f; // Delay for the enemy.entrytime
+
+            // Enemy start de movement with a delay 
+            if (enemy.entryTime >= delayTime)
+            {
+                // === 1ST OBJECTIVE ===
+                if (enemy.enemyInitialState)
+                {
+                    // Incrementar 't' para el movimiento circular
+                    float velocity = 1500.0f; // Velocidad de movimiento
+                    float moveSpeed = velocity * deltaTime;
+
+                    // Calcular la distancia entre la posición actual y el objetivo
+                    float distX = 0;
+
+                    if (enemy.loopDirectionX == 1)
+                    {
+                        distX = 1300 - enemy.rect.x;
+                    }
+
+                    else
+                    {
+                        distX = -148 - enemy.rect.x;
+                    }
+
+                    float distance = sqrt(distX * distX); // Distancia total al objetivo
+
+                    enemy.enemyLoopState = false;
+                    if (distance > moveSpeed)
+                    {
+                        // Normalizar la dirección
+                        float directionX = distX / distance;
+
+                        enemy.rotation = -90; // Convertir a grados
+
+                        // Mover al enemigo hacia el objetivo
+                        enemy.rect.x += directionX * moveSpeed;
+                    }
+
+                    else
+                    {
+                        // End of initial state
+                        enemy.rect.y = 60;
+
+                        enemy.enemyInitialState = false;
+                        enemy.manual = true;
+
+                        // Starting loop
+                    }
                 }
 
-                else if (enemy.enemyClass == Mantis)
+                else if (enemy.manual)
                 {
-                    float distX1;
-                    float moveSpeed = 300 * deltaTime;
-                    enemy.attackingTimer += deltaTime;
-                    /*if (attackdirnum == 0) distX1 = enemy.targetFinalPosition.x - 100 - enemy.rect.x;
-                    else distX1 = enemy.targetFinalPosition.x + 100 - enemy.rect.x;*/
+                    // Incrementar 't' para el movimiento circular
+                    float velocity = 1000.0f; // Velocidad de movimiento
+                    float moveSpeed = velocity * deltaTime;
 
-                    // Move the enemy to the target
+                    float distX = enemy.targetFinalPosition.x + globalEnemyOffsetX - enemy.rect.x; // X Distance to the final position of patrol movement
+                    float distY = 60 - enemy.rect.y; // Y Distance to the final position of patrol movement
 
-                    if (attackdirnum == 0) distX1 = enemy.targetFinalPosition.x - 100 - enemy.rect.x;
-                    else distX1 = enemy.targetFinalPosition.x + 100 - enemy.rect.x;
+                    float distance = sqrt(distX * distX + distY * distY); // Total distance to the objective
 
-                    float distY1 = screenHeight / 2 - enemy.rect.y;
-                    float distance1 = sqrt(distX1 * distX1 + distY1 * distY1); // Total distance to the objective
-
-                    float distX2 = enemy.targetFinalPosition.x + globalEnemyOffsetX - enemy.rect.x;
-                    float distY2 = enemy.targetFinalPosition.y - enemy.rect.y;
-                    float distance2 = sqrt(distX2 * distX2 + distY2 * distY2); // Total distance to the objective
-
-                    if (enemy.attackingTimer <= 1)
+                    if (distance > moveSpeed)
                     {
                         // Normalize the direction
-                        float directionX = distX1 / distance1;
-                        float directionY = distY1 / distance1;
+                        float directionX = distX / distance;
+                        float directionY = distY / distance;
 
                         enemy.rotation = atan2(directionY, directionX) * (180.0f / PI) + 90; // Convertir a grados
 
                         // Move the enemy to the objective
                         enemy.rect.x += directionX * moveSpeed;
                         enemy.rect.y += directionY * moveSpeed;
-
-                        enemy.playerPos.x = player.x;
-                        enemy.playerPos.y = player.y;
                     }
 
-                    else if (enemy.attackingTimer > 1 && !enemy.hasArribed)
+                    else
                     {
-                        // Normalize the direction
-                        float playerPosX = enemy.playerPos.x - enemy.rect.x;
-                        float playerPosY = enemy.playerPos.y - enemy.rect.y;
-                        float distanceToPlayer = sqrt(playerPosX * playerPosX + playerPosY * playerPosY);
+                        // Finishin patrol state
+                        enemy.rect.y = 60;
 
-                        float directionX = playerPosX / distanceToPlayer;
-                        float directionY = playerPosY / distanceToPlayer;
+                        enemy.manual = false;
+                        enemy.idle = true;
 
-                        enemy.rotation = atan2(directionY, directionX) * (180.0f / PI) + 90; // Convertir a grados
-
-                        // Move the enemy to the objective
-                        enemy.rect.x += directionX * moveSpeed;
-                        enemy.rect.y += directionY * moveSpeed;
-
-                        if (enemy.rect.y >= player.y - 1) enemy.hasArribed = true;
+                        //Starting idle movement
                     }
+                }
 
-                    else if (enemy.hasArribed)
+                else if (enemy.idle = true)
+                {
+                    enemy.rotation = Lerp(enemy.rotation, 0.0f, 0.2f);
+
+                    if (fabs(enemy.rotation) < 0.02f)
+                        enemy.rotation = 0.0f;
+
+                    // Actualizar la posición de todos los enemigos a la vez
+                    for (Enemy& enemy : enemies)
                     {
-                        if (distance2 > moveSpeed)
+                        if (!enemy.random && enemy.idle && enemy.enemyClass == Squid)
                         {
-                            // Normalize the direction
-                            float directionX = distX2 / distance2;
-                            float directionY = distY2 / distance2;
-
-                            enemy.rotation = atan2(directionY, directionX) * (180.0f / PI) + 90; // Convertir a grados
-
-                            // Move the enemy to the objective
-                            enemy.rect.x += directionX * moveSpeed;
-                            enemy.rect.y += directionY * moveSpeed;
-                        }
-
-                        else
-                        {
-                            // Ends attacking state
-
-                            enemy.random = false;
-                            enemy.attackingTimer = 0.0f;
-                            enemy.hasArribed = false;
-
-                            // Restart random state
+                            enemy.rect.x = enemy.targetFinalPosition.x + globalEnemyOffsetX;
                         }
                     }
-                    cout << enemy.rect.y << endl;
-                    cout << enemy.playerPos.y << endl;
+
+                    // === Attacing manager ===
+                    if (!gameOver)
+                    {
+                        if (enemy.attackCooldown >= 1.5f)
+                        {
+                            enemy.attackTime = (float)GetRandomValue(1, 500); // Random attack time
+
+                            if (enemy.attackTime <= 10)
+                            {
+                                // End random state
+
+                                enemy.attackCooldown = 0; // Reset the cooldown
+                                Bullet_Enemy newBullets_Enemy;
+
+                                newBullets_Enemy.rect = { enemy.rect.x + enemy.rect.width / 2, enemy.rect.y + enemy.rect.height / 2, 16, 12 };
+                                newBullets_Enemy.active = true;
+
+                                enemyBullets.push_back({ newBullets_Enemy });
+
+                                // Start attacing patrol
+                            }
+                        }
+
+                        else if (enemy.attackCooldown < 1.5f)
+                        {
+                            enemy.attackCooldown += deltaTime;
+                        }
+                    }
                 }
             }
         }
