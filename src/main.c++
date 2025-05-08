@@ -150,6 +150,7 @@ int main(void)
     Texture2D squidDeathAnim = LoadTexture("resources/enemies/deathEnemyAnim.png");
 
     Texture2D kraken = LoadTexture("resources/enemies/nave kraken.png");
+    Texture2D krakenHit = LoadTexture("resources/enemies/nave kraken hitten.png");
     Texture2D krakenDeathAnim = LoadTexture("resources/enemies/deathEnemyAnim.png");
 
     Texture2D boss = LoadTexture("resources/enemies/BOSS.png");
@@ -165,7 +166,7 @@ int main(void)
 
     // === MENU SPRITES === //
     Texture2D menuBackground = LoadTexture("resources/backgrounds/Menu Background.png");
-    Texture2D gamePlayBackground = LoadTexture("resources/backgrounds/Gameplay Background.png");
+    Texture2D gamePlayBackgroundLevel1 = LoadTexture("resources/backgrounds/Gameplay Background Level 1.png");
 
     Texture2D logo = LoadTexture("resources/backgrounds/Logo Game.png");
 
@@ -331,18 +332,12 @@ int main(void)
                 backgrounGameFramesCounter = 0;
                 currentBackgrounGameFrameX++;
 
-                if (currentBackgrounGameFrameX >= 3 && currentBackgrounGameFrameY >= 6)
-                {
-                    currentBackgrounGameFrameX = 0;
-                    currentBackgrounGameFrameY = 0;
-                }
-
-                if (currentBackgrounGameFrameX >= 8)
+                if (currentBackgrounGameFrameX >= 10)
                 {
                     currentBackgrounGameFrameX = 0;
                     currentBackgrounGameFrameY++;
 
-                    if (currentBackgrounGameFrameY >= 7)
+                    if (currentBackgrounGameFrameY >= 10)
                     {
                         currentBackgrounGameFrameY = 0;
                     }
@@ -467,8 +462,15 @@ int main(void)
                                 if (currentEnemyDestroySound >= 4) currentEnemyDestroySound = 0;
 
                                 bullet.active = false;
+
+                                // if(enemy.enemyClass == Kraken) 
                                 enemy.gotHit = true;
-                                score += 100;
+
+                                if (enemy.enemyClass == Draconoida) score += 100;
+                                else if (enemy.enemyClass == Mantis) score += 200;
+                                else if (enemy.enemyClass == Squid) score += 800;
+                                else if (enemy.enemyClass == Kraken) score += 500;
+
                                 currentEnemies--;
 
                                 // 20% to generate the item/object
@@ -592,7 +594,7 @@ int main(void)
                 if (currentEnemies == 0 && currentWave == 0)
                 {
                     currentEnemies += 5;
-                    enemy.SpawnEnemies(enemies, maxEnemies, 60.0f, -100.0f, 1, -1, 3.5f, screenWidth / 1.5f, screenHeight / 2.5f, currentEnemies, 3); // Left
+                    enemy.SpawnEnemies(enemies, maxEnemies, 60.0f, -100.0f, -1, -1, 3.5f, screenWidth / 1.5f, screenHeight / 2.5f, currentEnemies, 3); // Left
                     currentWave++;
                 }
                 // === Wave 2 ===
@@ -732,7 +734,7 @@ int main(void)
         // Draw all the scene
         BeginDrawing();
         ClearBackground(BLACK);
-        DrawTextureRec(gamePlayBackground, backgroundGameFrameRec, { 0, 0 }, WHITE);
+        DrawTextureRec(gamePlayBackgroundLevel1, backgroundGameFrameRec, { 0, 0 }, WHITE);
 
         // Draw the bullets
         for (const Bullet& bullet : bullets)
@@ -972,7 +974,7 @@ int main(void)
     UnloadTexture(shipSpriteDouble);
     UnloadTexture(draconoida);
     UnloadTexture(bulletSprite);
-    UnloadTexture(gamePlayBackground);
+    UnloadTexture(gamePlayBackgroundLevel1);
     UnloadTexture(menuBackground);
     UnloadFont(font);
 

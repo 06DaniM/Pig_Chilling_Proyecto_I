@@ -529,13 +529,21 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\Bullet.h" />
+    <ClInclude Include="..\..\src\Draconoida.h" />
     <ClInclude Include="..\..\src\Enemy.h" />
+    <ClInclude Include="..\..\src\Kraken.h" />
+    <ClInclude Include="..\..\src\Mantis.h" />
+    <ClInclude Include="..\..\src\Squid.h" />
     <ClInclude Include="..\..\src\Timer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\Bullet.cpp" />
+    <ClCompile Include="..\..\src\Draconoida.cpp" />
     <ClCompile Include="..\..\src\Enemy.cpp" />
+    <ClCompile Include="..\..\src\Kraken.cpp" />
     <ClCompile Include="..\..\src\main.c++" />
+    <ClCompile Include="..\..\src\Mantis.cpp" />
+    <ClCompile Include="..\..\src\Squid.cpp" />
     <ClCompile Include="..\..\src\Timer.cpp" />
   </ItemGroup>
   <ItemGroup>

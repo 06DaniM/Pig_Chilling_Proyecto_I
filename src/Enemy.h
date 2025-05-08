@@ -1,6 +1,5 @@
 #ifndef ENEMY_H
 #define ENEMY_H
-
 #include <vector>
 #include "raylib.h"
 
@@ -62,6 +61,7 @@ public:
     void SpawnEnemies(std::vector<Enemy>& enemies, int numberEnemies, float baseHeight, float baseWidth, int directionX, int directionY, float loopTime, float targetX, float targetY, int currentEnemies, int enemyPreset);
     void UpdateEnemyOffsetNormal(float deltaTime);
     void UpdateEnemyOffset(float deltaTime);
+    float Lerp(float a, float b, float t);
 };
 
 #endif // ENEMY_H
