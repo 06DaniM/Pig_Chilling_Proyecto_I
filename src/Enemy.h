@@ -52,6 +52,7 @@ public:
     bool hasArribed;
     int enemyDeathFramesCounter;
     int currentEnemyDeathFrame;
+    float enemyStartX;
 
     // Constructor
     Enemy();

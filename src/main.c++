@@ -594,7 +594,7 @@ int main(void)
                 if (currentEnemies == 0 && currentWave == 0)
                 {
                     currentEnemies += 5;
-                    enemy.SpawnEnemies(enemies, maxEnemies, 60.0f, -100.0f, -1, -1, 3.5f, screenWidth / 1.5f, screenHeight / 2.5f, currentEnemies, 3); // Left
+                    enemy.SpawnEnemies(enemies, maxEnemies, 60.0f, -100.0f, 1, -1, 3.5f, screenWidth / 1.5f, screenHeight / 2.5f, currentEnemies, 3); // Left
                     currentWave++;
                 }
                 // === Wave 2 ===

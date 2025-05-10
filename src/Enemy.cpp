@@ -18,7 +18,7 @@ Enemy::Enemy()
     targetIdlePosition{ 0.0f, 0.0f }, playerPos{ 0.0f, 0.0f }, attackPlayerPos(0.0f), entryTime(0.0f), rotation(0.0f), index(0),
     loopDirectionX(0), loopDirectionY(0), loopTime(0.0f), currentEnemies(0), enemyInitialState(true), 
     enemyLoopState(false), manual(true), idle(false), random(false), right(false), playerOnRight(false), 
-    canAttack(true), gotHit(false), hasArribed(false), enemyDeathFramesCounter(0), currentEnemyDeathFrame(0) { }
+    canAttack(true), gotHit(false), hasArribed(false), enemyDeathFramesCounter(0), currentEnemyDeathFrame(0), enemyStartX(0) { }
 
 DraconoidaEnemy draconoida;
 MantisEnemy mantis;
@@ -156,6 +156,7 @@ void Enemy::SpawnEnemies(std::vector<Enemy>& enemies, int numberEnemies, float b
 
         if (newEnemy.enemyClass == Squid)
         {
+            newEnemy.enemyStartX = startX;
             startY = screenHeight / 2 - 150;
             targetY = startY;
 
@@ -386,7 +387,7 @@ void Enemy::UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, std::vector<Ene
         // === SQUID === // 
         else
         {
-            squid.SquidAttackManager(enemyBullets, enemies, enemy, player, GetFrameTime(), globalEnemyOffsetX, startX, gameOver);
+            squid.SquidAttackManager(enemyBullets, enemies, enemy, player, GetFrameTime(), globalEnemyOffsetX, enemy.enemyStartX, gameOver);
         }
     }
 }
