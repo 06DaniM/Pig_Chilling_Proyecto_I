@@ -463,8 +463,8 @@ int main(void)
 
                                 bullet.active = false;
 
-                                // if(enemy.enemyClass == Kraken) 
-                                enemy.gotHit = true;
+                                if (enemy.enemyClass == Kraken && !enemy.krakenHit) enemy.krakenHit = true;
+                                else enemy.gotHit = true;
 
                                 if (enemy.enemyClass == Draconoida) score += 100;
                                 else if (enemy.enemyClass == Mantis) score += 200;
@@ -594,7 +594,7 @@ int main(void)
                 if (currentEnemies == 0 && currentWave == 0)
                 {
                     currentEnemies += 5;
-                    enemy.SpawnEnemies(enemies, maxEnemies, 60.0f, -100.0f, 1, -1, 3.5f, screenWidth / 1.5f, screenHeight / 2.5f, currentEnemies, 3); // Left
+                    enemy.SpawnEnemies(enemies, maxEnemies, 60.0f, -100.0f, 1, -1, 3.5f, screenWidth / 1.5f, screenHeight / 2.5f, currentEnemies, 4); // Left
                     currentWave++;
                 }
                 // === Wave 2 ===
@@ -827,7 +827,8 @@ int main(void)
                     if (enemy.enemyClass == Draconoida) DrawTexturePro(draconoida, source, dest, origin, enemy.rotation, WHITE);
                     else if (enemy.enemyClass == Mantis) DrawTexturePro(mantis, source, dest, origin, enemy.rotation, WHITE);
                     else if (enemy.enemyClass == Squid) DrawTexturePro(squid, source, dest, origin, enemy.rotation, WHITE);
-                    else DrawTexturePro(kraken, source, dest, origin, enemy.rotation, WHITE);
+                    else if (enemy.enemyClass == Kraken && !enemy.krakenHit) DrawTexturePro(kraken, source, dest, origin, enemy.rotation, WHITE);
+                    else DrawTexturePro(krakenHit, source, dest, origin, enemy.rotation, WHITE);
                 }
 
                 else

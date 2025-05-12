@@ -10,7 +10,7 @@ public:
     // Constructor
     KrakenEnemy();
     
-    void KrakenAttackManager(Enemy& enemy);
+    void KrakenAttackManager(std::vector<Bullet_Enemy>& enemyBullets, std::vector<Enemy>& enemies, Enemy& enemy, Rectangle& player, float deltaTime, float globalEnemyOffsetXN);
 };
 
 #endif // KRAKEN_H

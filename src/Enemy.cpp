@@ -18,7 +18,7 @@ Enemy::Enemy()
     targetIdlePosition{ 0.0f, 0.0f }, playerPos{ 0.0f, 0.0f }, attackPlayerPos(0.0f), entryTime(0.0f), rotation(0.0f), index(0),
     loopDirectionX(0), loopDirectionY(0), loopTime(0.0f), currentEnemies(0), enemyInitialState(true), 
     enemyLoopState(false), manual(true), idle(false), random(false), right(false), playerOnRight(false), 
-    canAttack(true), gotHit(false), hasArribed(false), enemyDeathFramesCounter(0), currentEnemyDeathFrame(0), enemyStartX(0) { }
+    canAttack(true), gotHit(false), krakenHit(false), hasArribed(false), enemyDeathFramesCounter(0), currentEnemyDeathFrame(0), enemyStartX(0) { }
 
 DraconoidaEnemy draconoida;
 MantisEnemy mantis;
@@ -378,7 +378,7 @@ void Enemy::UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, std::vector<Ene
 
                     else if (enemy.enemyClass == Kraken)
                     {
-                        // kraken.KrakenAttackManager(enemyBullets, enemies, enemy, player, GetFrameTime(), globalEnemyOffsetXN);
+                        kraken.KrakenAttackManager(enemyBullets, enemies, enemy, player, GetFrameTime(), globalEnemyOffsetXN);
                     }
                 }
             }
