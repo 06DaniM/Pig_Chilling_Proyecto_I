@@ -33,6 +33,7 @@ SOFTWARE.
 #include <cmath>
 #include <iostream>
 #include "Enemy.h"
+#include "Kraken.h"
 #include "Bullet.h"
 #include "Timer.h"
 
@@ -53,6 +54,7 @@ struct PowerUp {
 };
 
 Enemy enemy;
+KrakenEnemy krakenEnemy;
 
 Timer menuDelayTimer;
 bool isMenuTimerStarted = false;
@@ -254,6 +256,8 @@ int main(void)
             }
         }
 
+        if (krakenEnemy.playerPicked) canAct = false;
+
         // Menu manager
         if (inMenu)
         {
@@ -404,31 +408,6 @@ int main(void)
                 {
                     isWinTimerStarted = false;
                     hasWon = true;  // Solo se marca como ganado al terminar el temporizador
-                }
-            }
-
-            if (isDeathTimerStarted)
-            {
-                deathDelayTimer.Update(GetFrameTime());  // Actualiza el temporizador
-
-                if (deathDelayTimer.IsFinished())
-                {
-                    invencibilityTimer.Start(2);
-                    isInvencibilityDelayTimerStarted = true;
-
-                    isDeathTimerStarted = false;
-                    playerGotHit = false;
-
-                    playerDieFramesCounter = 0;
-                    currentPlayerDieFrame = 0;
-                    if (life <= 0) gameOver = true;  // Solo se marca como ganado al terminar el temporizador
-                    else
-                    {
-                        player.x = (screenWidth - player.width) / 2.0f;
-                        player.y = screenHeight / 1.5f;
-                        isVisible = true;
-                        canAct = true;
-                    }
                 }
             }
 
@@ -699,6 +678,32 @@ int main(void)
                 if (invencibilityTimer.IsFinished())
                 {
                     isInvencibilityDelayTimerStarted = false;
+                }
+            }
+
+            if (isDeathTimerStarted)
+            {
+                deathDelayTimer.Update(GetFrameTime());  // Actualiza el temporizador
+
+                if (deathDelayTimer.IsFinished())
+                {
+                    if (life <= 0) gameOver = true;  // Solo se marca como ganado al terminar el temporizador
+                    else
+                    {
+                        player.x = (screenWidth - player.width) / 2.0f;
+                        player.y = screenHeight / 1.5f;
+                        isVisible = true;
+                        canAct = true;
+                    }
+
+                    invencibilityTimer.Start(2);
+                    isInvencibilityDelayTimerStarted = true;
+
+                    isDeathTimerStarted = false;
+                    playerGotHit = false;
+
+                    playerDieFramesCounter = 0;
+                    currentPlayerDieFrame = 0;
                 }
             }
 

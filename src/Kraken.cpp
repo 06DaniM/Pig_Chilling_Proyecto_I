@@ -5,8 +5,8 @@
 using namespace std;
 
 // Enemy constructor
-KrakenEnemy::KrakenEnemy() {}
-
+KrakenEnemy::KrakenEnemy() : attackCollider({ 0, 0, 0, 10 }), playerPicked(false) {}
+ 
 const int screenWidth = 1152;
 const int screenHeight = 896;
 
@@ -47,7 +47,7 @@ void KrakenEnemy::KrakenAttackManager(std::vector<Bullet_Enemy>& enemyBullets, s
         float distX2 = enemy.targetFinalPosition.x + globalEnemyOffsetXN - enemy.rect.x;
         float distY2 = enemy.targetFinalPosition.y - enemy.rect.y;
         float distance2 = sqrt(distX2 * distX2 + distY2 * distY2); // Total distance to the objective
-        
+
         if (distance1 >= moveSpeed && enemy.enemyLoopState)
         {
             // Normalize the direction
@@ -60,7 +60,7 @@ void KrakenEnemy::KrakenAttackManager(std::vector<Bullet_Enemy>& enemyBullets, s
             enemy.rect.x += directionX * moveSpeed;
             enemy.rect.y += directionY * moveSpeed;
 
-            if (enemy.rect.y >= player.y - 95 )
+            if (enemy.rect.y >= player.y - 95)
             {
                 enemy.enemyLoopState = false;
                 enemy.canAttack = true;
@@ -71,26 +71,67 @@ void KrakenEnemy::KrakenAttackManager(std::vector<Bullet_Enemy>& enemyBullets, s
         {
             if (enemy.canAttack)
             {
+                // === ATTACK LOGIC === //
+                attackCollider.x = enemy.rect.x + 20;
+                attackCollider.y = player.y;
 
+                float distX = attackCollider.x - player.x;
+                float distance = sqrt(distX * distX);
+
+                float distX1 = enemy.targetFinalPosition.x - enemy.rect.x;
+                float distY1 = enemy.targetFinalPosition.y - 300 - enemy.rect.y;
+                float distance1 = sqrt(distX1 * distX1 + distY1 * distY1);
+
+                float directionX = distX1 / distance1;
+                float directionY = distY1 / distance1;
+
+                enemy.rotation = Lerp(enemy.rotation, 0.0f, 0.2f);
+
+                if (fabs(enemy.rotation) < 0.02f)
+                    enemy.rotation = 0.0f;
+
+                if (CheckCollisionRecs(attackCollider, player))
+                {
+                    if (player.x != enemy.rect.x)
+                    {
+                        player.x = attackCollider.x - player.width/2+7.5f;
+                    }
+                    playerPicked = true;
+                }
+
+                if (playerPicked && distance1 < moveSpeed)
+                {
+                    player.x = attackCollider.x - player.width / 2 + 7.5f;
+                    player.y = enemy.rect.y + 90;
+
+                    enemy.rect.x += directionX * moveSpeed;
+                    enemy.rect.y += directionY * moveSpeed;
+                }
+
+                else if (playerPicked && distance1 > moveSpeed)
+                {
+                    enemy.canAttack = false;
+                }
             }
 
-            else if (distance2 > moveSpeed && !enemy.canAttack)
-            {
-                // Normalize the direction
-                float directionX = distX2 / distance2;
-                float directionY = distY2 / distance2;
+            //else if (distance2 > moveSpeed && !enemy.canAttack)
+            //{
+            //    // Normalize the direction
+            //    float directionX = distX2 / distance2;
+            //    float directionY = distY2 / distance2;
 
-                enemy.rotation = atan2(directionY, directionX) * (180.0f / PI) + 90; // Convertir a grados
+            //    enemy.rotation = atan2(directionY, directionX) * (180.0f / PI) + 90; // Convertir a grados
 
-                // Move the enemy to the objective
-                enemy.rect.x += directionX * moveSpeed;
-                enemy.rect.y += directionY * moveSpeed;
-            }
+            //    // Move the enemy to the objective
+            //    enemy.rect.x += directionX * moveSpeed;
+            //    enemy.rect.y += directionY * moveSpeed;
+            //}
 
             else
             {
                 // Ends attacking state
 
+                enemy.rect = player;
                 enemy.random = false;
                 enemy.attackingTimer = 0.0f;
 

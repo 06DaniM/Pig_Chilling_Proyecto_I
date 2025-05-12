@@ -7,6 +7,8 @@
 
 class KrakenEnemy : public Enemy {
 public:
+    Rectangle attackCollider;
+    bool playerPicked;
     // Constructor
     KrakenEnemy();
     
