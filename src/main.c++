@@ -127,6 +127,7 @@ int main(void)
     int playerDieFramesCounter = 0;
 
     std::vector<Enemy> enemies; // Vector to manage the generated enemies 
+    std::vector<KrakenEnemy> krakens;
     std::vector<PowerUp> powerUps; // Vector to manage the generated power ups 
 
     int totalWaves = 4; // Number of waves per screen
@@ -443,49 +444,52 @@ int main(void)
                                 bullet.active = false;
 
                                 if (enemy.enemyClass == Kraken && !enemy.krakenHit) enemy.krakenHit = true;
-                                else enemy.gotHit = true;
-
-                                if (enemy.enemyClass == Draconoida) score += 100;
-                                else if (enemy.enemyClass == Mantis) score += 200;
-                                else if (enemy.enemyClass == Squid) score += 800;
-                                else if (enemy.enemyClass == Kraken) score += 500;
-
-                                currentEnemies--;
-
-                                // 20% to generate the item/object
-                                if (GetRandomValue(1, 100) < 5) // 20% de probabilidad de generar un power-up
+                                else
                                 {
-                                    // Lista de power-ups disponibles según los estados actuales y los que ya están en pantalla
-                                    std::vector<PowerUpType> availablePowerUps;
+                                    enemy.gotHit = true;
 
-                                    PowerUp newPowerUp;
+                                    if (enemy.enemyClass == Draconoida) score += 100;
+                                    else if (enemy.enemyClass == Mantis) score += 200;
+                                    else if (enemy.enemyClass == Squid) score += 800;
+                                    else if (enemy.enemyClass == Kraken) score += 500;
 
-                                    bool doubleShotOnScreen = false;
-                                    bool shieldOnScreen = false;
+                                    currentEnemies--;
 
-                                    // Verificar si ya hay un power-up de cada tipo en pantalla
-                                    for (const auto& powerUp : powerUps)
+                                    // 20% to generate the item/object
+                                    if (GetRandomValue(1, 100) < 5) // 20% de probabilidad de generar un power-up
                                     {
-                                        if (powerUp.type == Double_shot) doubleShotOnScreen = true;
-                                        if (powerUp.type == Shield) shieldOnScreen = true;
+                                        // Lista de power-ups disponibles según los estados actuales y los que ya están en pantalla
+                                        std::vector<PowerUpType> availablePowerUps;
+
+                                        PowerUp newPowerUp;
+
+                                        bool doubleShotOnScreen = false;
+                                        bool shieldOnScreen = false;
+
+                                        // Verificar si ya hay un power-up de cada tipo en pantalla
+                                        for (const auto& powerUp : powerUps)
+                                        {
+                                            if (powerUp.type == Double_shot) doubleShotOnScreen = true;
+                                            if (powerUp.type == Shield) shieldOnScreen = true;
+                                        }
+
+                                        // Solo añadir si el power-up no está activo ni en pantalla
+                                        if (!doubleShot && !doubleShotOnScreen) availablePowerUps.push_back(Double_shot);
+                                        if (!shield && !shieldOnScreen) availablePowerUps.push_back(Shield);
+
+                                        // Solo generamos un power-up si hay disponibles
+                                        if (!availablePowerUps.empty())
+                                        {
+                                            newPowerUp.rect = { enemy.rect.x + enemy.rect.width / 2, enemy.rect.y + enemy.rect.height / 2, 20, 20 };
+
+                                            // Convertir size_t a int de forma segura
+                                            int maxIndex = static_cast<int>(availablePowerUps.size()) - 1;
+                                            newPowerUp.type = availablePowerUps[GetRandomValue(0, maxIndex)];
+
+                                            powerUps.push_back(newPowerUp);
+                                        }
+                                        newPowerUp.active = true;
                                     }
-
-                                    // Solo añadir si el power-up no está activo ni en pantalla
-                                    if (!doubleShot && !doubleShotOnScreen) availablePowerUps.push_back(Double_shot);
-                                    if (!shield && !shieldOnScreen) availablePowerUps.push_back(Shield);
-
-                                    // Solo generamos un power-up si hay disponibles
-                                    if (!availablePowerUps.empty())
-                                    {
-                                        newPowerUp.rect = { enemy.rect.x + enemy.rect.width / 2, enemy.rect.y + enemy.rect.height / 2, 20, 20 };
-
-                                        // Convertir size_t a int de forma segura
-                                        int maxIndex = static_cast<int>(availablePowerUps.size()) - 1;
-                                        newPowerUp.type = availablePowerUps[GetRandomValue(0, maxIndex)];
-
-                                        powerUps.push_back(newPowerUp);
-                                    }
-                                    newPowerUp.active = true;
                                 }
 
                                 break;

@@ -115,19 +115,6 @@ void KrakenEnemy::KrakenAttackManager(std::vector<Bullet_Enemy>& enemyBullets, s
                 }
             }
 
-            //else if (distance2 > moveSpeed && !enemy.canAttack)
-            //{
-            //    // Normalize the direction
-            //    float directionX = distX2 / distance2;
-            //    float directionY = distY2 / distance2;
-
-            //    enemy.rotation = atan2(directionY, directionX) * (180.0f / PI) + 90; // Convertir a grados
-
-            //    // Move the enemy to the objective
-            //    enemy.rect.x += directionX * moveSpeed;
-            //    enemy.rect.y += directionY * moveSpeed;
-            //}
-
             else
             {
                 // Ends attacking state
