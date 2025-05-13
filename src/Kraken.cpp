@@ -90,7 +90,7 @@ void KrakenEnemy::KrakenAttackManager(std::vector<Bullet_Enemy>& enemyBullets, s
                 if (fabs(enemy.rotation) < 0.02f)
                     enemy.rotation = 0.0f;
 
-                if (CheckCollisionRecs(attackCollider, player))
+                if (CheckCollisionRecs(attackCollider, player) && !playerPicked)
                 {
                     if (player.x != enemy.rect.x)
                     {
@@ -99,7 +99,7 @@ void KrakenEnemy::KrakenAttackManager(std::vector<Bullet_Enemy>& enemyBullets, s
                     playerPicked = true;
                 }
 
-                if (playerPicked && distance1 < moveSpeed)
+                if (playerPicked && distance1 > moveSpeed)
                 {
                     player.x = attackCollider.x - player.width / 2 + 7.5f;
                     player.y = enemy.rect.y + 90;
@@ -108,9 +108,10 @@ void KrakenEnemy::KrakenAttackManager(std::vector<Bullet_Enemy>& enemyBullets, s
                     enemy.rect.y += directionY * moveSpeed;
                 }
 
-                else if (playerPicked && distance1 > moveSpeed)
+                else if (player.x < screenHeight - 90)
                 {
                     enemy.canAttack = false;
+                    enemy.rect = player;
                 }
             }
 
@@ -131,9 +132,7 @@ void KrakenEnemy::KrakenAttackManager(std::vector<Bullet_Enemy>& enemyBullets, s
             {
                 // Ends attacking state
 
-                enemy.rect = player;
-                enemy.random = false;
-                enemy.attackingTimer = 0.0f;
+                enemy.active = false;
 
                 // Restart random state
             }
