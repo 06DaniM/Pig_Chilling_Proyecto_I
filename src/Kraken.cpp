@@ -10,7 +10,7 @@ KrakenEnemy::KrakenEnemy() : attackCollider({ 0, 0, 0, 10 }), playerPicked(false
 const int screenWidth = 1152;
 const int screenHeight = 896;
 
-void KrakenEnemy::KrakenAttackManager(std::vector<Bullet_Enemy>& enemyBullets, std::vector<Enemy>& enemies, Enemy& enemy, Rectangle& player, float deltaTime, float globalEnemyOffsetXN)
+void KrakenEnemy::KrakenAttackManager(std::vector<Bullet_Enemy>& enemyBullets, std::vector<Enemy>& enemies, Enemy& enemy, Rectangle& player, float deltaTime, float globalEnemyOffsetXN, bool isInvencibilityDelayTimerStarted)
 {
     float velocity2 = 300.0f; // Movement speed
     float moveSpeed = velocity2 * deltaTime;
@@ -38,6 +38,7 @@ void KrakenEnemy::KrakenAttackManager(std::vector<Bullet_Enemy>& enemyBullets, s
 
     else
     {
+        bool isPicked = false;
         float distX1 = player.x + 10 - enemy.rect.x;
 
         // Move the enemy to the target
@@ -79,7 +80,7 @@ void KrakenEnemy::KrakenAttackManager(std::vector<Bullet_Enemy>& enemyBullets, s
                 float distance = sqrt(distX * distX);
 
                 float distX1 = enemy.targetFinalPosition.x - enemy.rect.x;
-                float distY1 = enemy.targetFinalPosition.y - 300 - enemy.rect.y;
+                float distY1 = -300 - enemy.rect.y;
                 float distance1 = sqrt(distX1 * distX1 + distY1 * distY1);
 
                 float directionX = distX1 / distance1;
@@ -90,28 +91,41 @@ void KrakenEnemy::KrakenAttackManager(std::vector<Bullet_Enemy>& enemyBullets, s
                 if (fabs(enemy.rotation) < 0.02f)
                     enemy.rotation = 0.0f;
 
-                if (CheckCollisionRecs(attackCollider, player) && !playerPicked)
+                if (CheckCollisionRecs(attackCollider, player) && !isPicked && !isInvencibilityDelayTimerStarted)
                 {
                     if (player.x != enemy.rect.x)
                     {
                         player.x = attackCollider.x - player.width/2+7.5f;
                     }
+                    isPicked = true;
                     playerPicked = true;
                 }
 
-                if (playerPicked && distance1 > moveSpeed)
-                {
-                    player.x = attackCollider.x - player.width / 2 + 7.5f;
-                    player.y = enemy.rect.y + 90;
+                cout << isPicked;
 
-                    enemy.rect.x += directionX * moveSpeed;
-                    enemy.rect.y += directionY * moveSpeed;
+                if (playerPicked)
+                {
+                    if (playerPicked && distance1 > moveSpeed)
+                    {
+                        player.x = attackCollider.x - player.width / 2 + 7.5f;
+                        player.y = enemy.rect.y + 90;
+
+                        enemy.rect.x += directionX * moveSpeed;
+                        enemy.rect.y += directionY * moveSpeed;
+                    }
+
+                    else if (player.y < screenHeight - 100)
+                    {
+                        enemy.canAttack = false;
+                        isPicked = false;
+                    }
                 }
 
-                else if (player.x < screenHeight - 90)
+                else
                 {
                     enemy.canAttack = false;
-                    enemy.rect = player;
+                    enemy.attackingTimer = 0;
+                    enemy.random = false;
                 }
             }
 
@@ -119,7 +133,7 @@ void KrakenEnemy::KrakenAttackManager(std::vector<Bullet_Enemy>& enemyBullets, s
             {
                 // Ends attacking state
 
-                enemy.active = false;
+                enemy.rect = player;
 
                 // Restart random state
             }

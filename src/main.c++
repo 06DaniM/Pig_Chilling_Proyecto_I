@@ -78,7 +78,7 @@ bool isInvencibilityDelayTimerStarted = false;
 const int screenWidth = 1152;
 const int screenHeight = 896;
 
-int screen = 1; // Levels of the game
+int level = 1; // Levels of the game
 
 int maxEnemies = 5; 
 int currentEnemies = 0;
@@ -130,7 +130,8 @@ int main(void)
     std::vector<KrakenEnemy> krakens;
     std::vector<PowerUp> powerUps; // Vector to manage the generated power ups 
 
-    int totalWaves = 4; // Number of waves per screen
+    int totalWavesLevel1 = 4; // Number of waves in the level 1
+    int totalWavesLevel2 = 4; // Number of waves in the level 2
     float waveTimer = 0.0f; // Time to start the next wave
     float waveDelay = 10.0f; // Seconds between waves
     int currentWave = 0; // Last wave played
@@ -256,8 +257,6 @@ int main(void)
                 canStart = true;
             }
         }
-
-        if (krakenEnemy.playerPicked) canAct = false;
 
         // Menu manager
         if (inMenu)
@@ -537,29 +536,60 @@ int main(void)
             enemyBullets.erase(std::remove_if(enemyBullets.begin(), enemyBullets.end(),
                 [](const Bullet_Enemy& b) { return !b.active || b.rect.y < 0; }), enemyBullets.end());
 
-            // === WAVES DELAY ===
-            if (currentWave < totalWaves && currentEnemies == 0 && currentWave == 0 && !isSpawnDelayTimerStarted)
+            if (level == 1)
             {
-                spawnDelayTimer.Start(1);
-                isSpawnDelayTimerStarted = true;
+                // === WAVES DELAY ===
+                if (currentWave < totalWavesLevel1 && currentEnemies == 0 && currentWave == 0 && !isSpawnDelayTimerStarted)
+                {
+                    spawnDelayTimer.Start(1);
+                    isSpawnDelayTimerStarted = true;
+                }
+
+                else if (currentWave < totalWavesLevel1 && currentEnemies <= 7 && currentWave == 1 && !isSpawnDelayTimerStarted)
+                {
+                    spawnDelayTimer.Start(1);
+                    isSpawnDelayTimerStarted = true;
+                }
+
+                else if (currentWave < totalWavesLevel1 && currentEnemies == 0 && currentWave == 2 && !isSpawnDelayTimerStarted)
+                {
+                    spawnDelayTimer.Start(0.5f);
+                    isSpawnDelayTimerStarted = true;
+                }
+
+                else if (currentWave < totalWavesLevel1 && currentEnemies <= 3 && currentWave == 3 && !isSpawnDelayTimerStarted)
+                {
+                    spawnDelayTimer.Start(1);
+                    isSpawnDelayTimerStarted = true;
+                }
             }
 
-            else if (currentWave < totalWaves && currentEnemies <= 7 && currentWave == 1 && !isSpawnDelayTimerStarted)
+            else if (level == 2)
             {
-                spawnDelayTimer.Start(1);
-                isSpawnDelayTimerStarted = true;
-            }
+                // === WAVES DELAY ===
+                if (currentWave < totalWavesLevel2 && currentEnemies == 0 && currentWave == 0 && !isSpawnDelayTimerStarted)
+                {
+                    spawnDelayTimer.Start(1);
+                    isSpawnDelayTimerStarted = true;
+                }
 
-            else if (currentWave < totalWaves && currentEnemies == 0 && currentWave == 2 && !isSpawnDelayTimerStarted)
-            {
-                spawnDelayTimer.Start(0.5f);
-                isSpawnDelayTimerStarted = true;
-            }
+                else if (currentWave < totalWavesLevel2 && currentEnemies <= 7 && currentWave == 1 && !isSpawnDelayTimerStarted)
+                {
+                    spawnDelayTimer.Start(1);
+                    isSpawnDelayTimerStarted = true;
+                }
 
-            else if (currentWave < totalWaves && currentEnemies <= 3 && currentWave == 3 && !isSpawnDelayTimerStarted)
-            {
-                spawnDelayTimer.Start(1);
-                isSpawnDelayTimerStarted = true;
+                else if (currentWave < totalWavesLevel2 && currentEnemies == 0 && currentWave == 2 && !isSpawnDelayTimerStarted)
+                {
+                    spawnDelayTimer.Start(0.5f);
+                    isSpawnDelayTimerStarted = true;
+                }
+
+                else if (currentWave < totalWavesLevel2 && currentEnemies <= 3 && currentWave == 3 && !isSpawnDelayTimerStarted)
+                {
+                    spawnDelayTimer.Start(1);
+                    isSpawnDelayTimerStarted = true;
+                }
             }
 
             // === ENEMY PRESETS ===
@@ -573,46 +603,92 @@ int main(void)
             // === WAVES MANAGER ===
             if (canSpawn)
             {
-                // === Wave 1 ===
-                if (currentEnemies == 0 && currentWave == 0)
+                if (level == 1)
                 {
-                    currentEnemies += 5;
-                    enemy.SpawnEnemies(enemies, maxEnemies, 60.0f, -100.0f, 1, -1, 3.5f, screenWidth / 1.5f, screenHeight / 2.5f, currentEnemies, 4); // Left
-                    currentWave++;
-                }
-                // === Wave 2 ===
-                else if (currentEnemies <= 2 && currentWave == 1)
-                {
-                    currentEnemies += 10;
-                    enemy.SpawnEnemies(enemies, maxEnemies, 120.0f, -100.0f, -1, -1, 3.5f, screenWidth / 2.0f - 80, screenHeight / 2.0f + 50, currentEnemies, 2); // Left
-                    enemy.SpawnEnemies(enemies, maxEnemies, 180.0f, screenWidth + 100.0f, 1, -1, 3.5f, screenWidth / 2.0f + 80, screenHeight / 2.0f + 50, currentEnemies, 1); // Right
-                    currentWave++;
-                }
+                    // === Wave 1 ===
+                    if (currentEnemies == 0 && currentWave == 0)
+                    {
+                        currentEnemies += 5;
+                        enemy.SpawnEnemies(enemies, maxEnemies, 60.0f, -100.0f, 1, -1, 3.5f, screenWidth / 1.5f, screenHeight / 2.5f, currentEnemies, 4); // Left
+                        currentWave++;
+                    }
+                    // === Wave 2 ===
+                    else if (currentEnemies <= 2 && currentWave == 1)
+                    {
+                        currentEnemies += 10;
+                        enemy.SpawnEnemies(enemies, maxEnemies, 120.0f, -100.0f, -1, -1, 3.5f, screenWidth / 2.0f - 80, screenHeight / 2.0f + 50, currentEnemies, 2); // Left
+                        enemy.SpawnEnemies(enemies, maxEnemies, 180.0f, screenWidth + 100.0f, 1, -1, 3.5f, screenWidth / 2.0f + 80, screenHeight / 2.0f + 50, currentEnemies, 1); // Right
+                        currentWave++;
+                    }
 
-                // === Wave 3 ===
-                else if (currentEnemies == 0 && currentWave == 2)
-                {
-                    currentEnemies += 5;
-                    enemy.SpawnEnemies(enemies, maxEnemies, 60.0f, screenWidth + 100, 1, 1, 2.5f, screenWidth / 2.0f, screenHeight / 1.8f, currentEnemies, 1); // Right
-                    currentWave++;
-                }
+                    // === Wave 3 ===
+                    else if (currentEnemies == 0 && currentWave == 2)
+                    {
+                        currentEnemies += 5;
+                        enemy.SpawnEnemies(enemies, maxEnemies, 60.0f, screenWidth + 100, 1, 1, 2.5f, screenWidth / 2.0f, screenHeight / 1.8f, currentEnemies, 1); // Right
+                        currentWave++;
+                    }
 
-                // === Wave 4 ===
-                else if (currentEnemies <= 3 && currentWave == 3)
+                    // === Wave 4 ===
+                    else if (currentEnemies <= 3 && currentWave == 3)
+                    {
+                        currentEnemies += 15;
+                        enemy.SpawnEnemies(enemies, maxEnemies, 120.0f, -100.0f, -1, -1, 2.5f, screenWidth / 2 - 100, screenHeight / 2.3f, currentEnemies, 1); // Left
+                        enemy.SpawnEnemies(enemies, maxEnemies, 180.0f, screenWidth + 100, 1, 1, 2.5f, screenWidth / 2 + 100, screenHeight / 2.3f, currentEnemies, 2); // Right
+                        enemy.SpawnEnemies(enemies, maxEnemies, 240.0f, screenWidth + 100, -1, 1, 2.5f, screenWidth / 2 + 40, screenHeight / 3.5f, currentEnemies, 2); // Right
+                        currentWave++;
+                    }
+                }
+                
+                else if (level == 2)
                 {
-                    currentEnemies += 15;
-                    enemy.SpawnEnemies(enemies, maxEnemies, 120.0f, -100.0f, -1, -1, 2.5f, screenWidth / 2 - 100, screenHeight / 2.3f, currentEnemies, 1); // Left
-                    enemy.SpawnEnemies(enemies, maxEnemies, 180.0f, screenWidth + 100, 1, 1, 2.5f, screenWidth / 2 + 100, screenHeight / 2.3f, currentEnemies, 2); // Right
-                    enemy.SpawnEnemies(enemies, maxEnemies, 240.0f, screenWidth + 100, -1, 1, 2.5f, screenWidth / 2 + 40, screenHeight / 3.5f, currentEnemies, 2); // Right
-                    currentWave++;
+                    // === Wave 1 ===
+                    if (currentEnemies == 0 && currentWave == 0)
+                    {
+                        currentEnemies += 5;
+                        enemy.SpawnEnemies(enemies, maxEnemies, 60.0f, -100.0f, 1, -1, 3.5f, screenWidth / 1.5f, screenHeight / 2.5f, currentEnemies, 4); // Left
+                        currentWave++;
+                    }
+                    // === Wave 2 ===
+                    else if (currentEnemies <= 2 && currentWave == 1)
+                    {
+                        currentEnemies += 10;
+                        enemy.SpawnEnemies(enemies, maxEnemies, 120.0f, -100.0f, -1, -1, 3.5f, screenWidth / 2.0f - 80, screenHeight / 2.0f + 50, currentEnemies, 2); // Left
+                        enemy.SpawnEnemies(enemies, maxEnemies, 180.0f, screenWidth + 100.0f, 1, -1, 3.5f, screenWidth / 2.0f + 80, screenHeight / 2.0f + 50, currentEnemies, 1); // Right
+                        currentWave++;
+                    }
+
+                    // === Wave 3 ===
+                    else if (currentEnemies == 0 && currentWave == 2)
+                    {
+                        currentEnemies += 5;
+                        enemy.SpawnEnemies(enemies, maxEnemies, 60.0f, screenWidth + 100, 1, 1, 2.5f, screenWidth / 2.0f, screenHeight / 1.8f, currentEnemies, 1); // Right
+                        currentWave++;
+                    }
+
+                    // === Wave 4 ===
+                    else if (currentEnemies <= 3 && currentWave == 3)
+                    {
+                        currentEnemies += 15;
+                        enemy.SpawnEnemies(enemies, maxEnemies, 120.0f, -100.0f, -1, -1, 2.5f, screenWidth / 2 - 100, screenHeight / 2.3f, currentEnemies, 1); // Left
+                        enemy.SpawnEnemies(enemies, maxEnemies, 180.0f, screenWidth + 100, 1, 1, 2.5f, screenWidth / 2 + 100, screenHeight / 2.3f, currentEnemies, 2); // Right
+                        enemy.SpawnEnemies(enemies, maxEnemies, 240.0f, screenWidth + 100, -1, 1, 2.5f, screenWidth / 2 + 40, screenHeight / 3.5f, currentEnemies, 2); // Right
+                        currentWave++;
+                    }
                 }
                 canSpawn = false;
             }
 
             // === Ends the first screen after destroying all enemies ===
-            else if (currentEnemies == 0 && currentWave >= totalWaves)
+            else if (currentEnemies == 0)
             {
-                if (!hasWon && !isWinTimerStarted)
+                if (currentWave >= totalWavesLevel1 && level == 1)
+                {
+                    currentWave = 0;
+                    level++;
+                }
+
+                if (!hasWon && !isWinTimerStarted && currentWave >= totalWavesLevel2 && level == 2)
                 {
                     winDelayTimer.Start(1.5f); // Wait 1 second for the winning screen
                     isWinTimerStarted = true;
@@ -636,17 +712,21 @@ int main(void)
             // Update the enemeis
             for (Enemy& enemy : enemies)
             {
-                if (CheckCollisionRecs(player, enemy.rect) && !shield && canAct && isVisible && !isInvencibilityDelayTimerStarted)
+                if (CheckCollisionRecs(player, enemy.rect) && !shield && !playerGotHit && !enemy.picked && isVisible && !isInvencibilityDelayTimerStarted && enemy.active)
                 {
                     PlaySound(deathPlayerSound);
                     playerGotHit = true;
+                    enemy.gotHit = true;
                     canAct = false;
                     life--;
 
                     break;
                 }
 
-                enemy.UpdateEnemy(enemyBullets, enemies, enemy, GetFrameTime(), player, gameOver);
+                if (enemy.picked) canAct = false;
+                else if (!canAct) krakenEnemy.playerPicked = true;
+
+                enemy.UpdateEnemy(enemyBullets, enemies, enemy, GetFrameTime(), player, gameOver, isInvencibilityDelayTimerStarted);
             }
 
             // Update enemies bullets

@@ -12,7 +12,7 @@ public:
     // Constructor
     KrakenEnemy();
     
-    void KrakenAttackManager(std::vector<Bullet_Enemy>& enemyBullets, std::vector<Enemy>& enemies, Enemy& enemy, Rectangle& player, float deltaTime, float globalEnemyOffsetXN);
+    void KrakenAttackManager(std::vector<Bullet_Enemy>& enemyBullets, std::vector<Enemy>& enemies, Enemy& enemy, Rectangle& player, float deltaTime, float globalEnemyOffsetXN, bool isInvencibilityDelayTimerStarted);
 };
 
 #endif // KRAKEN_H
