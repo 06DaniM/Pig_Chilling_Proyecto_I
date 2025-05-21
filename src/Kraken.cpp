@@ -146,5 +146,4 @@ void KrakenEnemy::KrakenAttackManager(std::vector<Bullet_Enemy>& enemyBullets, s
             }
         }
     }
-
 }
