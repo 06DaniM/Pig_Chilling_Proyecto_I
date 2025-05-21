@@ -987,6 +987,7 @@ int main(void)
 
                 // Restore to its initial state
                 player.x = (screenWidth - player.width) / 2.0f;
+                player.y = screenHeight / 1.5f;
                 bullets.clear();
                 score = 0;
                 currentWave = 0;

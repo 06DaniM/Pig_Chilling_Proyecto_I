@@ -6,13 +6,16 @@ using namespace std;
 
 // Enemy constructor
 KrakenEnemy::KrakenEnemy() : attackCollider({ 0, 0, 0, 10 }), playerPicked(false) {}
- 
+
 const int screenWidth = 1152;
 const int screenHeight = 896;
 
+bool isPicked = false;               // Estado global de si el jugador está agarrado
+Enemy* grabbingKraken = nullptr;     // Referencia al Kraken que está agarrando al jugador
+
 void KrakenEnemy::KrakenAttackManager(std::vector<Bullet_Enemy>& enemyBullets, std::vector<Enemy>& enemies, Enemy& enemy, Rectangle& player, float deltaTime, float globalEnemyOffsetXN, bool isInvencibilityDelayTimerStarted)
 {
-    float velocity2 = 300.0f; // Movement speed
+    float velocity2 = 300.0f;
     float moveSpeed = velocity2 * deltaTime;
     enemy.attackingTimer += deltaTime;
 
@@ -25,41 +28,39 @@ void KrakenEnemy::KrakenAttackManager(std::vector<Bullet_Enemy>& enemyBullets, s
         float dx = cos(loopT * PI * 2.5f) * 5;
         float dy = -sin(loopT * PI * 2.5f) * 2.5f;
 
-        // Movimiento
         enemy.rect.x += dx;
         enemy.rect.y += dy;
 
-        // Rotación
         enemy.rotation = atan2(dy, dx) * (180.0f / PI) + 90;
-
         enemy.attackPlayerPos = player.x;
         enemy.enemyLoopState = true;
     }
 
     else
     {
-        bool isPicked = false;
-        float distX1 = player.x + 10 - enemy.rect.x;
+        // 1. Movimiento hacia posición de ataque (debajo del jugador)
+        float dxToAttackPos = player.x + 10 - enemy.rect.x;
+        float dyToAttackPos = screenHeight / 1.5f - enemy.rect.y - 90;
+        float distToAttackPos = sqrt(dxToAttackPos * dxToAttackPos + dyToAttackPos * dyToAttackPos);
 
-        // Move the enemy to the target
-        float distY1 = player.y - enemy.rect.y - 90;
-        float distance1 = sqrt(distX1 * distX1 + distY1 * distY1); // Total distance to the objective
+        float dirXToAttack = dxToAttackPos / distToAttackPos;
+        float dirYToAttack = dyToAttackPos / distToAttackPos;
 
-        float distX2 = enemy.targetFinalPosition.x + globalEnemyOffsetXN - enemy.rect.x;
-        float distY2 = enemy.targetFinalPosition.y - enemy.rect.y;
-        float distance2 = sqrt(distX2 * distX2 + distY2 * distY2); // Total distance to the objective
+        // 2. Dirección para volver a la posición original (targetFinalPosition)
+        float dxToFinal = enemy.targetFinalPosition.x + globalEnemyOffsetXN - enemy.rect.x;
+        float dyToFinal = enemy.targetFinalPosition.y - enemy.rect.y;
+        float distToFinal = sqrt(dxToFinal * dxToFinal + dyToFinal * dyToFinal);
 
-        if (distance1 >= moveSpeed && enemy.enemyLoopState)
+        float dirXToFinal = dxToFinal / distToFinal;
+        float dirYToFinal = dyToFinal / distToFinal;
+
+        // --- Fase 1: Movimiento inicial hacia debajo del jugador
+        if (distToAttackPos >= moveSpeed && enemy.enemyLoopState)
         {
-            // Normalize the direction
-            float directionX = distX1 / distance1;
-            float directionY = distY1 / distance1;
+            enemy.rotation = atan2(dirYToAttack, dirXToAttack) * (180.0f / PI) + 90;
 
-            enemy.rotation = atan2(directionY, directionX) * (180.0f / PI) + 90;
-
-            // Move the enemy to the objective
-            enemy.rect.x += directionX * moveSpeed;
-            enemy.rect.y += directionY * moveSpeed;
+            enemy.rect.x += dirXToAttack * moveSpeed;
+            enemy.rect.y += dirYToAttack * moveSpeed;
 
             if (enemy.rect.y >= player.y - 95)
             {
@@ -68,75 +69,82 @@ void KrakenEnemy::KrakenAttackManager(std::vector<Bullet_Enemy>& enemyBullets, s
             }
         }
 
+        // --- Fase 2: Ataque o regreso
         else if (!enemy.enemyLoopState)
         {
             if (enemy.canAttack)
             {
-                // === ATTACK LOGIC === //
+                // Posicionar el collider de ataque
                 attackCollider.x = enemy.rect.x + 20;
                 attackCollider.y = player.y;
 
-                float distX = attackCollider.x - player.x;
-                float distance = sqrt(distX * distX);
-
-                float distX1 = enemy.targetFinalPosition.x - enemy.rect.x;
-                float distY1 = -300 - enemy.rect.y;
-                float distance1 = sqrt(distX1 * distX1 + distY1 * distY1);
-
-                float directionX = distX1 / distance1;
-                float directionY = distY1 / distance1;
-
-                enemy.rotation = Lerp(enemy.rotation, 0.0f, 0.2f);
-
-                if (fabs(enemy.rotation) < 0.02f)
-                    enemy.rotation = 0.0f;
-
-                if (CheckCollisionRecs(attackCollider, player) && !isPicked && !isInvencibilityDelayTimerStarted)
+                // Intentar agarrar al jugador
+                if (CheckCollisionRecs(attackCollider, player) && !playerPicked && !isInvencibilityDelayTimerStarted && !isPicked)
                 {
-                    if (player.x != enemy.rect.x)
-                    {
-                        player.x = attackCollider.x - player.width/2+7.5f;
-                    }
-                    isPicked = true;
+                    player.x = attackCollider.x - player.width / 2 + 7.5f;
                     playerPicked = true;
+                    isPicked = true;
+                    grabbingKraken = &enemy;
                 }
 
-                cout << isPicked;
-
-                if (playerPicked)
+                // Si este Kraken es el que agarró al jugador
+                if (playerPicked && grabbingKraken == &enemy)
                 {
-                    if (playerPicked && distance1 > moveSpeed)
+                    float dxToEscape = enemy.targetFinalPosition.x - enemy.rect.x;
+                    float dyToEscape = -300.0f - enemy.rect.y;
+                    float distToEscape = sqrt(dxToEscape * dxToEscape + dyToEscape * dyToEscape);
+                    float dirXEscape = dxToEscape / distToEscape;
+                    float dirYEscape = dyToEscape / distToEscape;
+
+                    enemy.rotation = Lerp(enemy.rotation, 0.0f, 0.2f);
+                    if (fabs(enemy.rotation) < 0.02f) enemy.rotation = 0.0f;
+
+                    if (distToEscape > moveSpeed)
                     {
                         player.x = attackCollider.x - player.width / 2 + 7.5f;
                         player.y = enemy.rect.y + 90;
 
-                        enemy.rect.x += directionX * moveSpeed;
-                        enemy.rect.y += directionY * moveSpeed;
+                        enemy.rect.x += dirXEscape * moveSpeed;
+                        enemy.rect.y += dirYEscape * moveSpeed;
                     }
 
-                    else if (player.y < screenHeight - 100)
+                    else
                     {
-                        enemy.canAttack = false;
+                        // Suelta al jugador
+                        playerPicked = false;
                         isPicked = false;
+                        grabbingKraken = nullptr;
+
+                        enemy.canAttack = false;
+                        enemy.attackingTimer = 0;
+                        enemy.random = false;
+
+                        player = enemy.rect;
                     }
                 }
 
+                // Si no lo agarró, regresar al targetFinalPosition
                 else
                 {
-                    enemy.canAttack = false;
-                    enemy.attackingTimer = 0;
-                    enemy.random = false;
+                    if (distToFinal > moveSpeed)
+                    {
+                        // ROTAR hacia la dirección de movimiento
+                        enemy.rotation = atan2(dirYToFinal, dirXToFinal) * (180.0f / PI) + 90;
+
+                        // MOVER hacia la posición final
+                        enemy.rect.x += dirXToFinal * moveSpeed;
+                        enemy.rect.y += dirYToFinal * moveSpeed;
+                    }
+                    else
+                    {
+                        // Llegó al destino, reinicia
+                        enemy.canAttack = false;
+                        enemy.attackingTimer = 0;
+                        enemy.random = false;
+                    }
                 }
-            }
-
-            else
-            {
-                // Ends attacking state
-
-                enemy.rect = player;
-
-                // Restart random state
             }
         }
     }
+
 }
