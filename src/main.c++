@@ -32,6 +32,7 @@ SOFTWARE.
 #include <algorithm>
 #include <cmath>
 #include <iostream>
+#include "Boss.h"
 #include "Enemy.h"
 #include "Kraken.h"
 #include "Bullet.h"
@@ -53,6 +54,7 @@ struct PowerUp {
     PowerUpType type; // Tipo de power-up 
 };
 
+Boss boss;
 Enemy enemy;
 KrakenEnemy krakenEnemy;
 
@@ -99,11 +101,17 @@ int currentBackgrounMenuFrameX = 0;
 int currentBackgrounMenuFrameY = 0;
 int backgrounMenuFramesCounter = 0;
 
-Rectangle backgroundGameFrameRec = { 0.0f, 0.0f, (float)screenWidth, (float)screenHeight };
+Rectangle backgroundGameFrameReclevel1 = { 0.0f, 0.0f, (float)screenWidth, (float)screenHeight };
 
-int currentBackgrounGameFrameX = 0;
-int currentBackgrounGameFrameY = 0;
-int backgrounGameFramesCounter = 0;
+int currentBackgrounGameFrameXlevel1 = 0;
+int currentBackgrounGameFrameYlevel1 = 0;
+int backgrounGameFramesCounterlevel1 = 0;
+
+Rectangle backgroundGameFrameReclevel2 = { 0.0f, 0.0f, (float)screenWidth, (float)screenHeight };
+
+int currentBackgrounGameFrameXlevel2 = 0;
+int currentBackgrounGameFrameYlevel2 = 0;
+int backgrounGameFramesCounterlevel2 = 0;
 
 Sound shotSound[4] = { 0 };
 int currentShotSound;
@@ -157,7 +165,7 @@ int main(void)
     Texture2D krakenHit = LoadTexture("resources/enemies/nave kraken hitten.png");
     Texture2D krakenDeathAnim = LoadTexture("resources/enemies/deathEnemyAnim.png");
 
-    Texture2D boss = LoadTexture("resources/enemies/BOSS.png");
+    Texture2D bossSprite = LoadTexture("resources/enemies/BOSS.png");
     Texture2D bossDeathAnim = LoadTexture("resources/enemies/deathEnemyAnim.png");
 
     Texture2D doubleShotSprite = LoadTexture("resources/powerUps/DobleShot_PowerUp.png");
@@ -171,6 +179,7 @@ int main(void)
     // === MENU SPRITES === //
     Texture2D menuBackground = LoadTexture("resources/backgrounds/Menu Background.png");
     Texture2D gamePlayBackgroundLevel1 = LoadTexture("resources/backgrounds/Gameplay Background Level 1.png");
+    Texture2D gamePlayBackgroundLevel2 = LoadTexture("resources/backgrounds/Gameplay Background Level 1.png");
 
     Texture2D logo = LoadTexture("resources/backgrounds/Logo Game.png");
 
@@ -282,17 +291,17 @@ int main(void)
 
             backgrounMenuFramesCounter++;
 
-            if (backgrounMenuFramesCounter >= 2)
+            if (backgrounMenuFramesCounter >= 4)
             {
                 backgrounMenuFramesCounter = 0;
                 currentBackgrounMenuFrameX++;
 
-                if (currentBackgrounMenuFrameX >= 6)
+                if (currentBackgrounMenuFrameX >= 10)
                 {
                     currentBackgrounMenuFrameX = 0;
                     currentBackgrounMenuFrameY++;
 
-                    if (currentBackgrounMenuFrameY >= 4)
+                    if (currentBackgrounMenuFrameY >= 10)
                     {
                         currentBackgrounMenuFrameY = 0;
                     }
@@ -307,17 +316,14 @@ int main(void)
             ClearBackground(BLACK);
             DrawTextureRec(menuBackground, backgroundMenuFrameRec, { 0,0 }, WHITE);
 
-            DrawTextEx(font, "SCORE", { 100, 30 }, 34, 2, WHITE);
-            DrawTextEx(font, "0", { 100, 60 }, 34, 2, WHITE);
-
             textWidth = MeasureText("PUSH RUN", 50); // Measure the length of the text
-            DrawTextEx(font, "PUSH RUN", { ((float)screenWidth - textWidth) / 2, 490 }, 50, 2, GREEN); // Center the text
+            DrawTextEx(font, "PUSH RUN", { ((float)screenWidth - textWidth) / 2, 650 }, 50, 2, GREEN); // Center the text
 
             textWidth = MeasureText("BUTTON", 50); // Measure the length of the text
-            DrawTextEx(font, "BUTTON", { ((float)screenWidth - textWidth) / 2, 560 }, 50, 2, GREEN); // Center the text
+            DrawTextEx(font, "BUTTON", { ((float)screenWidth - textWidth) / 2, 710 }, 50, 2, GREEN); // Center the text
 
             textWidth = MeasureText("FROM PIG CHILLING", 60); // Measure the length of the text
-            DrawTextEx(font, "FROM PIG CHILLING", { (float)(screenWidth - textWidth) / 2 + 55, 700 }, 60, 2, WHITE); // Center the text
+            DrawTextEx(font, "FROM PIG CHILLING", { (float)(screenWidth - textWidth) / 2 + 55, 790 }, 60, 2, WHITE); // Center the text
 
             EndDrawing();
 
@@ -341,26 +347,54 @@ int main(void)
         // Game manager 
         if (!pause)
         {
-            backgrounGameFramesCounter++;
-
-            if (backgrounGameFramesCounter >= 4)
+            if (level == 1)
             {
-                backgrounGameFramesCounter = 0;
-                currentBackgrounGameFrameX++;
+                backgrounGameFramesCounterlevel1++;
 
-                if (currentBackgrounGameFrameX >= 10)
+                if (backgrounGameFramesCounterlevel1 >= 4)
                 {
-                    currentBackgrounGameFrameX = 0;
-                    currentBackgrounGameFrameY++;
+                    backgrounGameFramesCounterlevel1 = 0;
+                    currentBackgrounGameFrameXlevel1++;
 
-                    if (currentBackgrounGameFrameY >= 10)
+                    if (currentBackgrounGameFrameXlevel1 >= 10)
                     {
-                        currentBackgrounGameFrameY = 0;
-                    }
-                }
+                        currentBackgrounGameFrameXlevel1 = 0;
+                        currentBackgrounGameFrameYlevel1++;
 
-                backgroundGameFrameRec.x = currentBackgrounGameFrameX * screenWidth;
-                backgroundGameFrameRec.y = currentBackgrounGameFrameY * screenHeight;
+                        if (currentBackgrounGameFrameYlevel1 >= 10)
+                        {
+                            currentBackgrounGameFrameYlevel1 = 0;
+                        }
+                    }
+
+                    backgroundGameFrameReclevel1.x = currentBackgrounGameFrameXlevel1 * screenWidth;
+                    backgroundGameFrameReclevel1.y = currentBackgrounGameFrameYlevel1 * screenHeight;
+                }
+            }
+
+            else
+            {
+                backgrounGameFramesCounterlevel2++;
+
+                if (backgrounGameFramesCounterlevel2 >= 4)
+                {
+                    backgrounGameFramesCounterlevel2 = 0;
+                    currentBackgrounGameFrameXlevel2++;
+
+                    if (currentBackgrounGameFrameXlevel2 >= 10)
+                    {
+                        currentBackgrounGameFrameXlevel2 = 0;
+                        currentBackgrounGameFrameYlevel2++;
+
+                        if (currentBackgrounGameFrameYlevel2 >= 10)
+                        {
+                            currentBackgrounGameFrameYlevel2 = 0;
+                        }
+                    }
+
+                    backgroundGameFrameReclevel2.x = currentBackgrounGameFrameXlevel2 * screenWidth;
+                    backgroundGameFrameReclevel2.y = currentBackgrounGameFrameYlevel2 * screenHeight;
+                }
             }
 
             // Movement of the ship
@@ -507,6 +541,14 @@ int main(void)
                             }
                         }
                     }
+
+                    if (boss.active)
+                    {
+                        if (CheckCollisionRecs(boss.rect, bullet.rect))
+                        {
+                            boss.life--;
+                        }
+                    }
                 }
             }
 
@@ -636,7 +678,7 @@ int main(void)
                     {
                         currentEnemies += 10;
                         enemy.SpawnEnemies(enemies, maxEnemies, 120.0f, -100.0f, -1, -1, 3.5f, screenWidth / 2.0f - 80, screenHeight / 2.0f + 50, currentEnemies, 2); // Left
-                        enemy.SpawnEnemies(enemies, maxEnemies, 180.0f, screenWidth + 100.0f, 1, -1, 3.5f, screenWidth / 2.0f + 80, screenHeight / 2.0f + 50, currentEnemies, 1); // Right
+                        enemy.SpawnEnemies(enemies, maxEnemies, 180.0f, screenWidth + 100.0f, 1, -1, 3.5f, screenWidth / 2.0f + 80, screenHeight / 2.0f + 50, currentEnemies, 2); // Right
                         currentWave++;
                     }
 
@@ -654,7 +696,7 @@ int main(void)
                         currentEnemies += 15;
                         enemy.SpawnEnemies(enemies, maxEnemies, 120.0f, -100.0f, -1, -1, 2.5f, screenWidth / 2 - 100, screenHeight / 2.3f, currentEnemies, 1); // Left
                         enemy.SpawnEnemies(enemies, maxEnemies, 180.0f, screenWidth + 100, 1, 1, 2.5f, screenWidth / 2 + 100, screenHeight / 2.3f, currentEnemies, 2); // Right
-                        enemy.SpawnEnemies(enemies, maxEnemies, 240.0f, screenWidth + 100, -1, 1, 2.5f, screenWidth / 2 + 40, screenHeight / 3.5f, currentEnemies, 2); // Right
+                        enemy.SpawnEnemies(enemies, maxEnemies, 240.0f, screenWidth + 100, -1, 1, 2.5f, screenWidth / 2 + 40, screenHeight / 3.5f, currentEnemies, 3); // Right
                         currentWave++;
                     }
                 }
@@ -673,8 +715,8 @@ int main(void)
                     else if (currentEnemies <= 2 && currentWave == 1)
                     {
                         currentEnemies += 10;
-                        enemy.SpawnEnemies(enemies, maxEnemies, 120.0f, -100.0f, -1, -1, 3.5f, screenWidth / 2.0f - 80, screenHeight / 2.0f + 50, currentEnemies, 2); // Left
-                        enemy.SpawnEnemies(enemies, maxEnemies, 180.0f, screenWidth + 100.0f, 1, -1, 3.5f, screenWidth / 2.0f + 80, screenHeight / 2.0f + 50, currentEnemies, 1); // Right
+                        enemy.SpawnEnemies(enemies, maxEnemies, 120.0f, -100.0f, -1, -1, 3.5f, screenWidth / 2.0f - 80, screenHeight / 2.0f + 50, currentEnemies, 5); // Left
+                        enemy.SpawnEnemies(enemies, maxEnemies, 180.0f, screenWidth + 100.0f, 1, -1, 3.5f, screenWidth / 2.0f + 80, screenHeight / 2.0f + 50, currentEnemies, 3); // Right
                         currentWave++;
                     }
 
@@ -682,7 +724,7 @@ int main(void)
                     else if (currentEnemies == 0 && currentWave == 2)
                     {
                         currentEnemies += 5;
-                        enemy.SpawnEnemies(enemies, maxEnemies, 60.0f, screenWidth + 100, 1, 1, 2.5f, screenWidth / 2.0f, screenHeight / 1.8f, currentEnemies, 1); // Right
+                        enemy.SpawnEnemies(enemies, maxEnemies, 60.0f, screenWidth + 100, 1, 1, 2.5f, screenWidth / 2.0f, screenHeight / 1.8f, currentEnemies, 6); // Right
                         currentWave++;
                     }
 
@@ -690,9 +732,9 @@ int main(void)
                     else if (currentEnemies <= 3 && currentWave == 3)
                     {
                         currentEnemies += 15;
-                        enemy.SpawnEnemies(enemies, maxEnemies, 120.0f, -100.0f, -1, -1, 2.5f, screenWidth / 2 - 100, screenHeight / 2.3f, currentEnemies, 1); // Left
-                        enemy.SpawnEnemies(enemies, maxEnemies, 180.0f, screenWidth + 100, 1, 1, 2.5f, screenWidth / 2 + 100, screenHeight / 2.3f, currentEnemies, 2); // Right
-                        enemy.SpawnEnemies(enemies, maxEnemies, 240.0f, screenWidth + 100, -1, 1, 2.5f, screenWidth / 2 + 40, screenHeight / 3.5f, currentEnemies, 2); // Right
+                        enemy.SpawnEnemies(enemies, maxEnemies, 120.0f, -100.0f, -1, -1, 2.5f, screenWidth / 2 - 100, screenHeight / 2.3f, currentEnemies, 4); // Left
+                        enemy.SpawnEnemies(enemies, maxEnemies, 180.0f, screenWidth + 100, 1, 1, 2.5f, screenWidth / 2 + 100, screenHeight / 2.3f, currentEnemies, 3); // Right
+                        enemy.SpawnEnemies(enemies, maxEnemies, 240.0f, screenWidth + 100, -1, 1, 2.5f, screenWidth / 2 + 40, screenHeight / 3.5f, currentEnemies, 4); // Right
                         currentWave++;
                     }
 
@@ -734,7 +776,7 @@ int main(void)
             enemy.UpdateEnemyOffsetNormal(GetFrameTime());
             enemy.UpdateEnemyOffset(GetFrameTime());
 
-            // Update the enemeis
+            // Update enemies
             for (Enemy& enemy : enemies)
             {
                 if (CheckCollisionRecs(player, enemy.rect) && !shield && !playerGotHit && !enemy.picked && isVisible && !isInvencibilityDelayTimerStarted && enemy.active)
@@ -781,6 +823,14 @@ int main(void)
                         bullet.active = false;
                         break;
                     }
+                }
+            }
+
+            // Update Boss
+            {
+                if (boss.active)
+                {
+                    boss.BossManager();
                 }
             }
 
@@ -852,7 +902,8 @@ int main(void)
         // Draw all the scene
         BeginDrawing();
         ClearBackground(BLACK);
-        DrawTextureRec(gamePlayBackgroundLevel1, backgroundGameFrameRec, { 0, 0 }, WHITE);
+        if (level == 1) DrawTextureRec(gamePlayBackgroundLevel1, backgroundGameFrameReclevel1, { 0, 0 }, WHITE);
+        else DrawTextureRec(gamePlayBackgroundLevel2, backgroundGameFrameReclevel2, { 0, 0 }, WHITE);
 
         // Draw the bullets
         for (const Bullet& bullet : bullets)

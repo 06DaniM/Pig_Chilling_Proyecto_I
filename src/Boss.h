@@ -15,7 +15,9 @@ class Boss {
 public:
     Rectangle rect;
     Rectangle enemyDeathFrameRec;
+    int life;
     bool active;
+    bool dying;
     int attackRutine;
     bool laserAttackNormal;
     bool laserAttackHeavy;
@@ -36,6 +38,7 @@ public:
     // Constructor
     Boss();
 
+    void BossSpawn();
     void BossManager();
 };
 
