@@ -5,14 +5,14 @@
 using namespace std;
 
 // Bullet_Enemy constructor
-Bullet_Boss::Bullet_Boss() : rect{ 0, 0, 0, 0 }, active(false) {}
+Bullet_Boss::Bullet_Boss() : rect{ 0, 0, 0, 0 }, pos{ 0,0 }, lifetime(0.0f), active(false) {}
 
 // Enemy constructor
 Boss::Boss()
     : rect{ 0, 0, 256, 256 }, enemyDeathFrameRec{ 0, 0, 54, 54 }, life(100), active(false), dying(false), dead(false), attackRutine(0),
     laserAttackNormal(false), laserAttackHeavy(false), shooting(false), attackTime(0.0f), attackingTimer(0.0f), attackCooldown(0.0f),
     playerPos{ 0.0f, 0.0f }, rotation(0.0f), appearance(false), idle(false), random(false), canAttack(true), hasArribed(false),
-    enemyDeathFramesCounter(0), currentEnemyDeathFrame(0), start({ 0,0 }), target({ 0,0 }), currentPattern(), patternTimer(0.0f), patternCooldown(0.0f),
+    enemyDeathFramesCounter(0), currentEnemyDeathFrame(0), start({ 0,0 }), target({ 0,0 }), currentPattern(ATTACK_NONE), patternTimer(0.0f), patternCooldown(0.0f),
     laserActive(false), laserTimer(0.0f), wideBeamActive(false), wideBeamTimer(0.0f), wideBeamRect({ 0,0 }), bulletDodgeActive(false), bulletDodgeTimer(0.0f), 
     bulletSpawnCooldown(0.0f)
 {}
@@ -43,10 +43,6 @@ void Boss::SelectNextPattern()
 {
     // Aleatorio:
     currentPattern = static_cast<BossAttackPattern>(GetRandomValue(0, 2));
-
-    // Secuencial (si prefieres orden fijo):
-    //currentPattern = static_cast<BossAttackPattern>((currentPattern + 1) % 3);
-    cout << currentPattern << endl;
 }
 
 void Boss::LaserDiagonalPattern()
@@ -55,7 +51,7 @@ void Boss::LaserDiagonalPattern()
     {
         // Activar rayos
         laserActive = true;
-        laserTimer = 2.0f; // Duran 2 segundos
+        laserTimer = 4.0f; // Duran 2 segundos
         // Aquí podrías activar sonido, animaciones, etc.
     }
 
@@ -63,13 +59,13 @@ void Boss::LaserDiagonalPattern()
     Vector2 origin = { rect.x + rect.width / 2, rect.y + rect.height };
 
     // Central recto
-    DrawRectangle(origin.x - 5, origin.y, 10, 800, RED);
+    DrawRectangle(origin.x - 50, origin.y, 100, 800, RED);
 
     // Izquierda diagonal (simulada con líneas)
-    DrawLineEx(origin, { origin.x - 400, origin.y + 800 }, 8.0f, RED);
+    DrawLineEx({ origin.x - 300, origin.y }, { origin.x - 50, origin.y + 800 }, 50, RED);
 
     // Derecha diagonal
-    DrawLineEx(origin, { origin.x + 400, origin.y + 800 }, 8.0f, RED);
+    DrawLineEx({ origin.x + 300, origin.y }, { origin.x + 50, origin.y + 800 }, 50, RED);
 
     // Timer para apagar los rayos
     laserTimer -= GetFrameTime();
@@ -177,7 +173,6 @@ void Boss::BossManager()
         {
             rect.y = target.y;
             appearance = false;
-            idle = true;
         }
     }
 
