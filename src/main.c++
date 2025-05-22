@@ -165,9 +165,13 @@ int main(void)
     Texture2D krakenHit = LoadTexture("resources/enemies/nave kraken hitten.png");
     Texture2D krakenDeathAnim = LoadTexture("resources/enemies/deathEnemyAnim.png");
 
-    Texture2D bossSprite = LoadTexture("resources/enemies/BOSS.png");
+    // === BOSS SPRITES === //
+    Texture2D bossSprite = LoadTexture("resources/enemies/boss.png");
+    Texture2D bossAttackNormalSprite = LoadTexture("resources/enemies/boss attack normal.png");
+    Texture2D bossAttackReverseSprite = LoadTexture("resources/enemies/boss attack reverse.png");
     Texture2D bossDeathAnim = LoadTexture("resources/enemies/deathEnemyAnim.png");
 
+    // === POWER UPS SPRITES === //
     Texture2D doubleShotSprite = LoadTexture("resources/powerUps/DobleShot_PowerUp.png");
     Texture2D shieldSprite = LoadTexture("resources/powerUps/Shield_PowerUp.png");
 
@@ -245,6 +249,20 @@ int main(void)
             hasWon = true;
         }
 
+        if (IsKeyPressed(KEY_B))
+        {
+            for (Enemy& enemy : enemies)
+            {
+                if (enemy.active)
+                {
+                    enemy.gotHit = true;
+                }
+            }
+            currentEnemies = 0;
+            currentWave = 4;
+            level = 2;
+        }
+
         if (IsKeyPressed(KEY_M))
         {
             for (Enemy& enemy : enemies)
@@ -310,7 +328,6 @@ int main(void)
                 backgroundMenuFrameRec.x = currentBackgrounMenuFrameX * screenWidth;
                 backgroundMenuFrameRec.y = currentBackgrounMenuFrameY * screenHeight;
             }
-
 
             BeginDrawing();
             ClearBackground(BLACK);
@@ -546,12 +563,13 @@ int main(void)
                     {
                         if (CheckCollisionRecs(boss.rect, bullet.rect))
                         {
+                            bullet.active = false;
                             boss.life--;
+                            cout << boss.life;
                         }
                     }
                 }
             }
-
             // Delete the inactive bullets
             bullets.erase(std::remove_if(bullets.begin(), bullets.end(),
                 [](const Bullet& b) { return !b.active || b.rect.y < 0; }), bullets.end());
@@ -741,7 +759,8 @@ int main(void)
                     // === BOSS ===
                     else if (currentEnemies == 0 && currentWave == 4)
                     {
-                        cout << "BOSSSS";
+                        boss.BossSpawn();
+                        currentWave++;
                     }
                 }
                 canSpawn = false;
@@ -756,7 +775,7 @@ int main(void)
                     level++;
                 }
 
-                if (!hasWon && !isWinTimerStarted && currentWave >= totalWavesLevel2 && level == 2)
+                if (!hasWon && !isWinTimerStarted && currentWave > totalWavesLevel2 && level == 2 && boss.dead)
                 {
                     winDelayTimer.Start(1.5f); // Wait 1 second for the winning screen
                     isWinTimerStarted = true;
@@ -1020,6 +1039,26 @@ int main(void)
                     else if (enemy.enemyClass == Squid) DrawTexturePro(squidDeathAnim, source, dest, origin, 0, WHITE);
                     else DrawTexturePro(krakenDeathAnim, source, dest, origin, 0, WHITE);
                 }
+            }
+        }
+
+        // Draw the boss
+        if (boss.active) DrawTextureEx(bossSprite, { boss.rect.x, boss.rect.y }, 0, 1, WHITE);
+
+        // Dibujar ataques del jefe DESPUÉS del jefe (así se ven encima)
+        if (boss.active)
+        {
+            switch (boss.currentPattern)
+            {
+            case ATTACK_LASER_DIAGONAL:
+                boss.LaserDiagonalPattern();
+                break;
+            case ATTACK_WIDE_BEAM:
+                boss.WideBeamAttack();
+                break;
+            case ATTACK_BULLET_DODGE:
+                boss.BulletDodgePattern();
+                break;
             }
         }
 
