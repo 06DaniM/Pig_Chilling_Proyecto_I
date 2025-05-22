@@ -131,7 +131,7 @@ int main(void)
     std::vector<PowerUp> powerUps; // Vector to manage the generated power ups 
 
     int totalWavesLevel1 = 4; // Number of waves in the level 1
-    int totalWavesLevel2 = 4; // Number of waves in the level 2
+    int totalWavesLevel2 = 5; // Number of waves in the level 2
     float waveTimer = 0.0f; // Time to start the next wave
     float waveDelay = 10.0f; // Seconds between waves
     int currentWave = 0; // Last wave played
@@ -234,6 +234,18 @@ int main(void)
         if (IsKeyPressed(KEY_ENTER)) // Change to when life is <= 0
         {
             hasWon = true;
+        }
+
+        if (IsKeyPressed(KEY_M))
+        {
+            for (Enemy& enemy : enemies)
+            {
+                if (enemy.active)
+                {
+                    enemy.gotHit = true;
+                    currentEnemies--;
+                }
+            }
         }
 
         // === BEGINING GAME CODE
@@ -590,6 +602,12 @@ int main(void)
                     spawnDelayTimer.Start(1);
                     isSpawnDelayTimerStarted = true;
                 }
+
+                else if (currentWave < totalWavesLevel2 && currentEnemies == 0 && currentWave == 4 && !isSpawnDelayTimerStarted)
+                {
+                    spawnDelayTimer.Start(1);
+                    isSpawnDelayTimerStarted = true;
+                }
             }
 
             // === ENEMY PRESETS ===
@@ -609,9 +627,10 @@ int main(void)
                     if (currentEnemies == 0 && currentWave == 0)
                     {
                         currentEnemies += 5;
-                        enemy.SpawnEnemies(enemies, maxEnemies, 60.0f, -100.0f, 1, -1, 3.5f, screenWidth / 1.5f, screenHeight / 2.5f, currentEnemies, 4); // Left
+                        enemy.SpawnEnemies(enemies, maxEnemies, 60.0f, -100.0f, 1, -1, 3.5f, screenWidth / 1.5f, screenHeight / 2.5f, currentEnemies, 1); // Left
                         currentWave++;
                     }
+
                     // === Wave 2 ===
                     else if (currentEnemies <= 2 && currentWave == 1)
                     {
@@ -649,6 +668,7 @@ int main(void)
                         enemy.SpawnEnemies(enemies, maxEnemies, 60.0f, -100.0f, 1, -1, 3.5f, screenWidth / 1.5f, screenHeight / 2.5f, currentEnemies, 4); // Left
                         currentWave++;
                     }
+
                     // === Wave 2 ===
                     else if (currentEnemies <= 2 && currentWave == 1)
                     {
@@ -675,6 +695,12 @@ int main(void)
                         enemy.SpawnEnemies(enemies, maxEnemies, 240.0f, screenWidth + 100, -1, 1, 2.5f, screenWidth / 2 + 40, screenHeight / 3.5f, currentEnemies, 2); // Right
                         currentWave++;
                     }
+
+                    // === BOSS ===
+                    else if (currentEnemies == 0 && currentWave == 4)
+                    {
+                        cout << "BOSSSS";
+                    }
                 }
                 canSpawn = false;
             }
@@ -694,7 +720,6 @@ int main(void)
                     isWinTimerStarted = true;
                 }
             }
-
             enemyFramesCounter++;
 
             if (enemyFramesCounter >= (30))
@@ -723,7 +748,11 @@ int main(void)
                     break;
                 }
 
-                if (enemy.picked) canAct = false;
+                if (enemy.picked)
+                {
+                    canAct = false;
+                    shield = false;
+                }
                 else if (!canAct) krakenEnemy.playerPicked = true;
 
                 enemy.UpdateEnemy(enemyBullets, enemies, enemy, GetFrameTime(), player, gameOver, isInvencibilityDelayTimerStarted);
