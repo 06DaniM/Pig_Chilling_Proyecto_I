@@ -291,7 +291,7 @@ int main(void)
 
             backgrounMenuFramesCounter++;
 
-            if (backgrounMenuFramesCounter >= 4)
+            if (backgrounMenuFramesCounter >= 1)
             {
                 backgrounMenuFramesCounter = 0;
                 currentBackgrounMenuFrameX++;
