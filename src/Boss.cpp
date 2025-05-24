@@ -1,6 +1,9 @@
 ﻿#include "Boss.h"
 #include <cmath>
 #include <iostream>
+#include <algorithm>
+#include <random>
+
 
 using namespace std;
 
@@ -39,7 +42,7 @@ void Boss::BossSpawn()
 void Boss::SelectNextPattern()
 {
     // Aleatorio:
-    currentPattern = static_cast<BossAttackPattern>(GetRandomValue(0, 0));
+    currentPattern = static_cast<BossAttackPattern>(GetRandomValue(2, 2));
 }
 
 void Boss::LaserDiagonalPattern(bool pause)
@@ -107,10 +110,24 @@ void Boss::WideBeamAttack(bool pause)
 
 void Boss::BulletDodgePattern(bool pause)
 {
+    float leftRayX = rect.x + 10;  // borde derecho del rayo izquierdo
+    float rightRayX = rect.x + rect.width - 10; // borde izquierdo del rayo derecho
+
+    // Cuatro posiciones equidistantes dentro del hueco entre los rayos
+    float gap = rightRayX - leftRayX;
+    float bulletSpawnPositions[4] = {
+        leftRayX + gap * 0.2f,
+        leftRayX + gap * 0.4f,
+        leftRayX + gap * 0.6f,
+        leftRayX + gap * 0.8f
+    };
+
     if (!bulletDodgeActive)
     {
         bulletDodgeActive = true;
-        bulletShootingTime = 4.0f;   // ⬅️ disparar balas durante 4 segundos
+        if (life >= life/2) bulletShootingTime = 15.0f;  
+        else if (life >= life / 3) bulletShootingTime = 20.0f;
+        else bulletShootingTime = 30.0f;
         dodgeBullets.clear();
         bulletSpawnCooldown = 0.0f;
     }
@@ -126,12 +143,20 @@ void Boss::BulletDodgePattern(bool pause)
         if (!pause) bulletSpawnCooldown -= GetFrameTime();
         if (bulletSpawnCooldown <= 0.0f)
         {
-            Bullet_Boss b;
-            b.pos = { rect.x + rect.width / 2, rect.y + rect.height };
-            b.lifetime = 0.0f;
-            b.active = true;
-            dodgeBullets.push_back(b);
-            bulletSpawnCooldown = 0.2f; // cada 0.2 segundos
+            // Mezclar índices para elegir dos posiciones distintas
+            int indices[] = { 0, 1, 2, 3 };
+            std::shuffle(std::begin(indices), std::end(indices), std::default_random_engine((unsigned int)(GetTime() * 1000)));
+
+            for (int i = 0; i < 2; i++) // generar 2 balas
+            {
+                Bullet_Boss b;
+                b.pos = { bulletSpawnPositions[indices[i]], rect.y + rect.height };
+                b.lifetime = 0.0f;
+                b.active = true;
+                dodgeBullets.push_back(b);
+            }
+
+            bulletSpawnCooldown = 0.5f; // subir cooldown porque generamos 2 a la vez
         }
 
         if (!pause) bulletShootingTime -= GetFrameTime(); // ⬅️ cuenta atrás para dejar de disparar
@@ -143,8 +168,10 @@ void Boss::BulletDodgePattern(bool pause)
         if (!b.active) continue;
 
         b.lifetime += GetFrameTime();
-        b.pos.y += 250 * GetFrameTime(); // Posición bala y
-        b.pos.x += sinf(b.lifetime * 6.0f) * 100 * GetFrameTime(); // Posición bala x
+
+        if (life >= life / 2) b.pos.y += 250 * GetFrameTime(); // Posición bala y
+        else if (life >= life / 3) b.pos.y += 350 * GetFrameTime(); // Posición bala y
+        else b.pos.y += 350 * GetFrameTime(); // Posición bala y
 
         b.rect = { b.pos.x - 8, b.pos.y - 8, 32, 32 };
 
