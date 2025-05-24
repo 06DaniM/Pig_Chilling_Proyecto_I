@@ -8,16 +8,17 @@
 using namespace std;
 
 // Bullet_Enemy constructor
-Bullet_Boss::Bullet_Boss() : rect{ 0, 0, 32, 32 }, pos{ 0,0 }, lifetime(0.0f), active(false) {}
+Bullet_Boss::Bullet_Boss() : rect{ 0, 0, 0, 0 }, pos{ 0,0 }, lifetime(0.0f), active(false) {}
 
 // Enemy constructor
 Boss::Boss()
-    : rect{ 0, 0, 432, 256 }, enemyDeathFrameRec{ 0, 0, 54, 54 }, life(100), active(false), dying(false), dead(false), attackRutine(0),
+    : rect{ 0, 0, 432, 256 }, enemyDeathFrameRec{ 0, 0, 54, 54 }, life(100), initialLife(0), active(false), dying(false), dead(false), attackRutine(0),
     laserAttackNormal(false), laserAttackHeavy(false), shooting(false), attackTime(0.0f), attackingTimer(0.0f), attackCooldown(0.0f),
     playerPos{ 0.0f, 0.0f }, rotation(0.0f), appearance(false), idle(false), random(false), canAttack(true), hasArribed(false),
     enemyDeathFramesCounter(0), currentEnemyDeathFrame(0), start({ 0,0 }), target({ 0,0 }), currentPattern(ATTACK_NONE), patternTimer(0.0f), patternCooldown(0.0f),
-    laserActive(false), laserTimer(0.0f), wideBeamActive(false), wideBeamTimer(0.0f), wideBeamRect({ 0,0,0,0 }), bulletDodgeActive(false), bulletDodgeTimer(0.0f), 
-    bulletShootingTime(0.0f), bulletSpawnCooldown(0.0f)
+    centerLaserRect({ 0,0 }), leftDiagonalRect({ 0,0 }), rightDiagonalRect({ 0,0 }), laserActive(false), laserDamageActive(false), laserTimer(0.0f), wideBeamDamageActive(false), wideBeamActive(false), wideBeamTimer(0.0f), wideBeamRect({0,0,0,0}),
+    bulletDodgeActive(false), bulletLaserDamageActive(false), leftRayRect ({ 0,0 }), rightRayRect({ 0,0 }), bulletDodgeTimer(0.0f), bulletShootingTime(0.0f), bulletSpawnCooldown(0.0f), warningStarted(false),
+    warningTimer(0.0f), warningDuration(1.5f)
 {}
 
 const int screenWidth = 1152;
@@ -29,12 +30,14 @@ void Boss::BossSpawn()
     start.x = (screenWidth - rect.width) / 2;
     start.y = -rect.height;
 
-
     // Position to move for starting the fight
     target.x = start.x;
     target.y = 50;
 
     rect = { start.x, start.y, 432, 256};
+
+    initialLife = life;
+
     active = true;
     appearance = true;
 }
@@ -42,40 +45,66 @@ void Boss::BossSpawn()
 void Boss::SelectNextPattern()
 {
     // Aleatorio:
-    currentPattern = static_cast<BossAttackPattern>(GetRandomValue(2, 2));
+    currentPattern = static_cast<BossAttackPattern>(GetRandomValue(1, 1));
 }
 
 void Boss::LaserDiagonalPattern(bool pause)
 {
     if (!laserActive)
     {
-        // Activar rayos
         laserActive = true;
-        laserTimer = 4.0f; // Duran 2 segundos
-        // Aquí podrías activar sonido, animaciones, etc.
+        laserTimer = 4.0f;
+
+        warningStarted = true;
+        warningTimer = warningDuration;
+        laserDamageActive = false;
     }
 
-    // Dibujar rayos
     Vector2 origin = { rect.x + rect.width / 2, rect.y + rect.height };
 
-    // Central recto
-    DrawRectangle(origin.x - 50, origin.y - 50, 100, 800, RED);
+    // ⚠️ Mostrar advertencia visual
+    DrawCircle((int)origin.x, (int)origin.y, 60, RED);
+    DrawCircle((int)origin.x - 190, (int)origin.y, 60, RED);
+    DrawCircle((int)origin.x + 190, (int)origin.y, 60, RED);
 
-    // Izquierda diagonal (simulada con líneas)
-    DrawLineEx({ origin.x - 190, origin.y }, { origin.x + 950, origin.y + 800 }, 50, RED);
+    if (warningStarted)
+    {
+        warningTimer -= GetFrameTime();
+        if (warningTimer <= 0.0f)
+        {
+            warningStarted = false;
+            laserDamageActive = true;
+        }
+        return;
+    }
 
-    // Derecha diagonal
-    DrawLineEx({ origin.x + 190, origin.y }, { origin.x - 950, origin.y + 800 }, 50, RED);
+    // 🔥 Dibujar rayos
+    DrawRectangle(origin.x - 50, origin.y - 50, 100, 800, RED); // rayo central
+    DrawLineEx({ origin.x - 190, origin.y }, { origin.x + 950, origin.y + 800 }, 50, RED); // izquierda
+    DrawLineEx({ origin.x + 190, origin.y }, { origin.x - 950, origin.y + 800 }, 50, RED); // derecha
 
-    // Timer para apagar los rayos
+    // 💥 Definir zonas de daño como rectángulos grandes
+    centerLaserRect = { origin.x - 50, origin.y - 50, 100, 800 };
 
-    if(!pause) laserTimer -= GetFrameTime();
+    // === Cambiar los DiagonalRect === //
+    //leftDiagonalRect = {
+    //    origin.x - 190, origin.y, // posición inicial
+    //    950, 800 // ancho grande hacia la derecha
+    //};
+
+    //rightDiagonalRect = {
+    //    origin.x - 950, origin.y, // inicia más a la izquierda
+    //    950 + 190, 800 // ancho total cubriendo hasta 190px a la derecha del origen
+    //};
+
+    if (!pause) laserTimer -= GetFrameTime();
+
     if (laserTimer <= 0)
     {
         laserActive = false;
-        // Termina el patrón después de mostrar los rayos
-        patternCooldown = 3.0f; // tiempo hasta el siguiente patrón
-        currentPattern = ATTACK_NONE; // o cualquier estado de espera
+        laserDamageActive = false;
+        patternCooldown = 3.0f;
+        currentPattern = ATTACK_NONE;
     }
 }
 
@@ -86,13 +115,29 @@ void Boss::WideBeamAttack(bool pause)
         wideBeamActive = true;
         wideBeamTimer = 3.0f;
 
-        // Aquí inicializas el rectángulo
+        warningStarted = true;
+        warningTimer = warningDuration;
+        wideBeamDamageActive = false;  // AÚN NO es peligroso
+
         wideBeamRect = {
-            rect.x + rect.width / 2 - 300,  // centro
+            rect.x + rect.width / 2 - 300,
             rect.y + rect.height,
-            600, // ancho del rayo
-            800  // altura
+            600,
+            800
         };
+    }
+
+    DrawCircle((int)(rect.x + rect.width / 2), (int)(rect.y + rect.height), 80, ORANGE);
+
+    if (warningStarted) {
+        warningTimer -= GetFrameTime();
+
+        if (warningTimer <= 0.0f) {
+            warningStarted = false;
+            wideBeamDamageActive = true;  // 🔥 AHORA sí hace daño
+        }
+
+        return;  // Todavía no dibujar el rayo ni aplicar daño
     }
 
     // Dibujar el rayo ancho
@@ -103,6 +148,7 @@ void Boss::WideBeamAttack(bool pause)
     if (wideBeamTimer <= 0)
     {
         wideBeamActive = false;
+        wideBeamDamageActive = false;
         patternCooldown = 3.0f;
         currentPattern = ATTACK_NONE; // o un estado de espera
     }
@@ -110,90 +156,130 @@ void Boss::WideBeamAttack(bool pause)
 
 void Boss::BulletDodgePattern(bool pause)
 {
-    float leftRayX = rect.x + 10;  // borde derecho del rayo izquierdo
-    float rightRayX = rect.x + rect.width - 10; // borde izquierdo del rayo derecho
+    float leftRayX = rect.x;
+    float rightRayX = rect.x + rect.width;
 
-    // Cuatro posiciones equidistantes dentro del hueco entre los rayos
     float gap = rightRayX - leftRayX;
-    float bulletSpawnPositions[4] = {
-        leftRayX + gap * 0.2f,
-        leftRayX + gap * 0.4f,
-        leftRayX + gap * 0.6f,
-        leftRayX + gap * 0.8f
+    float bulletSpawnPositions[9] = {
+        leftRayX + gap * 0.1f, leftRayX + gap * 0.2f, leftRayX + gap * 0.3f,
+        leftRayX + gap * 0.4f, leftRayX + gap * 0.5f, leftRayX + gap * 0.6f,
+        leftRayX + gap * 0.7f, leftRayX + gap * 0.8f, leftRayX + gap * 0.9f
     };
 
-    if (!bulletDodgeActive)
-    {
+    // ⚠️ Posiciones corregidas de los rayos (fuera del boss)
+    leftRayRect = { rect.x - 400, rect.y + rect.height, 400, 800 };
+    rightRayRect = { rect.x + rect.width, rect.y + rect.height, 400, 800 };
+
+    if (!bulletDodgeActive) {
         bulletDodgeActive = true;
-        if (life >= life/2) bulletShootingTime = 15.0f;  
-        else if (life >= life / 3) bulletShootingTime = 20.0f;
-        else bulletShootingTime = 30.0f;
+        warningStarted = true;
+        warningTimer = warningDuration;
+        bulletLaserDamageActive = false;
+
+        bulletShootingTime = (life >= initialLife * 0.5f) ? 15.0f : (life >= initialLife * 0.33f) ? 20.0f : 30.0f;
         dodgeBullets.clear();
         bulletSpawnCooldown = 0.0f;
     }
 
-    // Rayos laterales (mantener mientras haya balas)
+    // ⚠️ Advertencia visual (posición centrada con los rayos)
+    DrawCircle((int)(rect.x - 200), (int)(rect.y + rect.height), 40, BLUE); // izquierda
+    DrawCircle((int)(rect.x + rect.width + 200), (int)(rect.y + rect.height), 40, BLUE); // derecha
+
+    if (warningStarted) {
+        warningTimer -= GetFrameTime();
+        if (warningTimer <= 0.0f) {
+            warningStarted = false;
+            bulletLaserDamageActive = true; // ahora hacen daño
+        }
+        return;
+    }
+
+    // 🔥 Rayos activos
     float laserHeight = 800;
-    DrawRectangle(rect.x + 20, rect.y + rect.height, 10, laserHeight, BLUE); // izquierda
-    DrawRectangle(rect.x + rect.width - 30, rect.y + rect.height, 10, laserHeight, BLUE); // derecha
+    DrawRectangle(leftRayRect.x, leftRayRect.y, leftRayRect.width, laserHeight, BLUE);
+    DrawRectangle(rightRayRect.x, rightRayRect.y, rightRayRect.width, laserHeight, BLUE);
 
-    // Disparo de balas solo si aún queda tiempo
-    if (bulletShootingTime > 0.0f)
-    {
-        if (!pause) bulletSpawnCooldown -= GetFrameTime();
-        if (bulletSpawnCooldown <= 0.0f)
-        {
-            // Mezclar índices para elegir dos posiciones distintas
-            int indices[] = { 0, 1, 2, 3 };
-            std::shuffle(std::begin(indices), std::end(indices), std::default_random_engine((unsigned int)(GetTime() * 1000)));
+    // 💥 Disparo de balas
+    if (bulletShootingTime > 0.0f && !pause) {
+        bulletSpawnCooldown -= GetFrameTime();
 
-            for (int i = 0; i < 2; i++) // generar 2 balas
-            {
+        if (bulletSpawnCooldown <= 0.0f) {
+            // Escoger posiciones válidas
+            std::vector<int> validIndices;
+            do {
+                int indices[] = { 0,1,2,3,4,5,6,7,8 };
+                std::shuffle(std::begin(indices), std::end(indices), std::default_random_engine((unsigned int)(GetTime() * 1000)));
+                validIndices = { indices[0], indices[1], indices[2], indices[3], indices[4] };
+                std::sort(validIndices.begin(), validIndices.end());
+
+                int consecutive = 1;
+                bool valid = true;
+                for (int i = 1; i < validIndices.size(); i++) {
+                    if (validIndices[i] == validIndices[i - 1] + 1) {
+                        consecutive++;
+                        if (consecutive >= 3) {
+                            valid = false;
+                            break;
+                        }
+                    }
+                    else {
+                        consecutive = 1;
+                    }
+                }
+
+                if (valid) break;
+            } while (true);
+
+            // Crear balas
+            for (int i = 0; i < 5; i++) {
                 Bullet_Boss b;
-                b.pos = { bulletSpawnPositions[indices[i]], rect.y + rect.height };
+                b.pos = { bulletSpawnPositions[validIndices[i]], rect.y + rect.height - 50 };
                 b.lifetime = 0.0f;
                 b.active = true;
+                b.rect = { b.pos.x - 8, b.pos.y - 8, 16, 16 };
                 dodgeBullets.push_back(b);
             }
 
-            bulletSpawnCooldown = 0.5f; // subir cooldown porque generamos 2 a la vez
+            bulletSpawnCooldown = 0.6f;
         }
 
-        if (!pause) bulletShootingTime -= GetFrameTime(); // ⬅️ cuenta atrás para dejar de disparar
+        bulletShootingTime -= GetFrameTime();
     }
 
-    // Actualizar balas
-    for (auto& b : dodgeBullets)
-    {
-        if (!b.active) continue;
+    // 🌀 Movimiento y vida de balas
+    if (!pause) {
+        for (auto& b : dodgeBullets) {
+            if (!b.active) continue;
 
-        b.lifetime += GetFrameTime();
+            b.lifetime += GetFrameTime();
 
-        if (life >= life / 2) b.pos.y += 250 * GetFrameTime(); // Posición bala y
-        else if (life >= life / 3) b.pos.y += 350 * GetFrameTime(); // Posición bala y
-        else b.pos.y += 350 * GetFrameTime(); // Posición bala y
+            if (life >= initialLife * 0.5f) b.pos.y += 250 * GetFrameTime();
+            else if (life >= initialLife * 0.33f) b.pos.y += 300 * GetFrameTime();
+            else b.pos.y += 350 * GetFrameTime();
 
-        b.rect = { b.pos.x - 8, b.pos.y - 8, 32, 32 };
+            b.rect = { b.pos.x - 8, b.pos.y - 8, 16, 16 };
 
-        // Si la bala se sale de la pantalla, desactivarla
-        if (b.pos.y > 896 + 32) // más allá de la pantalla
-            b.active = false;
+            if (b.pos.y > 896 + 32) b.active = false;
+        }
     }
 
-    // Eliminar balas inactivas
+    // 🧹 Limpiar balas inactivas
     dodgeBullets.erase(
-        std::remove_if(dodgeBullets.begin(), dodgeBullets.end(), [](const Bullet_Boss& b) { return !b.active; }),
+        std::remove_if(dodgeBullets.begin(), dodgeBullets.end(), [](const Bullet_Boss& b) {
+            return !b.active;
+            }),
         dodgeBullets.end()
     );
 
-    // Solo termina el patrón cuando ya no quedan balas activas
-    if (bulletShootingTime <= 0.0f && dodgeBullets.empty())
-    {
+    // ✅ Finalizar patrón
+    if (bulletShootingTime <= 0.0f && dodgeBullets.empty()) {
         bulletDodgeActive = false;
+        bulletLaserDamageActive = false;
         patternCooldown = 3.0f;
         currentPattern = ATTACK_NONE;
     }
 }
+
 
 void Boss::BossManager(bool pause)
 {

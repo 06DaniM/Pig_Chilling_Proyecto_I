@@ -128,7 +128,19 @@ int main(void)
     InitWindow(screenWidth, screenHeight, "Galaga");
     InitAudioDevice();
 
-    Rectangle player = { (screenWidth - 74) / 2.0f, screenHeight / 1.5f, 64, 64 }; // PositionX, PositionY, ColliderX, ColliderY
+    const float spriteWidth = 80;
+    const float spriteHeight = 80;
+    const float colliderWidth = 30;
+    const float colliderHeight = 60;
+
+    Vector2 spritePos = { (screenWidth - spriteWidth) / 2.0f, screenHeight / 1.5f };
+
+    Rectangle player = {
+        spritePos.x + (spriteWidth - colliderWidth) / 2.0f,
+        spritePos.y + (spriteHeight - colliderHeight) / 2.0f,
+        colliderWidth,
+        colliderHeight
+    };
 
     Rectangle playerDieFrameRec = { 0,0 , 58, 58 };
 
@@ -167,7 +179,7 @@ int main(void)
     Texture2D krakenDeathAnim = LoadTexture("resources/enemies/deathEnemyAnim.png");
 
     // === BOSS SPRITES === //
-    Texture2D bossSprite = LoadTexture("resources/enemies/boss.png");
+    Texture2D bossSprite = LoadTexture("resources/enemies/bossatt.png");
     Texture2D bossAttackNormalSprite = LoadTexture("resources/enemies/boss attack normal.png");
     Texture2D bossAttackReverseSprite = LoadTexture("resources/enemies/boss attack reverse.png");
     Texture2D bossDeathAnim = LoadTexture("resources/enemies/deathEnemyAnim.png");
@@ -188,6 +200,8 @@ int main(void)
 
     Texture2D logo = LoadTexture("resources/backgrounds/Logo Game.png");
 
+    Music winMusic = LoadMusicStream("resources/music/Win.wav");
+    Music gameOverMusic = LoadMusicStream("resources/music/Death.wav");
     Music menuMusic = LoadMusicStream("resources/music/Main_Menu.wav");
     Music musicLevel1 = LoadMusicStream("resources/music/Level1.wav");
     Music musicLevel2 = LoadMusicStream("resources/music/Level2.wav");
@@ -227,6 +241,16 @@ int main(void)
     PlayMusicStream(menuMusic);
     PlayMusicStream(musicLevel1);
     PlayMusicStream(musicLevel2);
+    PlayMusicStream(winMusic);
+    PlayMusicStream(gameOverMusic);
+
+    bool winMusicStarted = false;
+    float winMusicDuration = 3.7f;
+    float winMusicTimer = 0.0f;
+
+    bool gameOverMusicStarted = false;
+    float gameOverMusicDuration = 1.8f;
+    float gameOverMusicTimer = 0.0f;
 
     while (!WindowShouldClose())
     {
@@ -424,12 +448,16 @@ int main(void)
                 }
             }
 
-            if (level == 1) UpdateMusicStream(musicLevel1);
-            else if (level == 2) UpdateMusicStream(musicLevel2);
+            if (level == 1 && !gameOver && !hasWon) UpdateMusicStream(musicLevel1);
+            else if (level == 2 && !gameOver && !hasWon) UpdateMusicStream(musicLevel2);
 
-            // Movement of the ship
-            if (IsKeyDown(KEY_D) && canAct) player.x += PLAYER_SPEED;
-            if (IsKeyDown(KEY_A) && canAct) player.x -= PLAYER_SPEED;
+            // Movimiento del sprite
+            if (IsKeyDown(KEY_D) && canAct) spritePos.x += PLAYER_SPEED;
+            if (IsKeyDown(KEY_A) && canAct) spritePos.x -= PLAYER_SPEED;
+
+            // Actualizar collider centrado en el sprite
+            player.x = spritePos.x + (spriteWidth - colliderWidth) / 2.0f;
+            player.y = spritePos.y + (spriteHeight - colliderHeight) / 2.0f;
 
             // Limit the movemente inside the window
             if (player.x < 0) player.x = 0;
@@ -455,13 +483,38 @@ int main(void)
                 // === FOR THE FINAL GAME
                 if (doubleShot)
                 {
-                    bullets.push_back({ { player.x + player.width / 2 - 15, player.y + player.height / 2, bulletWidth, bulletHeight }, true });
-                    bullets.push_back({ { player.x + player.width / 2 + 15, player.y + player.height / 2, bulletWidth, bulletHeight }, true });
+                    bullets.push_back({
+                    {
+                        spritePos.x + spriteWidth / 2 - 15 - bulletWidth / 2,
+                        spritePos.y + 20,
+                        bulletWidth,
+                        bulletHeight
+                    },
+                    true
+
+                    });
+                    bullets.push_back({
+                    {
+                        spritePos.x + spriteWidth / 2 + 15 - bulletWidth / 2,
+                        spritePos.y + 20,
+                        bulletWidth,
+                        bulletHeight
+                    },
+                    true
+                    });
                 }
 
                 else
                 {
-                    bullets.push_back({ { player.x + player.width / 2, player.y, bulletWidth, bulletHeight }, true });
+                    bullets.push_back({
+                    {
+                    spritePos.x + spriteWidth / 2 - bulletWidth / 2,
+                    spritePos.y,
+                    bulletWidth,
+                    bulletHeight
+                    },
+                    true
+                    });
                 }
             }
 
@@ -858,12 +911,40 @@ int main(void)
                 }
             }
 
-            if (CheckCollisionRecs(player, boss.wideBeamRect) && boss.wideBeamActive && canAct && isVisible && !isInvencibilityDelayTimerStarted)
+            if (boss.wideBeamDamageActive && CheckCollisionRecs(player, boss.wideBeamRect) && canAct && isVisible && !isInvencibilityDelayTimerStarted)
             {
                 PlaySound(deathPlayerSound);
                 playerGotHit = true;
                 canAct = false;
                 life--;
+            }
+
+            else if ((CheckCollisionRecs(player, boss.leftRayRect) || CheckCollisionRecs(player, boss.rightRayRect)) && boss.bulletLaserDamageActive && canAct && isVisible && !isInvencibilityDelayTimerStarted)
+            {
+                PlaySound(deathPlayerSound);
+                playerGotHit = true;
+                canAct = false;
+                life--;
+            }
+
+            else if ((CheckCollisionRecs(player, boss.centerLaserRect) || CheckCollisionRecs(player, boss.leftDiagonalRect) || CheckCollisionRecs(player, boss.rightDiagonalRect)) && boss.laserDamageActive && canAct && isVisible && !isInvencibilityDelayTimerStarted)
+            {
+                PlaySound(deathPlayerSound);
+                playerGotHit = true;
+                canAct = false;
+                life--;
+            }
+
+            for (Bullet_Boss& bullet : boss.dodgeBullets)
+            {
+                if (CheckCollisionRecs(player, bullet.rect) && canAct && isVisible && !isInvencibilityDelayTimerStarted)
+                {
+                    PlaySound(deathPlayerSound);
+                    playerGotHit = true;
+                    bullet.active = false;
+                    canAct = false;
+                    life--;
+                }
             }
 
             // Update Boss
@@ -970,28 +1051,16 @@ int main(void)
             }
         }
 
-        // Draw the boss bullets
-        for (const Bullet_Boss& bullet : boss.dodgeBullets)
-        {
-            if (bullet.active)
-            {
-                DrawTextureEx(bulletBossSprite,
-                    { bullet.pos.x - bulletBossSprite.width / 2,
-                      bullet.pos.y - bulletBossSprite.height / 2 },
-                    0, 1, WHITE);
-            }
-        }
-
         // Draw the ship
         if (isVisible)
         {
             if (playerGotHit)
             {
                 Rectangle dest = {
-                        player.x + player.width / 2.0f,
-                        player.y + player.height / 2.0f,
-                        player.width * 2,
-                        player.height * 2
+                spritePos.x + spriteWidth / 2.0f,
+                spritePos.y + spriteHeight / 2.0f,
+                spriteWidth * 2,  // escalar al doble si quieres
+                spriteHeight * 2
                 };
 
                 Vector2 origin = { dest.width / 2.0f, dest.height / 2.0f };
@@ -999,30 +1068,15 @@ int main(void)
                 DrawTexturePro(shipSpriteDeathAnim, playerDieFrameRec, dest, origin, 0, WHITE);
             }
 
-            else if (doubleShot && !shield)
-            {
-                if (isInvencibilityDelayTimerStarted) DrawTextureEx(shipSpriteDouble, { player.x, player.y }, 0, 1, { 255, 255, 255, 120 });
-                else DrawTexture(shipSpriteDouble, (int)player.x, (int)player.y, WHITE);
-            }
+            else if (doubleShot && !shield) DrawTextureEx(shipSpriteDouble, spritePos, 0, 1, isInvencibilityDelayTimerStarted ? Color{ 255, 255, 255, 120 } : WHITE);
 
-            else if (shield && !doubleShot)
-            {
-                DrawTexture(shipSpriteBuble, (int)player.x, (int)player.y, WHITE);
-            }
+            else if (shield && !doubleShot) DrawTexture(shipSpriteBuble, (int)spritePos.x, (int)spritePos.y, WHITE);
 
-            else if (doubleShot && shield)
-            {
-                DrawTexture(shipSpriteDoubleandBuble, (int)player.x, (int)player.y, WHITE);
-            }
+            else if (doubleShot && shield) DrawTexture(shipSpriteDoubleandBuble, (int)spritePos.x, (int)spritePos.y, WHITE);
 
-            else if (isInvencibilityDelayTimerStarted) DrawTextureEx(shipSpriteBase, { player.x, player.y }, 0, 1, { 255, 255, 255, 120 });
-            else DrawTextureEx(shipSpriteBase, { player.x, player.y }, 0, 1, WHITE);
-        }
+            else DrawTextureEx(shipSpriteBase, spritePos, 0, 1, isInvencibilityDelayTimerStarted ? Color{ 255, 255, 255, 120 } : WHITE);
 
-        // Draw the lifes of the ship
-        for (int i = 0; i < life; i++) {
-            Vector2 position = { 25 + i * (shipSpriteBase.width * scale + 10), screenHeight - shipSpriteBase.height * scale - 25 };
-            DrawTextureEx(shipSpriteBase, position, 0.0f, scale, WHITE);
+            DrawRectangleLinesEx(player, 2, GREEN);
         }
 
         // Draw the enemies
@@ -1095,6 +1149,24 @@ int main(void)
             }
         }
 
+        // Draw the boss bullets
+        for (const Bullet_Boss& bullet : boss.dodgeBullets)
+        {
+            if (bullet.active)
+            {
+                DrawTextureEx(bulletBossSprite,
+                    { bullet.pos.x - bulletBossSprite.width / 2,
+                      bullet.pos.y - bulletBossSprite.height / 2 },
+                    0, 0.8f, WHITE);
+            }
+        }
+
+        // Draw the lifes of the ship
+        for (int i = 0; i < life; i++) {
+            Vector2 position = { 25 + i * (shipSpriteBase.width * scale + 10), screenHeight - shipSpriteBase.height * scale - 25 };
+            DrawTextureEx(shipSpriteBase, position, 0.0f, scale, WHITE);
+        }
+
         // Display the score
         DrawTextEx(font, TextFormat("SCORE: %i", score), { 10, 10 }, 34, 2, WHITE);
 
@@ -1109,8 +1181,21 @@ int main(void)
         if (gameOver)
         {
             if (!isNextScreenTimerStarted) {
-                nextScreenTimer.Start(1);        // Inicia el temporizador solo una vez
+                nextScreenTimer.Start(2);        // Inicia el temporizador solo una vez
                 isNextScreenTimerStarted = true;
+            }
+
+            if (!gameOverMusicStarted)
+            {
+                PlayMusicStream(gameOverMusic);
+                gameOverMusicStarted = true;
+                gameOverMusicTimer = 0.0f;
+            }
+
+            gameOverMusicTimer += GetFrameTime();
+            if (gameOverMusicTimer < gameOverMusicDuration)
+            {
+                UpdateMusicStream(gameOverMusic);
             }
 
             // Show the GAME OVER screen
@@ -1142,17 +1227,33 @@ int main(void)
                 player.y = screenHeight / 1.5f;
                 bullets.clear();
                 score = 0;
+                level = 1;
                 currentWave = 0;
                 currentEnemies = 0;
             }
             continue; // Avoid the code is still executing in the menu
         }
 
+        else gameOverMusicStarted = false;
+
         if (hasWon)
         {
             if (!isNextScreenTimerStarted) {
-                nextScreenTimer.Start(1);        // Inicia el temporizador solo una vez
+                nextScreenTimer.Start(4);        // Inicia el temporizador solo una vez
                 isNextScreenTimerStarted = true;
+            }
+
+            if (!winMusicStarted)
+            {
+                PlayMusicStream(gameOverMusic);
+                winMusicStarted = true;
+                winMusicTimer = 0.0f;
+            }
+
+            winMusicTimer += GetFrameTime();
+            if (winMusicTimer < winMusicDuration)
+            {
+                UpdateMusicStream(winMusic);
             }
 
             // Show victory screen
@@ -1174,6 +1275,8 @@ int main(void)
 
             canAct = false;
 
+            isNextScreenTimerStarted = true;
+
             if (GetKeyPressed() != 0 && canPass) // Detect any key
             {
                 // Reset the initial states
@@ -1183,7 +1286,9 @@ int main(void)
                 inMenu = true; // Return to menu
                 score = 0; // Reset the score
                 life = 3; // Reset the life
+                level = 1;
                 currentWave = 0; // Reset the waves
+                currentEnemies = 0; // Reset the enemies
 
                 // Reset the position of the player
                 player.x = (screenWidth - player.width) / 2.0f;
@@ -1191,10 +1296,13 @@ int main(void)
                 // Clear all the enemies and bullets, just in case
                 bullets.clear();
                 enemies.clear();
-                currentEnemies = 0;
             }
             continue; // Avoid the code is still executing in the victory menu
         }
+
+        else winMusicStarted = false;
+
+        if (!gameOver || !hasWon) canPass = false;
 
         for (const PowerUp& powerUp : powerUps)
         {

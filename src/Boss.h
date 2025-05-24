@@ -25,6 +25,7 @@ public:
     Rectangle rect;
     Rectangle enemyDeathFrameRec;
     int life;
+    int initialLife;
     bool active;
     bool dying;
     bool dead;
@@ -49,16 +50,28 @@ public:
     BossAttackPattern currentPattern;
     float patternTimer;        // Duración del patrón actual
     float patternCooldown;     // Tiempo hasta el próximo patrón
+    Rectangle centerLaserRect;
+    Rectangle leftDiagonalRect;
+    Rectangle rightDiagonalRect;
     bool laserActive;
+    bool laserDamageActive;
     float laserTimer;
     bool wideBeamActive;
+    bool wideBeamDamageActive;
     float wideBeamTimer;
     Rectangle wideBeamRect;
     bool bulletDodgeActive;
+    bool bulletLaserDamageActive;
+    Rectangle leftRayRect;
+    Rectangle rightRayRect;
     float bulletDodgeTimer;
     float bulletSpawnCooldown;
     float bulletShootingTime;
     std::vector<Bullet_Boss> dodgeBullets;
+    bool warningStarted;
+    float warningTimer;
+    const float warningDuration;
+
 
     // Constructor
     Boss();
