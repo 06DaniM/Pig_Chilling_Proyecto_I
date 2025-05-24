@@ -188,8 +188,8 @@ int main(void)
     Texture2D logo = LoadTexture("resources/backgrounds/Logo Game.png");
 
     Music menuMusic = LoadMusicStream("resources/music/Main_Menu.wav");
-    Music musicLevel1 = LoadMusicStream("resources/music/02 Regular Stage Theme.ogg");
-    Music musicLevel2 = LoadMusicStream("resources/music/Alan Walker - Darkside.mp3");
+    Music musicLevel1 = LoadMusicStream("resources/music/Level1.wav");
+    Music musicLevel2 = LoadMusicStream("resources/music/Level2.wav");
 
     Font font = LoadFontEx("resources/font/Data 70 Regular.otf", 64, 0, 0);
 
