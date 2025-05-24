@@ -187,7 +187,9 @@ int main(void)
 
     Texture2D logo = LoadTexture("resources/backgrounds/Logo Game.png");
 
-    Music music = LoadMusicStream("resources/music/02 Regular Stage Theme.ogg");
+    Music menuMusic = LoadMusicStream("resources/music/Main_Menu.wav");
+    Music musicLevel1 = LoadMusicStream("resources/music/02 Regular Stage Theme.ogg");
+    Music musicLevel2 = LoadMusicStream("resources/music/Alan Walker - Darkside.mp3");
 
     Font font = LoadFontEx("resources/font/Data 70 Regular.otf", 64, 0, 0);
 
@@ -221,11 +223,12 @@ int main(void)
     bool showGameOver = false;
 
     SetTargetFPS(60);
-    PlayMusicStream(music);
+    PlayMusicStream(menuMusic);
+    PlayMusicStream(musicLevel1);
+    PlayMusicStream(musicLevel2);
 
     while (!WindowShouldClose())
     {
-        UpdateMusicStream(music);
 
         // === HACKS FOR TESTING ===
         if (IsKeyPressed(KEY_R))
@@ -278,12 +281,16 @@ int main(void)
         // === BEGINING GAME CODE
 
         // Pause the game
-        if (IsKeyPressed(KEY_ESCAPE) || IsKeyPressed('P')) {
+        if (IsKeyPressed(KEY_ESCAPE) || IsKeyPressed('P')) 
+        {
             pause = !pause;
             canAct = !canAct;
 
-            if (pause) PauseMusicStream(music);
-            else ResumeMusicStream(music);
+            if (pause && level == 1) PauseMusicStream(musicLevel1);
+            else if (!pause && level == 1)ResumeMusicStream(musicLevel1);
+
+            if (pause && level == 2) PauseMusicStream(musicLevel2);
+            else if (!pause && level == 2)ResumeMusicStream(musicLevel2);
         }
 
         if (isMenuTimerStarted)
@@ -328,6 +335,8 @@ int main(void)
                 backgroundMenuFrameRec.x = currentBackgrounMenuFrameX * screenWidth;
                 backgroundMenuFrameRec.y = currentBackgrounMenuFrameY * screenHeight;
             }
+
+            UpdateMusicStream(menuMusic);
 
             BeginDrawing();
             ClearBackground(BLACK);
@@ -413,6 +422,9 @@ int main(void)
                     backgroundGameFrameReclevel2.y = currentBackgrounGameFrameYlevel2 * screenHeight;
                 }
             }
+
+            if (level == 1) UpdateMusicStream(musicLevel1);
+            else if (level == 2) UpdateMusicStream(musicLevel2);
 
             // Movement of the ship
             if (IsKeyDown(KEY_D) && canAct) player.x += PLAYER_SPEED;
