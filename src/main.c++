@@ -870,7 +870,7 @@ int main(void)
             {
                 if (boss.active)
                 {
-                    boss.BossManager();
+                    boss.BossManager(pause);
                 }
             }
 
@@ -1084,13 +1084,13 @@ int main(void)
             switch (boss.currentPattern)
             {
             case ATTACK_LASER_DIAGONAL:
-                boss.LaserDiagonalPattern();
+                boss.LaserDiagonalPattern(pause);
                 break;
             case ATTACK_WIDE_BEAM:
-                boss.WideBeamAttack();
+                boss.WideBeamAttack(pause);
                 break;
             case ATTACK_BULLET_DODGE:
-                boss.BulletDodgePattern();
+                boss.BulletDodgePattern(pause);
                 break;
             }
         }

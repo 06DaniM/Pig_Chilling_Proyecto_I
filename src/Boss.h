@@ -64,11 +64,11 @@ public:
     Boss();
 
     void BossSpawn();
-    void BossManager();
+    void BossManager(bool pause);
     void SelectNextPattern();
-    void LaserDiagonalPattern();
-    void WideBeamAttack();
-    void BulletDodgePattern();
+    void LaserDiagonalPattern(bool pause);
+    void WideBeamAttack(bool pause);
+    void BulletDodgePattern(bool pause);
 };
 
 #endif // BOSS_H

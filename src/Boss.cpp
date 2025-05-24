@@ -9,7 +9,7 @@ Bullet_Boss::Bullet_Boss() : rect{ 0, 0, 32, 32 }, pos{ 0,0 }, lifetime(0.0f), a
 
 // Enemy constructor
 Boss::Boss()
-    : rect{ 0, 0, 256, 256 }, enemyDeathFrameRec{ 0, 0, 54, 54 }, life(100), active(false), dying(false), dead(false), attackRutine(0),
+    : rect{ 0, 0, 432, 256 }, enemyDeathFrameRec{ 0, 0, 54, 54 }, life(100), active(false), dying(false), dead(false), attackRutine(0),
     laserAttackNormal(false), laserAttackHeavy(false), shooting(false), attackTime(0.0f), attackingTimer(0.0f), attackCooldown(0.0f),
     playerPos{ 0.0f, 0.0f }, rotation(0.0f), appearance(false), idle(false), random(false), canAttack(true), hasArribed(false),
     enemyDeathFramesCounter(0), currentEnemyDeathFrame(0), start({ 0,0 }), target({ 0,0 }), currentPattern(ATTACK_NONE), patternTimer(0.0f), patternCooldown(0.0f),
@@ -29,9 +29,9 @@ void Boss::BossSpawn()
 
     // Position to move for starting the fight
     target.x = start.x;
-    target.y = 100;
+    target.y = 50;
 
-    rect = { start.x, start.y, 256, 256};
+    rect = { start.x, start.y, 432, 256};
     active = true;
     appearance = true;
 }
@@ -39,10 +39,10 @@ void Boss::BossSpawn()
 void Boss::SelectNextPattern()
 {
     // Aleatorio:
-    currentPattern = static_cast<BossAttackPattern>(GetRandomValue(1, 1));
+    currentPattern = static_cast<BossAttackPattern>(GetRandomValue(0, 0));
 }
 
-void Boss::LaserDiagonalPattern()
+void Boss::LaserDiagonalPattern(bool pause)
 {
     if (!laserActive)
     {
@@ -56,16 +56,17 @@ void Boss::LaserDiagonalPattern()
     Vector2 origin = { rect.x + rect.width / 2, rect.y + rect.height };
 
     // Central recto
-    DrawRectangle(origin.x - 50, origin.y, 100, 800, RED);
+    DrawRectangle(origin.x - 50, origin.y - 50, 100, 800, RED);
 
     // Izquierda diagonal (simulada con líneas)
-    DrawLineEx({ origin.x - 300, origin.y }, { origin.x - 50, origin.y + 800 }, 50, RED);
+    DrawLineEx({ origin.x - 190, origin.y }, { origin.x + 950, origin.y + 800 }, 50, RED);
 
     // Derecha diagonal
-    DrawLineEx({ origin.x + 300, origin.y }, { origin.x + 50, origin.y + 800 }, 50, RED);
+    DrawLineEx({ origin.x + 190, origin.y }, { origin.x - 950, origin.y + 800 }, 50, RED);
 
     // Timer para apagar los rayos
-    laserTimer -= GetFrameTime();
+
+    if(!pause) laserTimer -= GetFrameTime();
     if (laserTimer <= 0)
     {
         laserActive = false;
@@ -75,7 +76,7 @@ void Boss::LaserDiagonalPattern()
     }
 }
 
-void Boss::WideBeamAttack()
+void Boss::WideBeamAttack(bool pause)
 {
     if (!wideBeamActive)
     {
@@ -95,7 +96,7 @@ void Boss::WideBeamAttack()
     DrawRectangleRec(wideBeamRect, ORANGE);
 
     // Timer para desactivarlo
-    wideBeamTimer -= GetFrameTime();
+    if (!pause) wideBeamTimer -= GetFrameTime();
     if (wideBeamTimer <= 0)
     {
         wideBeamActive = false;
@@ -104,7 +105,7 @@ void Boss::WideBeamAttack()
     }
 }
 
-void Boss::BulletDodgePattern()
+void Boss::BulletDodgePattern(bool pause)
 {
     if (!bulletDodgeActive)
     {
@@ -122,7 +123,7 @@ void Boss::BulletDodgePattern()
     // Disparo de balas solo si aún queda tiempo
     if (bulletShootingTime > 0.0f)
     {
-        bulletSpawnCooldown -= GetFrameTime();
+        if (!pause) bulletSpawnCooldown -= GetFrameTime();
         if (bulletSpawnCooldown <= 0.0f)
         {
             Bullet_Boss b;
@@ -133,7 +134,7 @@ void Boss::BulletDodgePattern()
             bulletSpawnCooldown = 0.2f; // cada 0.2 segundos
         }
 
-        bulletShootingTime -= GetFrameTime(); // ⬅️ cuenta atrás para dejar de disparar
+        if (!pause) bulletShootingTime -= GetFrameTime(); // ⬅️ cuenta atrás para dejar de disparar
     }
 
     // Actualizar balas
@@ -167,7 +168,7 @@ void Boss::BulletDodgePattern()
     }
 }
 
-void Boss::BossManager()
+void Boss::BossManager(bool pause)
 {
     // Apareance state
     if (appearance)
@@ -184,7 +185,7 @@ void Boss::BossManager()
         }
     }
 
-    patternCooldown -= GetFrameTime();
+    if (!pause) patternCooldown -= GetFrameTime();
     if (!appearance && patternCooldown <= 0) {
         SelectNextPattern();
         patternCooldown = 10.0f;
@@ -194,13 +195,13 @@ void Boss::BossManager()
     switch (currentPattern)
     {
     case ATTACK_LASER_DIAGONAL:
-        LaserDiagonalPattern();
+        LaserDiagonalPattern(pause);
         break;
     case ATTACK_WIDE_BEAM:
-        WideBeamAttack();
+        WideBeamAttack(pause);
         break;
     case ATTACK_BULLET_DODGE:
-        BulletDodgePattern();
+        BulletDodgePattern(pause);
         break;
     }
 }
