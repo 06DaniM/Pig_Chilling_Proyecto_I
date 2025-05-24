@@ -121,6 +121,7 @@ int currentEnemyDestroySound;
 
 std::vector<Bullet> bullets;
 std::vector<Bullet_Enemy> enemyBullets;
+std::vector<Bullet_Boss> bossBullets;
 
 int main(void)
 {
@@ -183,7 +184,7 @@ int main(void)
     // === MENU SPRITES === //
     Texture2D menuBackground = LoadTexture("resources/backgrounds/Menu Background.png");
     Texture2D gamePlayBackgroundLevel1 = LoadTexture("resources/backgrounds/Gameplay Background Level 1.png");
-    Texture2D gamePlayBackgroundLevel2 = LoadTexture("resources/backgrounds/Gameplay Background Level 1.png");
+    Texture2D gamePlayBackgroundLevel2 = LoadTexture("resources/backgrounds/Gameplay Background Level 2.png");
 
     Texture2D logo = LoadTexture("resources/backgrounds/Logo Game.png");
 
@@ -316,7 +317,7 @@ int main(void)
 
             backgrounMenuFramesCounter++;
 
-            if (backgrounMenuFramesCounter >= 1)
+            if (backgrounMenuFramesCounter >= 2)
             {
                 backgrounMenuFramesCounter = 0;
                 currentBackgrounMenuFrameX++;
@@ -857,6 +858,14 @@ int main(void)
                 }
             }
 
+            if (CheckCollisionRecs(player, boss.wideBeamRect) && boss.wideBeamActive && canAct && isVisible && !isInvencibilityDelayTimerStarted)
+            {
+                PlaySound(deathPlayerSound);
+                playerGotHit = true;
+                canAct = false;
+                life--;
+            }
+
             // Update Boss
             {
                 if (boss.active)
@@ -958,6 +967,18 @@ int main(void)
                     { (bullet.rect.x + bullet.rect.width / 2 - bulletSprite.width / 2),
                     (bullet.rect.y + bullet.rect.height / 2 - bulletSprite.height / 2) }, 0, 1,
                     WHITE);
+            }
+        }
+
+        // Draw the boss bullets
+        for (const Bullet_Boss& bullet : boss.dodgeBullets)
+        {
+            if (bullet.active)
+            {
+                DrawTextureEx(bulletBossSprite,
+                    { bullet.pos.x - bulletBossSprite.width / 2,
+                      bullet.pos.y - bulletBossSprite.height / 2 },
+                    0, 1, WHITE);
             }
         }
 

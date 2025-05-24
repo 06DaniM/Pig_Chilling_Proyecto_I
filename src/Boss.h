@@ -57,6 +57,8 @@ public:
     bool bulletDodgeActive;
     float bulletDodgeTimer;
     float bulletSpawnCooldown;
+    float bulletShootingTime;
+    std::vector<Bullet_Boss> dodgeBullets;
 
     // Constructor
     Boss();

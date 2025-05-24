@@ -1,11 +1,11 @@
-#include "Boss.h"
+ï»¿#include "Boss.h"
 #include <cmath>
 #include <iostream>
 
 using namespace std;
 
 // Bullet_Enemy constructor
-Bullet_Boss::Bullet_Boss() : rect{ 0, 0, 0, 0 }, pos{ 0,0 }, lifetime(0.0f), active(false) {}
+Bullet_Boss::Bullet_Boss() : rect{ 0, 0, 32, 32 }, pos{ 0,0 }, lifetime(0.0f), active(false) {}
 
 // Enemy constructor
 Boss::Boss()
@@ -13,18 +13,15 @@ Boss::Boss()
     laserAttackNormal(false), laserAttackHeavy(false), shooting(false), attackTime(0.0f), attackingTimer(0.0f), attackCooldown(0.0f),
     playerPos{ 0.0f, 0.0f }, rotation(0.0f), appearance(false), idle(false), random(false), canAttack(true), hasArribed(false),
     enemyDeathFramesCounter(0), currentEnemyDeathFrame(0), start({ 0,0 }), target({ 0,0 }), currentPattern(ATTACK_NONE), patternTimer(0.0f), patternCooldown(0.0f),
-    laserActive(false), laserTimer(0.0f), wideBeamActive(false), wideBeamTimer(0.0f), wideBeamRect({ 0,0 }), bulletDodgeActive(false), bulletDodgeTimer(0.0f), 
-    bulletSpawnCooldown(0.0f)
+    laserActive(false), laserTimer(0.0f), wideBeamActive(false), wideBeamTimer(0.0f), wideBeamRect({ 0,0,0,0 }), bulletDodgeActive(false), bulletDodgeTimer(0.0f), 
+    bulletShootingTime(0.0f), bulletSpawnCooldown(0.0f)
 {}
 
 const int screenWidth = 1152;
 const int screenHeight = 896;
-std::vector<Bullet_Boss> dodgeBullets;
 
 void Boss::BossSpawn()
 {
-    cout << "Boss spawned" << endl;
-
     // Spawn position
     start.x = (screenWidth - rect.width) / 2;
     start.y = -rect.height;
@@ -42,7 +39,7 @@ void Boss::BossSpawn()
 void Boss::SelectNextPattern()
 {
     // Aleatorio:
-    currentPattern = static_cast<BossAttackPattern>(GetRandomValue(0, 2));
+    currentPattern = static_cast<BossAttackPattern>(GetRandomValue(1, 1));
 }
 
 void Boss::LaserDiagonalPattern()
@@ -52,7 +49,7 @@ void Boss::LaserDiagonalPattern()
         // Activar rayos
         laserActive = true;
         laserTimer = 4.0f; // Duran 2 segundos
-        // Aquí podrías activar sonido, animaciones, etc.
+        // AquÃ­ podrÃ­as activar sonido, animaciones, etc.
     }
 
     // Dibujar rayos
@@ -61,7 +58,7 @@ void Boss::LaserDiagonalPattern()
     // Central recto
     DrawRectangle(origin.x - 50, origin.y, 100, 800, RED);
 
-    // Izquierda diagonal (simulada con líneas)
+    // Izquierda diagonal (simulada con lÃ­neas)
     DrawLineEx({ origin.x - 300, origin.y }, { origin.x - 50, origin.y + 800 }, 50, RED);
 
     // Derecha diagonal
@@ -72,8 +69,8 @@ void Boss::LaserDiagonalPattern()
     if (laserTimer <= 0)
     {
         laserActive = false;
-        // Termina el patrón después de mostrar los rayos
-        patternCooldown = 3.0f; // tiempo hasta el siguiente patrón
+        // Termina el patrÃ³n despuÃ©s de mostrar los rayos
+        patternCooldown = 3.0f; // tiempo hasta el siguiente patrÃ³n
         currentPattern = ATTACK_NONE; // o cualquier estado de espera
     }
 }
@@ -83,12 +80,15 @@ void Boss::WideBeamAttack()
     if (!wideBeamActive)
     {
         wideBeamActive = true;
-        wideBeamTimer = 1.5f; // Duración del ataque
+        wideBeamTimer = 3.0f;
 
-        // Posición del rayo ancho
-        float beamWidth = 300.0f;
-        float beamX = rect.x + rect.width / 2 - beamWidth / 2;
-        wideBeamRect = { beamX, rect.y + rect.height, beamWidth, 800 }; // hacia abajo
+        // AquÃ­ inicializas el rectÃ¡ngulo
+        wideBeamRect = {
+            rect.x + rect.width / 2 - 300,  // centro
+            rect.y + rect.height,
+            600, // ancho del rayo
+            800  // altura
+        };
     }
 
     // Dibujar el rayo ancho
@@ -109,49 +109,57 @@ void Boss::BulletDodgePattern()
     if (!bulletDodgeActive)
     {
         bulletDodgeActive = true;
-        bulletDodgeTimer = 4.0f;
+        bulletShootingTime = 4.0f;   // â¬…ï¸ disparar balas durante 4 segundos
         dodgeBullets.clear();
         bulletSpawnCooldown = 0.0f;
     }
 
-    // Rayos laterales (solo visuales aquí)
+    // Rayos laterales (mantener mientras haya balas)
     float laserHeight = 800;
     DrawRectangle(rect.x + 20, rect.y + rect.height, 10, laserHeight, BLUE); // izquierda
     DrawRectangle(rect.x + rect.width - 30, rect.y + rect.height, 10, laserHeight, BLUE); // derecha
 
-    // Disparo de balas en el centro en onda
-    bulletSpawnCooldown -= GetFrameTime();
-    if (bulletSpawnCooldown <= 0.0f)
+    // Disparo de balas solo si aÃºn queda tiempo
+    if (bulletShootingTime > 0.0f)
     {
-        Bullet_Boss b;
-        b.pos = { rect.x + rect.width / 2, rect.y + rect.height };
-        b.lifetime = 0.0f;
-        b.active = true;
-        dodgeBullets.push_back(b);
-        bulletSpawnCooldown = 0.2f; // disparar cada 0.2 segundos
+        bulletSpawnCooldown -= GetFrameTime();
+        if (bulletSpawnCooldown <= 0.0f)
+        {
+            Bullet_Boss b;
+            b.pos = { rect.x + rect.width / 2, rect.y + rect.height };
+            b.lifetime = 0.0f;
+            b.active = true;
+            dodgeBullets.push_back(b);
+            bulletSpawnCooldown = 0.2f; // cada 0.2 segundos
+        }
+
+        bulletShootingTime -= GetFrameTime(); // â¬…ï¸ cuenta atrÃ¡s para dejar de disparar
     }
 
-    // Actualizar y dibujar balas
+    // Actualizar balas
     for (auto& b : dodgeBullets)
     {
         if (!b.active) continue;
 
         b.lifetime += GetFrameTime();
-        b.pos.y += 250 * GetFrameTime();
-        b.pos.x += sinf(b.lifetime * 6.0f) * 100 * GetFrameTime(); // movimiento en onda
+        b.pos.y += 250 * GetFrameTime(); // PosiciÃ³n bala y
+        b.pos.x += sinf(b.lifetime * 6.0f) * 100 * GetFrameTime(); // PosiciÃ³n bala x
 
-        DrawCircleV(b.pos, 8, YELLOW);
+        b.rect = { b.pos.x - 8, b.pos.y - 8, 32, 32 };
+
+        // Si la bala se sale de la pantalla, desactivarla
+        if (b.pos.y > 896 + 32) // mÃ¡s allÃ¡ de la pantalla
+            b.active = false;
     }
 
-    // Puedes desactivarla si se sale de pantalla
+    // Eliminar balas inactivas
     dodgeBullets.erase(
         std::remove_if(dodgeBullets.begin(), dodgeBullets.end(), [](const Bullet_Boss& b) { return !b.active; }),
         dodgeBullets.end()
     );
 
-    // Finalizar patrón después de cierto tiempo
-    bulletDodgeTimer -= GetFrameTime();
-    if (bulletDodgeTimer <= 0)
+    // Solo termina el patrÃ³n cuando ya no quedan balas activas
+    if (bulletShootingTime <= 0.0f && dodgeBullets.empty())
     {
         bulletDodgeActive = false;
         patternCooldown = 3.0f;
@@ -182,7 +190,7 @@ void Boss::BossManager()
         patternCooldown = 10.0f;
     }
 
-    // Ejecutar el patrón actual
+    // Ejecutar el patrÃ³n actual
     switch (currentPattern)
     {
     case ATTACK_LASER_DIAGONAL:
