@@ -12,14 +12,14 @@ Bullet_Boss::Bullet_Boss() : rect{ 0, 0, 0, 0 }, pos{ 0,0 }, lifetime(0.0f), act
 
 // Enemy constructor
 Boss::Boss()
-    : rect{ 0, 0, 432, 256 }, enemyDeathFrameRec{ 0, 0, 54, 54 }, life(0), initialLife(100), active(false), dying(false), dead(false), attackRutine(0),
+    : rect{ 0, 0, 432, 256 }, enemyDeathFrameRec{ 0, 0, 54, 54 }, life(0), initialLife(100), active(false), gotHit(false), dying(false), dead(false), attackRutine(0),
     laserAttackNormal(false), laserAttackHeavy(false), shooting(false), attackTime(0.0f), attackingTimer(0.0f), attackCooldown(0.0f),
     playerPos{ 0.0f, 0.0f }, rotation(0.0f), appearance(false), idle(false), random(false), canAttack(true), hasArribed(false),
     enemyDeathFramesCounter(0), currentEnemyDeathFrame(0), start({ 0,0 }), target({ 0,0 }), currentPattern(ATTACK_NONE), patternTimer(0.0f), patternCooldown(0.0f),
     centerLaserRect({ 0,0,0,0 }), leftDiagonalRect({ 0,0,0,0 }), rightDiagonalRect({ 0,0 }), laserActive(false), laserDamageActive(false), laserTimer(0), 
     wideBeamDamageActive(false), wideBeamActive(false), wideBeamTimer(0.0f), wideBeamRect({ 0,0,0,0 }), bulletDodgeActive(false), bulletLaserDamageActive(false), 
     leftRayRect({ 0,0,0,0 }), rightRayRect({ 0,0,0,0 }), bulletDodgeTimer(0.0f), bulletShootingTime(0.0f), bulletSpawnCooldown(0.0f), warningStarted(false), 
-    warningTimer(0.0f), warningDurationLaserDiagonal(2.8f), warningDurationWideBeam(2.8f), warningDurationBulletDodge(3), warningAnimTexture({}), 
+    warningTimer(0.0f), warningDurationLaserDiagonal(2.6f), warningDurationWideBeam(2.8f), warningDurationBulletDodge(3), warningAnimTexture({}), 
     warningAnimFrame({0,0,0,0}), warningAnimFrameIndex(0), warningAnimTimer(0.0f), warningAnimSpeed(0.05f), warningAnimPlaying(false), warningAnimFinished(false), 
     warningAnimReversing(false), diagonalLaserSFXActive(false), diagonalLaserSFXPlayed(false), wideBeamSFXActive(false), wideBeamSFXPlayed(false), 
     bulletDodgeSFXActive(false), bulletDodgeSFXPlayed(false), shieldActive(false), shieldTimer(0.0f), shieldDuration(0.0f), shieldRect({ 0 })
@@ -47,11 +47,35 @@ void Boss::BossSpawn()
     appearance = true;
 }
 
+std::vector<std::vector<BossAttackPattern>> patternCombinations = {
+    { ATTACK_BULLET_DODGE, ATTACK_LASER_DIAGONAL, ATTACK_BULLET_DODGE },
+    { ATTACK_LASER_DIAGONAL, ATTACK_WIDE_BEAM, ATTACK_BULLET_DODGE },
+    { ATTACK_WIDE_BEAM, ATTACK_BULLET_DODGE, ATTACK_LASER_DIAGONAL },
+    { ATTACK_LASER_DIAGONAL, ATTACK_BULLET_DODGE, ATTACK_WIDE_BEAM },
+    { ATTACK_BULLET_DODGE, ATTACK_WIDE_BEAM, ATTACK_LASER_DIAGONAL },
+    { ATTACK_WIDE_BEAM, ATTACK_LASER_DIAGONAL, ATTACK_BULLET_DODGE }
+};
+
+int currentCombinationIndex = -1;
+int currentPatternIndex = 0;
+
 void Boss::SelectNextPattern()
 {
-    // Aleatorio:
-    currentPattern = static_cast<BossAttackPattern>(GetRandomValue(0, 2));
+    if (currentCombinationIndex == -1 || currentPatternIndex >= patternCombinations[currentCombinationIndex].size())
+    {
+        int newIndex;
+        do {
+            newIndex = GetRandomValue(0, patternCombinations.size() - 1);
+        } while (newIndex == currentCombinationIndex);
+
+        currentCombinationIndex = newIndex;
+        currentPatternIndex = 0;
+    }
+
+    currentPattern = patternCombinations[currentCombinationIndex][currentPatternIndex];
+    currentPatternIndex++;
 }
+
 
 void Boss::PlayWarningAnimation()
 {
@@ -129,8 +153,8 @@ void Boss::LaserDiagonalPattern()
         // ⚠️ Dibujar advertencias visuales (círculos)
         Vector2 origin = { rect.x + rect.width / 2, rect.y + rect.height };
         DrawCircle((int)origin.x, (int)origin.y, 60, RED);
-        DrawCircle((int)origin.x - 190, (int)origin.y, 60, RED);
-        DrawCircle((int)origin.x + 190, (int)origin.y, 60, RED);
+        DrawCircle((int)origin.x - 190, (int)origin.y, 40, RED);
+        DrawCircle((int)origin.x + 190, (int)origin.y, 40, RED);
     }
 
     // 🛑 Fase de advertencia
@@ -182,7 +206,7 @@ void Boss::LaserDiagonalPattern()
         diagonalLaserSFXPlayed = false;
         laserActive = false;
         laserDamageActive = false;
-        patternCooldown = 3.0f;
+        patternCooldown = 4.0f;
 
         // ▶️ Reproducir animación en reversa
         warningAnimPlaying = true;
@@ -238,7 +262,7 @@ void Boss::WideBeamAttack()
         wideBeamSFXActive = false;
         wideBeamSFXPlayed = false;
         wideBeamDamageActive = false;
-        patternCooldown = 3.0f;
+        patternCooldown = 4.0f;
         currentPattern = ATTACK_NONE; // o un estado de espera
     }
 }
@@ -383,7 +407,7 @@ void Boss::BulletDodgePattern()
             bulletLaserDamageActive = false;
             bulletDodgeActive = false;
             warningStarted = false;
-            patternCooldown = 3.0f;
+            patternCooldown = 4.0f;
 
             warningAnimPlaying = true;
             warningAnimReversing = true;
@@ -414,8 +438,8 @@ void Boss::BossManager()
             appearance = false;
         }
     }
-
-    patternCooldown -= GetFrameTime();
+    
+    if (currentPattern == ATTACK_NONE) patternCooldown -= GetFrameTime();
     if (!appearance && patternCooldown <= 0) {
         SelectNextPattern();
         patternCooldown = 10.0f;

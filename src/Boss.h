@@ -27,6 +27,7 @@ public:
     int life;
     int initialLife;
     bool active;
+    bool gotHit;
     bool dying;
     bool dead;
     int attackRutine;
@@ -48,8 +49,8 @@ public:
     Vector2 start;
     Vector2 target;
     BossAttackPattern currentPattern;
-    float patternTimer;        // Duración del patrón actual
-    float patternCooldown;     // Tiempo hasta el próximo patrón
+    float patternTimer;   
+    float patternCooldown;
     Rectangle centerLaserRect;
     Rectangle leftDiagonalRect;
     Rectangle rightDiagonalRect;
@@ -74,11 +75,11 @@ public:
     const float warningDurationLaserDiagonal;
     const float warningDurationBulletDodge;
 
-    Texture2D warningAnimTexture;      // Sprite sheet
-    Rectangle warningAnimFrame;        // Frame actual
+    Texture2D warningAnimTexture;    
+    Rectangle warningAnimFrame;     
     int warningAnimFrameIndex;
     float warningAnimTimer;
-    float warningAnimSpeed;     // Velocidad entre frames
+    float warningAnimSpeed;     
     bool warningAnimPlaying;
     bool warningAnimFinished;
     bool warningAnimReversing;

@@ -241,6 +241,7 @@ int main(void)
     int score = 0;
     int life = 3;
     float scale = 0.75f; // Reduce the scale of the sprites
+    int bosshitframe = 0;
 
     float shotCooldown = 0.3f;  // Time between shots
     float shotTimer = 0.0f;     // Timer for counting seconds
@@ -573,6 +574,8 @@ int main(void)
                 }
             }
 
+            if (bosshitframe > 0) bosshitframe++;
+
             // Update the bullets
             for (Bullet& bullet : bullets)
             {
@@ -657,6 +660,8 @@ int main(void)
                         else if (CheckCollisionRecs(boss.rect, bullet.rect))
                         {
                             bullet.active = false;
+                            boss.gotHit = true;
+                            bosshitframe++;
                             boss.life--;
                             cout << boss.life;
                         }
@@ -868,13 +873,14 @@ int main(void)
                     currentWave = 0;
                     level++;
                 }
-                cout << hasWon << isWinTimerStarted << currentWave << totalWavesLevel2 << level << boss.dead << endl;
+
                 if (!hasWon && !isWinTimerStarted && currentWave >= totalWavesLevel2 && level == 2 && boss.dead)
                 {
                     winDelayTimer.Start(1.5f); // Wait 1 second for the winning screen
                     isWinTimerStarted = true;
                 }
             }
+
             enemyFramesCounter++;
 
             if (enemyFramesCounter >= (30))
@@ -1191,15 +1197,27 @@ int main(void)
         if (boss.active && boss.life > 0)
         {
             // Si está mostrando la animación de advertencia, dibujarla
-            if (boss.warningAnimPlaying || boss.warningAnimFinished)
+            if ((boss.warningAnimPlaying || boss.warningAnimFinished) && bosshitframe == 0)
                 DrawTextureRec(bossAttackNormalSprite, boss.warningAnimFrame, { boss.rect.x, boss.rect.y }, WHITE);
-            else
-                DrawTextureEx(bossSprite, { boss.rect.x, boss.rect.y }, 0, 1, WHITE);
+
+            else if ((boss.warningAnimPlaying || boss.warningAnimFinished) && bosshitframe > 0)
+                DrawTextureRec(bossAttackNormalSprite, boss.warningAnimFrame, { boss.rect.x, boss.rect.y }, RED);
+
+            else if (bosshitframe > 0)
+            {
+                DrawTextureEx(bossSprite, { boss.rect.x, boss.rect.y }, 0, 1, RED);
+                boss.gotHit = false;
+            }
+
+            else DrawTextureEx(bossSprite, { boss.rect.x, boss.rect.y }, 0, 1, WHITE);
+
             if (boss.shieldActive)
             {
                 DrawRectangle(boss.shieldRect.x, boss.shieldRect.y, boss.shieldRect.width, boss.shieldRect.height, BLUE); // borde azul
             }
         }
+
+        if (bosshitframe > 5) bosshitframe = 0;
 
         // Dibujar ataques del jefe DESPUÉS del jefe (así se ven encima)
         if (boss.active)
