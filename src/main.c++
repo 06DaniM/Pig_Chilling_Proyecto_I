@@ -191,6 +191,11 @@ int main(void)
     Texture2D bulletSprite = LoadTexture("resources/bullets/Disparo_Spaceship.png");
     Texture2D bulletEnemySprite = LoadTexture("resources/bullets/Disparo_Regular_Enemy.png");
     Texture2D bulletBossSprite = LoadTexture("resources/bullets/Disparo_Boss.png");
+    Texture2D diagonalMidAttackLaser = LoadTexture("resources/bullets/diagonalMidAttackLaser.png");
+    Texture2D diagonalLateralAttackLaser = LoadTexture("resources/bullets/diagonalLateralAttackLaser.png");
+    Texture2D diagonalBallLateralLaser = LoadTexture("resources/bullets/diagonalBallLateralLaser.png");
+    Texture2D diagonalBallMidLaser = LoadTexture("resources/bullets/diagonalBallMidLaser.png");
+    Texture2D wideBeamBall = LoadTexture("resources/bullets/wideBeamBall.png");
 
     // === MENU SPRITES === //
     Texture2D menuBackground = LoadTexture("resources/backgrounds/Menu Background.png");
@@ -1234,6 +1239,55 @@ int main(void)
                 boss.BulletDodgePattern();
                 break;
             }
+        }
+
+        if (boss.laserDamageActive)
+        {
+            Vector2 origin = { boss.rect.x + boss.rect.width / 2, boss.rect.y + boss.rect.height };
+            DrawTextureEx(diagonalMidAttackLaser, { origin.x - 50, origin.y - 50 }, 0, 1, WHITE);
+            DrawTextureEx(diagonalLateralAttackLaser, { origin.x - 190, origin.y }, -50, 1, WHITE);
+            DrawTextureEx(diagonalLateralAttackLaser, { origin.x + 190, origin.y }, 50, 1, WHITE);
+        }
+
+        if (boss.warningAnimFinished && boss.currentPattern == ATTACK_LASER_DIAGONAL)
+        {
+            boss.LaserDiagonalBallWarningAnimation(); // <-- actualiza los frames
+
+            Vector2 origin = { boss.rect.x + boss.rect.width / 2, boss.rect.y + boss.rect.height };
+            Vector2 positions[2] = {
+                { origin.x - 190, origin.y },
+                { origin.x + 190, origin.y }
+            };
+            Vector2 center = { origin.x, origin.y };
+
+            for (int i = 0; i < 2; i++)
+            {
+                Vector2 drawPos = {
+                    positions[i].x - boss.diagonalBallFrameRect.width / 2,
+                    positions[i].y - boss.diagonalBallFrameRect.height / 2
+                };
+
+                DrawTextureRec(diagonalBallLateralLaser, boss.diagonalBallFrameRect, drawPos, WHITE);
+            }
+
+            Vector2 drawPos = {
+                center.x - boss.diagonalBallMidFrameRect.width / 2,
+                center.y - boss.diagonalBallMidFrameRect.height / 2
+            };
+
+            DrawTextureRec(diagonalBallMidLaser, boss.diagonalBallMidFrameRect, drawPos, WHITE);
+        }
+
+        if (boss.wideBeamActive && boss.currentPattern == ATTACK_WIDE_BEAM)
+        {
+            boss.WideBeamBallWarningAnimation();
+
+            Vector2 wideBeamPos = {
+                boss.rect.x + boss.rect.width / 2 - boss.wideBeamBallFrameRect.width / 2,
+                boss.rect.y + boss.rect.height - boss.wideBeamBallFrameRect.height / 2
+            };
+
+            DrawTextureRec(wideBeamBall, boss.wideBeamBallFrameRect, wideBeamPos, WHITE);
         }
 
         // Draw the boss bullets

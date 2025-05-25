@@ -22,7 +22,9 @@ Boss::Boss()
     warningTimer(0.0f), warningDurationLaserDiagonal(2.6f), warningDurationWideBeam(2.8f), warningDurationBulletDodge(3), warningAnimTexture({}), 
     warningAnimFrame({0,0,0,0}), warningAnimFrameIndex(0), warningAnimTimer(0.0f), warningAnimSpeed(0.05f), warningAnimPlaying(false), warningAnimFinished(false), 
     warningAnimReversing(false), diagonalLaserSFXActive(false), diagonalLaserSFXPlayed(false), wideBeamSFXActive(false), wideBeamSFXPlayed(false), 
-    bulletDodgeSFXActive(false), bulletDodgeSFXPlayed(false), shieldActive(false), shieldTimer(0.0f), shieldDuration(0.0f), shieldRect({ 0 })
+    bulletDodgeSFXActive(false), bulletDodgeSFXPlayed(false), shieldActive(false), shieldTimer(0.0f), shieldDuration(0.0f), shieldRect({ 0 }), diagonalBallFrameIndex(0),
+    diagonalBallAnimTimer(0.0f), diagonalBallAnimSpeed(0.1f), diagonalBallFrameRect({ 0, 0, 80, 80 }), diagonalBallMidFrameRect({ 0, 0, 120, 120 }), wideBeamBallFrameIndex(0),
+    wideBeamBallAnimTimer(0.0f), wideBeamBallAnimSpeed(0.1f), wideBeamBallFrameRect({ 0, 0, 160, 160 })
 {}
 
 const int screenWidth = 1152;
@@ -61,7 +63,8 @@ int currentPatternIndex = 0;
 
 void Boss::SelectNextPattern()
 {
-    if (currentCombinationIndex == -1 || currentPatternIndex >= patternCombinations[currentCombinationIndex].size())
+    currentPattern = static_cast<BossAttackPattern> (1);
+    /*if (currentCombinationIndex == -1 || currentPatternIndex >= patternCombinations[currentCombinationIndex].size())
     {
         int newIndex;
         do {
@@ -73,7 +76,7 @@ void Boss::SelectNextPattern()
     }
 
     currentPattern = patternCombinations[currentCombinationIndex][currentPatternIndex];
-    currentPatternIndex++;
+    currentPatternIndex++;*/
 }
 
 
@@ -119,6 +122,50 @@ void Boss::PlayWarningAnimation()
         0.0f,
         432.0f,
         256.0f
+    };
+}
+
+void Boss::LaserDiagonalBallWarningAnimation()
+{
+    if (diagonalBallFrameIndex < 9)  // Solo avanza si no es el último frame
+    {
+        diagonalBallAnimTimer += GetFrameTime();
+        if (diagonalBallAnimTimer >= diagonalBallAnimSpeed)
+        {
+            diagonalBallAnimTimer = 0.0f;
+            diagonalBallFrameIndex++;
+
+            if (diagonalBallFrameIndex > 9)  // Máximo frame
+                diagonalBallFrameIndex = 9;
+        }
+    }
+
+    diagonalBallFrameRect = {
+        (float)(diagonalBallFrameIndex * 80), 0, 80, 80
+    };
+
+    diagonalBallMidFrameRect = {
+        (float)(diagonalBallFrameIndex * 120), 0, 120, 120
+    };
+}
+
+void Boss::WideBeamBallWarningAnimation()
+{
+    if (wideBeamBallFrameIndex < 9)  // Solo avanza si no es el último frame
+    {
+        wideBeamBallAnimTimer += GetFrameTime();
+        if (wideBeamBallAnimTimer >= wideBeamBallAnimSpeed)
+        {
+            wideBeamBallAnimTimer = 0.0f;
+            wideBeamBallFrameIndex++;
+
+            if (wideBeamBallFrameIndex > 9)  // Máximo frame
+                wideBeamBallFrameIndex = 9;
+        }
+    }
+
+    wideBeamBallFrameRect = {
+        (float)(wideBeamBallFrameIndex * 160), 0, 160, 160
     };
 }
 
@@ -176,7 +223,7 @@ void Boss::LaserDiagonalPattern()
         // 🔥 Ataque activo
         Vector2 origin = { rect.x + rect.width / 2, rect.y + rect.height };
 
-        DrawRectangle(origin.x - 50, origin.y - 50, 100, 800, RED); // rayo central
+        //DrawRectangle(origin.x - 50, origin.y - 50, 100, 800, RED); // rayo central
         DrawLineEx({ origin.x - 190, origin.y }, { origin.x + 950, origin.y + 800 }, 50, RED); // izquierda
         DrawLineEx({ origin.x + 190, origin.y }, { origin.x - 950, origin.y + 800 }, 50, RED); // derecha
 
@@ -202,6 +249,8 @@ void Boss::LaserDiagonalPattern()
 
     if (laserTimer <= 0)
     {
+        diagonalBallFrameIndex = 0;
+        diagonalBallAnimTimer = 0;
         diagonalLaserSFXActive = false;
         diagonalLaserSFXPlayed = false;
         laserActive = false;
@@ -223,7 +272,7 @@ void Boss::WideBeamAttack()
     if (!wideBeamActive)
     {
         wideBeamActive = true;
-        wideBeamTimer = 3.0f;
+        wideBeamTimer = 5.8f;
 
         warningStarted = true;
         warningTimer = warningDurationWideBeam;

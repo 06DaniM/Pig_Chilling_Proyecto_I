@@ -96,11 +96,26 @@ public:
     float shieldDuration;
     Rectangle shieldRect;
 
+    int diagonalBallFrameIndex;
+    float diagonalBallAnimTimer;
+    float diagonalBallAnimSpeed;
+    Rectangle diagonalBallFrameRect;
+    Rectangle diagonalBallMidFrameRect;
+
+    int wideBeamBallFrameIndex;
+    float wideBeamBallAnimTimer;
+    float wideBeamBallAnimSpeed;
+    Rectangle wideBeamBallFrameRect;
+
+
+
     // Constructor
     Boss();
 
     void BossSpawn();
     void PlayWarningAnimation();
+    void LaserDiagonalBallWarningAnimation();
+    void WideBeamBallWarningAnimation();
     void BossManager();
     void SelectNextPattern();
     void LaserDiagonalPattern();
