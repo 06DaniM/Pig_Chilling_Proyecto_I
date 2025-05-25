@@ -182,7 +182,7 @@ int main(void)
     Texture2D bossSprite = LoadTexture("resources/enemies/boss.png");
     Texture2D bossAttackNormalSprite = LoadTexture("resources/enemies/bossAttackNormal.png");
     Texture2D bossAttackWideBeamSprite = LoadTexture("resources/enemies/bossAttackWideBeam.png");
-    Texture2D bossDeathAnim = LoadTexture("resources/enemies/boss attack reverse.png");
+    Texture2D bossDeathAnim = LoadTexture("resources/enemies/bossAttackWideBeam.png");
 
     // === POWER UPS SPRITES === //
     Texture2D doubleShotSprite = LoadTexture("resources/powerUps/DobleShot_PowerUp.png");
@@ -364,6 +364,16 @@ int main(void)
         // Menu manager
         if (inMenu)
         {
+            if (!boss.diagonalLaserSFXActive) StopSound(laserDiagonalSFX);
+            if (!boss.wideBeamSFXActive) StopSound(wideBeamSFX);
+            if (!boss.bulletDodgeSFXActive) StopSound(bulletDodgeSFX);
+
+            boss.EndLaserDiagonalPattern();
+            boss.EndWideBeamAttack();
+            boss.EndBulletDodgePattern();
+
+            boss.dodgeBullets.clear();
+
             if (!isMenuTimerStarted) {
                 menuDelayTimer.Start(2); 
                 isMenuTimerStarted = true;
@@ -1010,6 +1020,10 @@ int main(void)
 
             if (boss.dying)
             {
+                if (!boss.diagonalLaserSFXActive) StopSound(laserDiagonalSFX);
+                if (!boss.wideBeamSFXActive) StopSound(wideBeamSFX);
+                if (!boss.bulletDodgeSFXActive) StopSound(bulletDodgeSFX);
+
                 boss.laserDamageActive = false;
 
                 boss.EndLaserDiagonalPattern();
@@ -1021,29 +1035,23 @@ int main(void)
 
             if (boss.dead) canAct = false;
 
-            if (!pause)
+            cout << boss.diagonalLaserSFXActive << boss.diagonalLaserSFXPlayed << endl;
+            if (boss.diagonalLaserSFXActive && !boss.diagonalLaserSFXPlayed)
             {
-                if (boss.diagonalLaserSFXActive && !boss.diagonalLaserSFXPlayed)
-                {
-                    PlaySound(laserDiagonalSFX);
-                    boss.diagonalLaserSFXPlayed = true;
-                }
+                PlaySound(laserDiagonalSFX);
+                boss.diagonalLaserSFXPlayed = true;
+            }
 
-                else if (boss.wideBeamSFXActive && !boss.wideBeamSFXPlayed)
-                {
-                    PlaySound(wideBeamSFX);
-                    boss.wideBeamSFXPlayed = true;
-                }
+            else if (boss.wideBeamSFXActive && !boss.wideBeamSFXPlayed)
+            {
+                PlaySound(wideBeamSFX);
+                boss.wideBeamSFXPlayed = true;
+            }
 
-                else if (boss.bulletDodgeSFXActive && !boss.bulletDodgeSFXPlayed)
-                {
-                    PlaySound(bulletDodgeSFX);
-                    boss.bulletDodgeSFXPlayed = true;
-                }
-
-                if (!boss.diagonalLaserSFXActive || boss.dying || inMenu) StopSound(laserDiagonalSFX);
-                if (!boss.wideBeamSFXActive || boss.dying || inMenu) StopSound(wideBeamSFX);
-                if (!boss.bulletDodgeSFXActive || boss.dying || inMenu) StopSound(bulletDodgeSFX);
+            else if (boss.bulletDodgeSFXActive && !boss.bulletDodgeSFXPlayed)
+            {
+                PlaySound(bulletDodgeSFX);
+                boss.bulletDodgeSFXPlayed = true;
             }
 
             if (isInvencibilityDelayTimerStarted)
