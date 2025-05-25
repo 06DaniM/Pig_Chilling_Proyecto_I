@@ -96,6 +96,16 @@ public:
     float shieldDuration;
     Rectangle shieldRect;
 
+    int bossIdleFrameIndex;
+    float bossIdleAnimTimer;
+    float bossIdleAnimSpeed;
+    Rectangle bossIdleFrameRect;
+
+    int bossDieFrameIndex;
+    float bossDieAnimTimer;
+    float bossDieAnimSpeed;
+    Rectangle bossDieFrameRect;
+
     int diagonalBallFrameIndex;
     float diagonalBallAnimTimer;
     float diagonalBallAnimSpeed;
@@ -107,20 +117,31 @@ public:
     float wideBeamBallAnimSpeed;
     Rectangle wideBeamBallFrameRect;
 
+    int dodgeBulletLaserBallFrameIndex;
+    float dodgeBulletLaserBallAnimTimer;
+    float dodgeBulletLaserBallAnimSpeed;
+    Rectangle dodgeBulletLaserBallFrameRect;
+
 
 
     // Constructor
     Boss();
 
     void BossSpawn();
+    void IdleAnimation();
+    void DieAnimation();
     void PlayWarningAnimation();
     void LaserDiagonalBallWarningAnimation();
     void WideBeamBallWarningAnimation();
+    void DodgeBulletLaserBallWarningAnimation();
     void BossManager();
     void SelectNextPattern();
     void LaserDiagonalPattern();
+    void EndLaserDiagonalPattern();
     void WideBeamAttack();
+    void EndWideBeamAttack();
     void BulletDodgePattern();
+    void EndBulletDodgePattern();
 };
 
 #endif // BOSS_H

@@ -191,11 +191,18 @@ int main(void)
     Texture2D bulletSprite = LoadTexture("resources/bullets/Disparo_Spaceship.png");
     Texture2D bulletEnemySprite = LoadTexture("resources/bullets/Disparo_Regular_Enemy.png");
     Texture2D bulletBossSprite = LoadTexture("resources/bullets/Disparo_Boss.png");
+
     Texture2D diagonalMidAttackLaser = LoadTexture("resources/bullets/diagonalMidAttackLaser.png");
     Texture2D diagonalLateralAttackLaser = LoadTexture("resources/bullets/diagonalLateralAttackLaser.png");
     Texture2D diagonalBallLateralLaser = LoadTexture("resources/bullets/diagonalBallLateralLaser.png");
     Texture2D diagonalBallMidLaser = LoadTexture("resources/bullets/diagonalBallMidLaser.png");
+
+    Texture2D wideBeamLaser = LoadTexture("resources/bullets/wideBeamLaser.png");
     Texture2D wideBeamBall = LoadTexture("resources/bullets/wideBeamBall.png");
+
+    Texture2D dodgeBulletLaser = LoadTexture("resources/bullets/dodgeBulletLaser.png");
+    Texture2D dodgeBulletLaserBall = LoadTexture("resources/bullets/dodgeBulletLaserBall.png");
+    Texture2D Shield_Boss = LoadTexture("resources/bullets/Shield_Boss.png");
 
     // === MENU SPRITES === //
     Texture2D menuBackground = LoadTexture("resources/backgrounds/Menu Background.png");
@@ -413,6 +420,9 @@ int main(void)
                 currentEnemies = 0;
 
                 isMenuTimerStarted = false;
+
+                spritePos = { (screenWidth - spriteWidth) / 2.0f, screenHeight / 1.5f };
+
                 canStart = false;
                 inMenu = false;
                 canAct = true;
@@ -987,14 +997,25 @@ int main(void)
             }
 
             // Update Boss
-            if (boss.active)
+            if (boss.active && !boss.dying && !gameOver)
             {
                 boss.BossManager();
                 if (boss.life <= 0)
                 {
-                    boss.dead = true;
-                    boss.active = false;
+                    boss.dying = true;
+                    bosshitframe = 0;
                 }
+            }
+
+            if (boss.dying)
+            {
+                boss.laserDamageActive = false;
+
+                boss.EndLaserDiagonalPattern();
+                boss.EndWideBeamAttack();
+                boss.EndBulletDodgePattern();
+
+                boss.dodgeBullets.clear();
             }
 
             if (boss.dead) canAct = false;
@@ -1019,9 +1040,9 @@ int main(void)
                     boss.bulletDodgeSFXPlayed = true;
                 }
 
-                if (!boss.diagonalLaserSFXActive || boss.dead) StopSound(laserDiagonalSFX);
-                if (!boss.wideBeamSFXActive || boss.dead) StopSound(wideBeamSFX);
-                if (!boss.bulletDodgeSFXActive || boss.dead) StopSound(bulletDodgeSFX);
+                if (!boss.diagonalLaserSFXActive || boss.dying) StopSound(laserDiagonalSFX);
+                if (!boss.wideBeamSFXActive || boss.dying) StopSound(wideBeamSFX);
+                if (!boss.bulletDodgeSFXActive || boss.dying) StopSound(bulletDodgeSFX);
             }
 
             if (isInvencibilityDelayTimerStarted)
@@ -1199,95 +1220,145 @@ int main(void)
         }
 
         // Draw the boss
-        if (boss.active && boss.life > 0)
+        if (!boss.dead && boss.active)
         {
-            // Si está mostrando la animación de advertencia, dibujarla
-            if ((boss.warningAnimPlaying || boss.warningAnimFinished) && bosshitframe == 0)
-                DrawTextureRec(bossAttackNormalSprite, boss.warningAnimFrame, { boss.rect.x, boss.rect.y }, WHITE);
-
-            else if ((boss.warningAnimPlaying || boss.warningAnimFinished) && bosshitframe > 0)
-                DrawTextureRec(bossAttackNormalSprite, boss.warningAnimFrame, { boss.rect.x, boss.rect.y }, RED);
-
-            else if (bosshitframe > 0)
+            if (!boss.dying && boss.life > 0)
             {
-                DrawTextureEx(bossSprite, { boss.rect.x, boss.rect.y }, 0, 1, RED);
-                boss.gotHit = false;
+
+                // Si está mostrando la animación de advertencia, dibujarla
+                if ((boss.warningAnimPlaying || boss.warningAnimFinished) && bosshitframe == 0)
+                    DrawTextureRec(bossAttackNormalSprite, boss.warningAnimFrame, { boss.rect.x, boss.rect.y }, WHITE);
+
+                else if ((boss.warningAnimPlaying || boss.warningAnimFinished) && bosshitframe > 0)
+                    DrawTextureRec(bossAttackNormalSprite, boss.warningAnimFrame, { boss.rect.x, boss.rect.y }, RED);
+
+                else if (bosshitframe > 0)
+                {
+                    DrawTextureRec(bossSprite, boss.bossIdleFrameRect, { boss.rect.x, boss.rect.y }, RED);
+                    boss.gotHit = false;
+                }
+
+                else DrawTextureRec(bossSprite, boss.bossIdleFrameRect, { boss.rect.x, boss.rect.y }, WHITE);
+
+                if (boss.shieldActive)
+                {
+                    DrawTexture(Shield_Boss, boss.shieldRect.x, boss.shieldRect.y, WHITE); // borde azul
+                }
+
+                if (bosshitframe > 5) bosshitframe = 0;
+
+                // Dibujar ataques del jefe DESPUÉS del jefe (así se ven encima)
+                if (boss.active)
+                {
+                    switch (boss.currentPattern)
+                    {
+                    case ATTACK_LASER_DIAGONAL:
+                        boss.LaserDiagonalPattern();
+                        break;
+                    case ATTACK_WIDE_BEAM:
+                        boss.WideBeamAttack();
+                        break;
+                    case ATTACK_BULLET_DODGE:
+                        boss.BulletDodgePattern();
+                        break;
+                    }
+                }
+
+                if (boss.laserDamageActive)
+                {
+                    Vector2 origin = { boss.rect.x + boss.rect.width / 2, boss.rect.y + boss.rect.height };
+                    DrawTextureEx(diagonalMidAttackLaser, { origin.x - 50, origin.y - 50 }, 0, 1, WHITE);
+                    DrawTextureEx(diagonalLateralAttackLaser, { origin.x - 190, origin.y }, -50, 1, WHITE);
+                    DrawTextureEx(diagonalLateralAttackLaser, { origin.x + 190, origin.y }, 50, 1, WHITE);
+                }
+
+
+                if (boss.warningAnimFinished && boss.currentPattern == ATTACK_LASER_DIAGONAL)
+                {
+                    boss.LaserDiagonalBallWarningAnimation(); // <-- actualiza los frames
+
+                    Vector2 origin = { boss.rect.x + boss.rect.width / 2, boss.rect.y + boss.rect.height };
+                    Vector2 positions[2] = {
+                        { origin.x - 190, origin.y },
+                        { origin.x + 190, origin.y }
+                    };
+                    Vector2 center = { origin.x, origin.y };
+
+                    for (int i = 0; i < 2; i++)
+                    {
+                        Vector2 drawPos = {
+                            positions[i].x - boss.diagonalBallFrameRect.width / 2,
+                            positions[i].y - boss.diagonalBallFrameRect.height / 2
+                        };
+
+                        DrawTextureRec(diagonalBallLateralLaser, boss.diagonalBallFrameRect, drawPos, WHITE);
+                    }
+
+                    Vector2 drawPos = {
+                        center.x - boss.diagonalBallMidFrameRect.width / 2,
+                        center.y - boss.diagonalBallMidFrameRect.height / 2
+                    };
+
+                    DrawTextureRec(diagonalBallMidLaser, boss.diagonalBallMidFrameRect, drawPos, WHITE);
+                }
+
+                if (boss.wideBeamActive && boss.currentPattern == ATTACK_WIDE_BEAM) // Cambiar wideBeamActive por la condición que sea cuando la animación esté hecha
+                {
+                    boss.WideBeamBallWarningAnimation();
+
+                    Vector2 wideBeamPos = {
+                        boss.rect.x + boss.rect.width / 2 - boss.wideBeamBallFrameRect.width / 2,
+                        boss.rect.y + boss.rect.height - boss.wideBeamBallFrameRect.height / 2
+                    };
+
+                    DrawTextureRec(wideBeamBall, boss.wideBeamBallFrameRect, wideBeamPos, WHITE);
+
+                    if (boss.wideBeamDamageActive) DrawTexture(wideBeamLaser, boss.wideBeamRect.x, boss.wideBeamRect.y, WHITE);
+                }
+
+                if (boss.warningStarted && boss.currentPattern == ATTACK_BULLET_DODGE)
+                {
+                    boss.DodgeBulletLaserBallWarningAnimation(); // <-- actualiza los frames
+
+                    Vector2 origin = { boss.rect.x + boss.rect.width / 2, boss.rect.y + boss.rect.height };
+                    Vector2 positions[2] = {
+                        { boss.rect.x - 200.0f, boss.rect.y + boss.rect.height },
+                        { boss.rect.x + boss.rect.width + 200.0f, boss.rect.y + boss.rect.height }
+                    };
+
+                    Vector2 center = { origin.x, origin.y };
+
+                    for (int i = 0; i < 2; i++)
+                    {
+                        Vector2 drawPos = {
+                            positions[i].x - boss.dodgeBulletLaserBallFrameRect.width / 2,
+                            positions[i].y - boss.dodgeBulletLaserBallFrameRect.height / 2
+                        };
+
+                        DrawTextureRec(dodgeBulletLaserBall, boss.dodgeBulletLaserBallFrameRect, drawPos, WHITE);
+                    }
+
+                    if (boss.bulletLaserDamageActive)
+                    {
+                        DrawTexture(dodgeBulletLaser, boss.leftRayRect.x, boss.leftRayRect.y, WHITE);
+                        DrawTexture(dodgeBulletLaser, boss.rightRayRect.x, boss.rightRayRect.y, WHITE);
+                    }
+                }
             }
 
-            else DrawTextureEx(bossSprite, { boss.rect.x, boss.rect.y }, 0, 1, WHITE);
-
-            if (boss.shieldActive)
+            else
             {
-                DrawRectangle(boss.shieldRect.x, boss.shieldRect.y, boss.shieldRect.width, boss.shieldRect.height, BLUE); // borde azul
+                if (boss.bossDieFrameIndex < 8)
+                {
+                    boss.DieAnimation();
+                    DrawTextureRec(bossDeathAnim, boss.bossDieFrameRect, { boss.rect.x, boss.rect.y }, WHITE);
+                }
+                else
+                {
+                    boss.active = false;
+                    boss.dead = true;
+                }
             }
-        }
-
-        if (bosshitframe > 5) bosshitframe = 0;
-
-        // Dibujar ataques del jefe DESPUÉS del jefe (así se ven encima)
-        if (boss.active)
-        {
-            switch (boss.currentPattern)
-            {
-            case ATTACK_LASER_DIAGONAL:
-                boss.LaserDiagonalPattern();
-                break;
-            case ATTACK_WIDE_BEAM:
-                boss.WideBeamAttack();
-                break;
-            case ATTACK_BULLET_DODGE:
-                boss.BulletDodgePattern();
-                break;
-            }
-        }
-
-        if (boss.laserDamageActive)
-        {
-            Vector2 origin = { boss.rect.x + boss.rect.width / 2, boss.rect.y + boss.rect.height };
-            DrawTextureEx(diagonalMidAttackLaser, { origin.x - 50, origin.y - 50 }, 0, 1, WHITE);
-            DrawTextureEx(diagonalLateralAttackLaser, { origin.x - 190, origin.y }, -50, 1, WHITE);
-            DrawTextureEx(diagonalLateralAttackLaser, { origin.x + 190, origin.y }, 50, 1, WHITE);
-        }
-
-        if (boss.warningAnimFinished && boss.currentPattern == ATTACK_LASER_DIAGONAL)
-        {
-            boss.LaserDiagonalBallWarningAnimation(); // <-- actualiza los frames
-
-            Vector2 origin = { boss.rect.x + boss.rect.width / 2, boss.rect.y + boss.rect.height };
-            Vector2 positions[2] = {
-                { origin.x - 190, origin.y },
-                { origin.x + 190, origin.y }
-            };
-            Vector2 center = { origin.x, origin.y };
-
-            for (int i = 0; i < 2; i++)
-            {
-                Vector2 drawPos = {
-                    positions[i].x - boss.diagonalBallFrameRect.width / 2,
-                    positions[i].y - boss.diagonalBallFrameRect.height / 2
-                };
-
-                DrawTextureRec(diagonalBallLateralLaser, boss.diagonalBallFrameRect, drawPos, WHITE);
-            }
-
-            Vector2 drawPos = {
-                center.x - boss.diagonalBallMidFrameRect.width / 2,
-                center.y - boss.diagonalBallMidFrameRect.height / 2
-            };
-
-            DrawTextureRec(diagonalBallMidLaser, boss.diagonalBallMidFrameRect, drawPos, WHITE);
-        }
-
-        if (boss.wideBeamActive && boss.currentPattern == ATTACK_WIDE_BEAM)
-        {
-            boss.WideBeamBallWarningAnimation();
-
-            Vector2 wideBeamPos = {
-                boss.rect.x + boss.rect.width / 2 - boss.wideBeamBallFrameRect.width / 2,
-                boss.rect.y + boss.rect.height - boss.wideBeamBallFrameRect.height / 2
-            };
-
-            DrawTextureRec(wideBeamBall, boss.wideBeamBallFrameRect, wideBeamPos, WHITE);
         }
 
         // Draw the boss bullets
@@ -1364,6 +1435,12 @@ int main(void)
                 isInvencibilityDelayTimerStarted = false;
                 inMenu = true;
                 gameOver = false;
+
+                boss.EndLaserDiagonalPattern();
+                boss.EndWideBeamAttack();
+                boss.EndBulletDodgePattern();
+
+                boss.active = false;
 
                 // Restore to its initial state
                 player.x = (screenWidth - player.width) / 2.0f;
