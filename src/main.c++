@@ -208,7 +208,16 @@ int main(void)
 
     Font font = LoadFontEx("resources/font/Data 70 Regular.otf", 64, 0, 0);
 
+    Sound shotSound[4] = { 0 };
+    int currentShotSound;
+
+    Sound enemyDestroySound[4] = { 0 };
+    int currentEnemyDestroySound;
+
     Sound deathPlayerSound = LoadSound("resources/soundEffects/fighter_destroyed.mp3");
+    Music laserDiagonalSFX = LoadMusicStream("resources/soundEffects/Diagonal_Attack.wav");
+    Music wideBeamSFX = LoadMusicStream("resources/soundEffects/Wide_Beam_Attack.wav");
+    Music bulletDodgeSFX = LoadMusicStream("resources/soundEffects/Bullet_Dodge_Attack.wav");
 
     shotSound[0] = LoadSound("resources/soundEffects/laser_default.mp3");
 
@@ -244,6 +253,9 @@ int main(void)
     PlayMusicStream(musicBoss);
     PlayMusicStream(winMusic);
     PlayMusicStream(gameOverMusic);
+    PlayMusicStream(laserDiagonalSFX);
+    PlayMusicStream(wideBeamSFX);
+    PlayMusicStream(bulletDodgeSFX);
 
     bool winMusicStarted = false;
     float winMusicDuration = 3.7f;
@@ -955,11 +967,27 @@ int main(void)
             }
 
             // Update Boss
+            if (boss.active)
             {
-                if (boss.active)
-                {
-                    boss.BossManager(pause);
-                }
+                boss.BossManager(pause);
+            }
+
+            if (boss.diagonalLaserSFXActive)
+            {
+                UpdateMusicStream(laserDiagonalSFX);
+                boss.bulletDodgeSFXPlayed = true;
+            }
+
+            else if (boss.wideBeamActive)
+            {
+                UpdateMusicStream(wideBeamSFX);
+                boss.bulletDodgeSFXPlayed = true;
+            }
+
+            else if (boss.bulletDodgeSFXActive)
+            {
+                UpdateMusicStream(bulletDodgeSFX);
+                boss.bulletDodgeSFXPlayed = true;
             }
 
             if (isInvencibilityDelayTimerStarted)

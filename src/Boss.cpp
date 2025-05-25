@@ -16,12 +16,13 @@ Boss::Boss()
     laserAttackNormal(false), laserAttackHeavy(false), shooting(false), attackTime(0.0f), attackingTimer(0.0f), attackCooldown(0.0f),
     playerPos{ 0.0f, 0.0f }, rotation(0.0f), appearance(false), idle(false), random(false), canAttack(true), hasArribed(false),
     enemyDeathFramesCounter(0), currentEnemyDeathFrame(0), start({ 0,0 }), target({ 0,0 }), currentPattern(ATTACK_NONE), patternTimer(0.0f), patternCooldown(0.0f),
-    centerLaserRect({ 0,0,0,0 }), leftDiagonalRect({ 0,0,0,0 }), rightDiagonalRect({ 0,0 }), laserActive(false), laserDamageActive(false), laserTimer(0.0f), 
+    centerLaserRect({ 0,0,0,0 }), leftDiagonalRect({ 0,0,0,0 }), rightDiagonalRect({ 0,0 }), laserActive(false), laserDamageActive(false), laserTimer(0), 
     wideBeamDamageActive(false), wideBeamActive(false), wideBeamTimer(0.0f), wideBeamRect({ 0,0,0,0 }), bulletDodgeActive(false), bulletLaserDamageActive(false), 
     leftRayRect({ 0,0,0,0 }), rightRayRect({ 0,0,0,0 }), bulletDodgeTimer(0.0f), bulletShootingTime(0.0f), bulletSpawnCooldown(0.0f), warningStarted(false), 
-    warningTimer(0.0f), warningDurationLaserDiagonal(1.5f), warningDurationWideBeam(2.5f), warningDurationBulletDodge(3), warningAnimTexture({}), 
+    warningTimer(0.0f), warningDurationLaserDiagonal(2.8f), warningDurationWideBeam(2.5f), warningDurationBulletDodge(3), warningAnimTexture({}), 
     warningAnimFrame({0,0,0,0}), warningAnimFrameIndex(0), warningAnimTimer(0.0f), warningAnimSpeed(0.05f), warningAnimPlaying(false), warningAnimFinished(false), 
-    warningAnimReversing(false)
+    warningAnimReversing(false), diagonalLaserSFXActive(false), diagonalLaserSFXPlayed(false), wideBeamSFXActive(false), wideBeamSFXPlayed(false), 
+    bulletDodgeSFXActive(false), bulletDodgeSFXPlayed(false)
 {}
 
 const int screenWidth = 1152;
@@ -69,7 +70,7 @@ void Boss::PlayWarningAnimation()
                 warningAnimPlaying = false;
                 warningAnimFinished = true;
 
-                warningStarted = true;
+                if (currentPattern != ATTACK_BULLET_DODGE) warningStarted = true;
             }
         }
         else // Si está reproduciendo en reversa
@@ -100,7 +101,7 @@ void Boss::LaserDiagonalPattern(bool pause)
     if (!laserActive)
     {
         laserActive = true;
-        laserTimer = 4.0f;
+        laserTimer = 7.8f;
 
         // Iniciar advertencia
         warningTimer = warningDurationLaserDiagonal; // 1.5f
@@ -133,6 +134,7 @@ void Boss::LaserDiagonalPattern(bool pause)
     // 🛑 Fase de advertencia
     if (warningStarted)
     {
+        diagonalLaserSFXActive = true;
         warningTimer -= GetFrameTime();
         if (warningTimer <= 0.0f)
         {
@@ -174,6 +176,8 @@ void Boss::LaserDiagonalPattern(bool pause)
 
     if (laserTimer <= 0)
     {
+        diagonalLaserSFXActive = false;
+        diagonalLaserSFXPlayed = false;
         laserActive = false;
         laserDamageActive = false;
         patternCooldown = 3.0f;
@@ -207,6 +211,7 @@ void Boss::WideBeamAttack(bool pause)
         };
     }
 
+    wideBeamSFXActive = true;
     DrawCircle((int)(rect.x + rect.width / 2), (int)(rect.y + rect.height), 80, ORANGE);
 
     if (warningStarted) {
@@ -228,6 +233,8 @@ void Boss::WideBeamAttack(bool pause)
     if (wideBeamTimer <= 0)
     {
         wideBeamActive = false;
+        wideBeamSFXActive = false;
+        wideBeamSFXPlayed = false;
         wideBeamDamageActive = false;
         patternCooldown = 3.0f;
         currentPattern = ATTACK_NONE; // o un estado de espera
@@ -267,20 +274,24 @@ void Boss::BulletDodgePattern(bool pause)
     if (warningAnimPlaying) {
         PlayWarningAnimation();
 
+        // Cuando la animación termina este frame:
         if (!warningAnimPlaying && !warningAnimReversing && !warningStarted) {
+            warningTimer = warningDurationBulletDodge;
             warningStarted = true;
-            warningTimer = warningDurationBulletDodge;  // Espera antes de activar rayos y balas
+            cout << "Warning started, timer: " << warningTimer << endl;
+            return;  // Evita que se reste el timer este frame
         }
-        return;
+        return; // Mientras la animación sigue, salir
     }
 
     // 3. MOSTRAR CÍRCULOS DURANTE ADVERTENCIA
     if (warningStarted && !bulletLaserDamageActive) {
+        bulletDodgeSFXActive = true;
         DrawCircle((int)(rect.x - 200), (int)(rect.y + rect.height), 40, BLUE);
         DrawCircle((int)(rect.x + rect.width + 200), (int)(rect.y + rect.height), 40, BLUE);
 
         warningTimer -= GetFrameTime();
-        if (warningTimer <= 0.0f) {
+        if (warningTimer <= 0.0f && !bulletLaserDamageActive) {
             bulletLaserDamageActive = true;
             bulletShootingTime = (life >= initialLife * 0.5f) ? 15.0f :
                 (life >= initialLife * 0.33f) ? 20.0f : 30.0f;
@@ -362,6 +373,8 @@ void Boss::BulletDodgePattern(bool pause)
 
         // 6. FINALIZAR PATRÓN
         if (bulletShootingTime <= 0.0f && dodgeBullets.empty()) {
+            bulletDodgeSFXActive = false;
+            bulletDodgeSFXPlayed = false;
             bulletLaserDamageActive = false;
             bulletDodgeActive = false;
             warningStarted = false;

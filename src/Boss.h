@@ -83,6 +83,13 @@ public:
     bool warningAnimFinished;
     bool warningAnimReversing;
 
+    bool diagonalLaserSFXActive;
+    bool diagonalLaserSFXPlayed;
+    bool wideBeamSFXActive;
+    bool wideBeamSFXPlayed;
+    bool bulletDodgeSFXActive;
+    bool bulletDodgeSFXPlayed;
+
 
     // Constructor
     Boss();
