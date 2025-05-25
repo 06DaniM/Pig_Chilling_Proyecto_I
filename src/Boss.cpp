@@ -71,8 +71,8 @@ int currentPatternIndex = 0;
 
 void Boss::SelectNextPattern()
 {
-    //currentPattern = static_cast<BossAttackPattern> (0);
-    if (currentCombinationIndex == -1 || currentPatternIndex >= patternCombinations[currentCombinationIndex].size())
+    currentPattern = static_cast<BossAttackPattern> (1);
+    /*if (currentCombinationIndex == -1 || currentPatternIndex >= patternCombinations[currentCombinationIndex].size())
     {
         int newIndex;
         do {
@@ -84,7 +84,7 @@ void Boss::SelectNextPattern()
     }
 
     currentPattern = patternCombinations[currentCombinationIndex][currentPatternIndex];
-    currentPatternIndex++;
+    currentPatternIndex++;*/
 }
 
 void Boss::IdleAnimation()
@@ -95,12 +95,12 @@ void Boss::IdleAnimation()
         bossIdleAnimTimer = 0.0f;
         bossIdleFrameIndex++;
 
-        if (bossIdleFrameIndex > 4) 
+        if (bossIdleFrameIndex > 9) 
             bossIdleFrameIndex = 0;
     }
 
     bossIdleFrameRect = {
-        (float)(bossIdleFrameIndex * 256), 0, 256, 256
+        (float)(bossIdleFrameIndex * 432), 0, 432, 256
     };
 }
 
@@ -317,7 +317,6 @@ void Boss::EndLaserDiagonalPattern()
     warningAnimPlaying = true;
     warningAnimReversing = true;
     warningAnimTimer = 0.0f;
-    warningAnimFrameIndex = 8;
 
     currentPattern = ATTACK_NONE;
 }
@@ -333,12 +332,23 @@ void Boss::WideBeamAttack()
         warningTimer = warningDurationWideBeam;
         wideBeamDamageActive = false;  // AÚN NO es peligroso
 
+        warningAnimPlaying = true;
+        warningAnimFinished = false;
+        warningAnimReversing = false;
+        warningAnimFrameIndex = 0;
+        warningAnimTimer = 0.0f;
+
         wideBeamRect = {
             rect.x + rect.width / 2 - 300,
             rect.y + rect.height,
             600,
             800
         };
+    }
+
+    if (warningAnimPlaying || warningAnimFinished)
+    {
+        PlayWarningAnimation();
     }
 
     wideBeamSFXActive = true;
@@ -368,6 +378,11 @@ void Boss::EndWideBeamAttack()
     wideBeamSFXActive = false;
     wideBeamSFXPlayed = false;
     wideBeamDamageActive = false;
+
+    warningAnimPlaying = true;
+    warningAnimReversing = true;
+    warningAnimTimer = 0.0f;
+
     patternCooldown = 4.0f;
     currentPattern = ATTACK_NONE;
 }

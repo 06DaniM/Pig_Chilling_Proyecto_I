@@ -180,7 +180,8 @@ int main(void)
 
     // === BOSS SPRITES === //
     Texture2D bossSprite = LoadTexture("resources/enemies/boss.png");
-    Texture2D bossAttackNormalSprite = LoadTexture("resources/enemies/boss attack normal.png");
+    Texture2D bossAttackNormalSprite = LoadTexture("resources/enemies/bossAttackNormal.png");
+    Texture2D bossAttackWideBeamSprite = LoadTexture("resources/enemies/bossAttackWideBeam.png");
     Texture2D bossDeathAnim = LoadTexture("resources/enemies/boss attack reverse.png");
 
     // === POWER UPS SPRITES === //
@@ -1040,9 +1041,9 @@ int main(void)
                     boss.bulletDodgeSFXPlayed = true;
                 }
 
-                if (!boss.diagonalLaserSFXActive || boss.dying) StopSound(laserDiagonalSFX);
-                if (!boss.wideBeamSFXActive || boss.dying) StopSound(wideBeamSFX);
-                if (!boss.bulletDodgeSFXActive || boss.dying) StopSound(bulletDodgeSFX);
+                if (!boss.diagonalLaserSFXActive || boss.dying || inMenu) StopSound(laserDiagonalSFX);
+                if (!boss.wideBeamSFXActive || boss.dying || inMenu) StopSound(wideBeamSFX);
+                if (!boss.bulletDodgeSFXActive || boss.dying || inMenu) StopSound(bulletDodgeSFX);
             }
 
             if (isInvencibilityDelayTimerStarted)
@@ -1226,13 +1227,19 @@ int main(void)
             {
 
                 // Si está mostrando la animación de advertencia, dibujarla
-                if ((boss.warningAnimPlaying || boss.warningAnimFinished) && bosshitframe == 0)
-                    DrawTextureRec(bossAttackNormalSprite, boss.warningAnimFrame, { boss.rect.x, boss.rect.y }, WHITE);
+                if (boss.currentPattern != ATTACK_WIDE_BEAM && (boss.warningAnimPlaying || boss.warningAnimFinished))
+                {
+                    if (bosshitframe == 0) DrawTextureRec(bossAttackNormalSprite, boss.warningAnimFrame, { boss.rect.x, boss.rect.y }, WHITE);
+                    else if (bosshitframe > 0) DrawTextureRec(bossAttackNormalSprite, boss.warningAnimFrame, { boss.rect.x, boss.rect.y }, RED);
+                }
 
-                else if ((boss.warningAnimPlaying || boss.warningAnimFinished) && bosshitframe > 0)
-                    DrawTextureRec(bossAttackNormalSprite, boss.warningAnimFrame, { boss.rect.x, boss.rect.y }, RED);
+                else if (boss.currentPattern == ATTACK_WIDE_BEAM && (boss.warningAnimPlaying || boss.warningAnimFinished))
+                {
+                    if (bosshitframe == 0) DrawTextureRec(bossAttackWideBeamSprite, boss.warningAnimFrame, { boss.rect.x, boss.rect.y }, WHITE);
+                    else if (bosshitframe > 0) DrawTextureRec(bossAttackWideBeamSprite, boss.warningAnimFrame, { boss.rect.x, boss.rect.y }, RED);
+                }
 
-                else if (bosshitframe > 0)
+                else if (bosshitframe > 0 && boss.currentPattern == ATTACK_NONE)
                 {
                     DrawTextureRec(bossSprite, boss.bossIdleFrameRect, { boss.rect.x, boss.rect.y }, RED);
                     boss.gotHit = false;
