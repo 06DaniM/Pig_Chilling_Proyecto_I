@@ -179,9 +179,8 @@ int main(void)
     Texture2D krakenDeathAnim = LoadTexture("resources/enemies/deathEnemyAnim.png");
 
     // === BOSS SPRITES === //
-    Texture2D bossSprite = LoadTexture("resources/enemies/bossatt.png");
+    Texture2D bossSprite = LoadTexture("resources/enemies/boss.png");
     Texture2D bossAttackNormalSprite = LoadTexture("resources/enemies/boss attack normal.png");
-    Texture2D bossAttackReverseSprite = LoadTexture("resources/enemies/boss attack reverse.png");
     Texture2D bossDeathAnim = LoadTexture("resources/enemies/deathEnemyAnim.png");
 
     // === POWER UPS SPRITES === //
@@ -205,6 +204,7 @@ int main(void)
     Music menuMusic = LoadMusicStream("resources/music/Main_Menu.wav");
     Music musicLevel1 = LoadMusicStream("resources/music/Level1.wav");
     Music musicLevel2 = LoadMusicStream("resources/music/Level2.wav");
+    Music musicBoss = LoadMusicStream("resources/music/Boss.wav");
 
     Font font = LoadFontEx("resources/font/Data 70 Regular.otf", 64, 0, 0);
 
@@ -228,7 +228,7 @@ int main(void)
 
     bool doubleShot = false, shield = false, canAct = false, isVisible = true, playerGotHit = false;
     bool canStart = false, canPass = false,pause = false, gameOver = false, hasWon = false, canSpawn = false;
-    bool inMenu = true;
+    bool inMenu = true, inboss = false;
     int score = 0;
     int life = 3;
     float scale = 0.75f; // Reduce the scale of the sprites
@@ -241,6 +241,7 @@ int main(void)
     PlayMusicStream(menuMusic);
     PlayMusicStream(musicLevel1);
     PlayMusicStream(musicLevel2);
+    PlayMusicStream(musicBoss);
     PlayMusicStream(winMusic);
     PlayMusicStream(gameOverMusic);
 
@@ -314,8 +315,11 @@ int main(void)
             if (pause && level == 1) PauseMusicStream(musicLevel1);
             else if (!pause && level == 1)ResumeMusicStream(musicLevel1);
 
-            if (pause && level == 2) PauseMusicStream(musicLevel2);
-            else if (!pause && level == 2)ResumeMusicStream(musicLevel2);
+            if (pause && level == 2 && !inboss) PauseMusicStream(musicLevel2);
+            else if (!pause && level == 2 && !inboss)ResumeMusicStream(musicLevel2);
+
+            if (inboss) ResumeMusicStream(musicBoss);
+            else if (inboss) PauseMusicStream(musicBoss);
         }
 
         if (isMenuTimerStarted)
@@ -449,19 +453,21 @@ int main(void)
             }
 
             if (level == 1 && !gameOver && !hasWon) UpdateMusicStream(musicLevel1);
-            else if (level == 2 && !gameOver && !hasWon) UpdateMusicStream(musicLevel2);
+            else if (level == 2 && !inboss && !gameOver && !hasWon) UpdateMusicStream(musicLevel2);
+            else if (level == 2 && inboss && !gameOver && !hasWon) UpdateMusicStream(musicBoss);
 
             // Movimiento del sprite
             if (IsKeyDown(KEY_D) && canAct) spritePos.x += PLAYER_SPEED;
             if (IsKeyDown(KEY_A) && canAct) spritePos.x -= PLAYER_SPEED;
 
+            // Limit the movemente inside the window
+            if (spritePos.x < 0) spritePos.x = 0;
+            else if (spritePos.x > screenWidth - spriteWidth) spritePos.x = screenWidth - spriteWidth;
+
             // Actualizar collider centrado en el sprite
             player.x = spritePos.x + (spriteWidth - colliderWidth) / 2.0f;
             player.y = spritePos.y + (spriteHeight - colliderHeight) / 2.0f;
 
-            // Limit the movemente inside the window
-            if (player.x < 0) player.x = 0;
-            if (player.x > screenWidth - player.width) player.x = screenWidth - player.width;
 
             // Shots with cooldown
             shotTimer += GetFrameTime();
@@ -825,6 +831,7 @@ int main(void)
                     // === BOSS ===
                     else if (currentEnemies == 0 && currentWave == 4)
                     {
+                        inboss = true;
                         boss.BossSpawn();
                         currentWave++;
                     }
@@ -1130,7 +1137,14 @@ int main(void)
         }
 
         // Draw the boss
-        if (boss.active) DrawTextureEx(bossSprite, { boss.rect.x, boss.rect.y }, 0, 1, WHITE);
+        if (boss.active)
+        {
+            // Si está mostrando la animación de advertencia, dibujarla
+            if (boss.warningAnimPlaying || boss.warningAnimFinished)
+                DrawTextureRec(bossAttackNormalSprite, boss.warningAnimFrame, { boss.rect.x, boss.rect.y }, WHITE);
+            else
+                DrawTextureEx(bossSprite, { boss.rect.x, boss.rect.y }, 0, 1, WHITE);
+        }
 
         // Dibujar ataques del jefe DESPUÉS del jefe (así se ven encima)
         if (boss.active)
@@ -1198,6 +1212,8 @@ int main(void)
                 UpdateMusicStream(gameOverMusic);
             }
 
+            inboss = false;
+
             // Show the GAME OVER screen
             BeginDrawing();
             DrawRectangle(0, 0, screenWidth, screenHeight, { 0, 0, 0, 120 });
@@ -1249,6 +1265,8 @@ int main(void)
                 winMusicStarted = true;
                 winMusicTimer = 0.0f;
             }
+
+            inboss = false;
 
             winMusicTimer += GetFrameTime();
             if (winMusicTimer < winMusicDuration)

@@ -70,13 +70,25 @@ public:
     std::vector<Bullet_Boss> dodgeBullets;
     bool warningStarted;
     float warningTimer;
-    const float warningDuration;
+    const float warningDurationWideBeam;
+    const float warningDurationLaserDiagonal;
+    const float warningDurationBulletDodge;
+
+    Texture2D warningAnimTexture;      // Sprite sheet
+    Rectangle warningAnimFrame;        // Frame actual
+    int warningAnimFrameIndex;
+    float warningAnimTimer;
+    float warningAnimSpeed;     // Velocidad entre frames
+    bool warningAnimPlaying;
+    bool warningAnimFinished;
+    bool warningAnimReversing;
 
 
     // Constructor
     Boss();
 
     void BossSpawn();
+    void PlayWarningAnimation();
     void BossManager(bool pause);
     void SelectNextPattern();
     void LaserDiagonalPattern(bool pause);
