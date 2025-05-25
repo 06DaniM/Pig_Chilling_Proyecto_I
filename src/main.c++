@@ -181,7 +181,7 @@ int main(void)
     // === BOSS SPRITES === //
     Texture2D bossSprite = LoadTexture("resources/enemies/boss.png");
     Texture2D bossAttackNormalSprite = LoadTexture("resources/enemies/boss attack normal.png");
-    Texture2D bossDeathAnim = LoadTexture("resources/enemies/deathEnemyAnim.png");
+    Texture2D bossDeathAnim = LoadTexture("resources/enemies/boss attack reverse.png");
 
     // === POWER UPS SPRITES === //
     Texture2D doubleShotSprite = LoadTexture("resources/powerUps/DobleShot_PowerUp.png");
@@ -301,6 +301,11 @@ int main(void)
             level = 2;
         }
 
+        if (IsKeyPressed(KEY_K) && inboss) // Change to when life is <= 0
+        {
+            boss.life = 0;
+        }
+
         if (IsKeyPressed(KEY_M))
         {
             for (Enemy& enemy : enemies)
@@ -316,7 +321,7 @@ int main(void)
         // === BEGINING GAME CODE
 
         // Pause the game
-        if (IsKeyPressed(KEY_ESCAPE) || IsKeyPressed('P')) 
+        if (IsKeyPressed(KEY_ESCAPE) || IsKeyPressed('P') && !inboss) 
         {
             pause = !pause;
             canAct = !canAct;
@@ -395,6 +400,8 @@ int main(void)
             {
                 enemies.clear();
                 // Reset the values
+
+                boss.dead = false;
                 life = 3;
                 currentWave = 0;
                 currentEnemies = 0;
@@ -642,7 +649,12 @@ int main(void)
 
                     if (boss.active)
                     {
-                        if (CheckCollisionRecs(boss.rect, bullet.rect))
+                        if (boss.bulletDodgeSFXActive && CheckCollisionRecs(boss.shieldRect, bullet.rect))
+                        {
+                            bullet.active = false;
+                        }
+
+                        else if (CheckCollisionRecs(boss.rect, bullet.rect))
                         {
                             bullet.active = false;
                             boss.life--;
@@ -856,8 +868,8 @@ int main(void)
                     currentWave = 0;
                     level++;
                 }
-
-                if (!hasWon && !isWinTimerStarted && currentWave > totalWavesLevel2 && level == 2 && boss.dead)
+                cout << hasWon << isWinTimerStarted << currentWave << totalWavesLevel2 << level << boss.dead << endl;
+                if (!hasWon && !isWinTimerStarted && currentWave >= totalWavesLevel2 && level == 2 && boss.dead)
                 {
                     winDelayTimer.Start(1.5f); // Wait 1 second for the winning screen
                     isWinTimerStarted = true;
@@ -966,9 +978,15 @@ int main(void)
             // Update Boss
             if (boss.active)
             {
-                boss.BossManager(pause);
-                
+                boss.BossManager();
+                if (boss.life <= 0)
+                {
+                    boss.dead = true;
+                    boss.active = false;
+                }
             }
+
+            if (boss.dead) canAct = false;
 
             if (!pause)
             {
@@ -990,9 +1008,9 @@ int main(void)
                     boss.bulletDodgeSFXPlayed = true;
                 }
 
-                if (!boss.diagonalLaserSFXActive) StopSound(laserDiagonalSFX);
-                if (!boss.wideBeamSFXActive) StopSound(wideBeamSFX);
-                if (!boss.bulletDodgeSFXActive) StopSound(bulletDodgeSFX);
+                if (!boss.diagonalLaserSFXActive || boss.dead) StopSound(laserDiagonalSFX);
+                if (!boss.wideBeamSFXActive || boss.dead) StopSound(wideBeamSFX);
+                if (!boss.bulletDodgeSFXActive || boss.dead) StopSound(bulletDodgeSFX);
             }
 
             if (isInvencibilityDelayTimerStarted)
@@ -1170,7 +1188,7 @@ int main(void)
         }
 
         // Draw the boss
-        if (boss.active)
+        if (boss.active && boss.life > 0)
         {
             // Si está mostrando la animación de advertencia, dibujarla
             if (boss.warningAnimPlaying || boss.warningAnimFinished)
@@ -1189,13 +1207,13 @@ int main(void)
             switch (boss.currentPattern)
             {
             case ATTACK_LASER_DIAGONAL:
-                boss.LaserDiagonalPattern(pause);
+                boss.LaserDiagonalPattern();
                 break;
             case ATTACK_WIDE_BEAM:
-                boss.WideBeamAttack(pause);
+                boss.WideBeamAttack();
                 break;
             case ATTACK_BULLET_DODGE:
-                boss.BulletDodgePattern(pause);
+                boss.BulletDodgePattern();
                 break;
             }
         }

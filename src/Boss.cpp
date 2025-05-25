@@ -12,7 +12,7 @@ Bullet_Boss::Bullet_Boss() : rect{ 0, 0, 0, 0 }, pos{ 0,0 }, lifetime(0.0f), act
 
 // Enemy constructor
 Boss::Boss()
-    : rect{ 0, 0, 432, 256 }, enemyDeathFrameRec{ 0, 0, 54, 54 }, life(100), initialLife(0), active(false), dying(false), dead(false), attackRutine(0),
+    : rect{ 0, 0, 432, 256 }, enemyDeathFrameRec{ 0, 0, 54, 54 }, life(0), initialLife(100), active(false), dying(false), dead(false), attackRutine(0),
     laserAttackNormal(false), laserAttackHeavy(false), shooting(false), attackTime(0.0f), attackingTimer(0.0f), attackCooldown(0.0f),
     playerPos{ 0.0f, 0.0f }, rotation(0.0f), appearance(false), idle(false), random(false), canAttack(true), hasArribed(false),
     enemyDeathFramesCounter(0), currentEnemyDeathFrame(0), start({ 0,0 }), target({ 0,0 }), currentPattern(ATTACK_NONE), patternTimer(0.0f), patternCooldown(0.0f),
@@ -40,8 +40,9 @@ void Boss::BossSpawn()
 
     rect = { start.x, start.y, 432, 256};
 
-    initialLife = life;
+    life = initialLife;
 
+    dead = false;
     active = true;
     appearance = true;
 }
@@ -49,7 +50,7 @@ void Boss::BossSpawn()
 void Boss::SelectNextPattern()
 {
     // Aleatorio:
-    currentPattern = static_cast<BossAttackPattern>(GetRandomValue(2, 2));
+    currentPattern = static_cast<BossAttackPattern>(GetRandomValue(0, 2));
 }
 
 void Boss::PlayWarningAnimation()
@@ -97,7 +98,7 @@ void Boss::PlayWarningAnimation()
     };
 }
 
-void Boss::LaserDiagonalPattern(bool pause)
+void Boss::LaserDiagonalPattern()
 {
     if (!laserActive)
     {
@@ -172,7 +173,7 @@ void Boss::LaserDiagonalPattern(bool pause)
         DrawRectangleLines(rightDiagonalRect.x, rightDiagonalRect.y, rightDiagonalRect.width, rightDiagonalRect.height, GREEN);
 
         // ⏲️ Timer del ataque
-        if (!pause) laserTimer -= GetFrameTime();
+        laserTimer -= GetFrameTime();
     }
 
     if (laserTimer <= 0)
@@ -193,7 +194,7 @@ void Boss::LaserDiagonalPattern(bool pause)
     }
 }
 
-void Boss::WideBeamAttack(bool pause)
+void Boss::WideBeamAttack()
 {
     if (!wideBeamActive)
     {
@@ -230,7 +231,7 @@ void Boss::WideBeamAttack(bool pause)
     DrawRectangleRec(wideBeamRect, ORANGE);
 
     // Timer para desactivarlo
-    if (!pause) wideBeamTimer -= GetFrameTime();
+    wideBeamTimer -= GetFrameTime();
     if (wideBeamTimer <= 0)
     {
         wideBeamActive = false;
@@ -242,7 +243,7 @@ void Boss::WideBeamAttack(bool pause)
     }
 }
 
-void Boss::BulletDodgePattern(bool pause)
+void Boss::BulletDodgePattern()
 {
     float leftRayX = rect.x;
     float rightRayX = rect.x + rect.width;
@@ -313,7 +314,7 @@ void Boss::BulletDodgePattern(bool pause)
         DrawCircle((int)(rect.x + rect.width + 200), (int)(rect.y + rect.height), 40, BLUE);
 
         // 5. DISPARO DE BALAS
-        if (bulletShootingTime > 0.0f && !pause) {
+        if (bulletShootingTime > 0.0f) {
             bulletSpawnCooldown -= GetFrameTime();
             if (bulletSpawnCooldown <= 0.0f) {
                 std::vector<int> validIndices;
@@ -357,14 +358,13 @@ void Boss::BulletDodgePattern(bool pause)
         }
 
         // Movimiento de balas
-        if (!pause) {
-            for (auto& b : dodgeBullets) {
-                if (!b.active) continue;
-                b.lifetime += GetFrameTime();
-                b.pos.y += (life >= initialLife * 0.5f ? 250 : 300) * GetFrameTime();
-                b.rect = { b.pos.x - 8, b.pos.y - 8, 16, 16 };
-                if (b.pos.y > 928) b.active = false;
-            }
+        for (auto& b : dodgeBullets) 
+        {
+            if (!b.active) continue;
+            b.lifetime += GetFrameTime();
+            b.pos.y += (life >= initialLife * 0.5f ? 250 : 300) * GetFrameTime();
+            b.rect = { b.pos.x - 8, b.pos.y - 8, 16, 16 };
+            if (b.pos.y > 928) b.active = false;
         }
 
         // Limpiar balas inactivas
@@ -395,7 +395,7 @@ void Boss::BulletDodgePattern(bool pause)
     }
 }
 
-void Boss::BossManager(bool pause)
+void Boss::BossManager()
 {
     if (warningAnimPlaying)
         PlayWarningAnimation();
@@ -415,7 +415,7 @@ void Boss::BossManager(bool pause)
         }
     }
 
-    if (!pause) patternCooldown -= GetFrameTime();
+    patternCooldown -= GetFrameTime();
     if (!appearance && patternCooldown <= 0) {
         SelectNextPattern();
         patternCooldown = 10.0f;
@@ -430,13 +430,13 @@ void Boss::BossManager(bool pause)
     switch (currentPattern)
     {
     case ATTACK_LASER_DIAGONAL:
-        LaserDiagonalPattern(pause);
+        LaserDiagonalPattern();
         break;
     case ATTACK_WIDE_BEAM:
-        WideBeamAttack(pause);
+        WideBeamAttack();
         break;
     case ATTACK_BULLET_DODGE:
-        BulletDodgePattern(pause);
+        BulletDodgePattern();
         break;
     }
 }

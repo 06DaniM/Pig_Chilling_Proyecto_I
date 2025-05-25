@@ -100,12 +100,11 @@ public:
 
     void BossSpawn();
     void PlayWarningAnimation();
-    void BossManager(bool pause);
+    void BossManager();
     void SelectNextPattern();
-    void LaserDiagonalPattern(bool pause);
-    void WideBeamAttack(bool pause);
-    void BulletDodgePattern(bool pause);
-    void DrawShield();
+    void LaserDiagonalPattern();
+    void WideBeamAttack();
+    void BulletDodgePattern();
 };
 
 #endif // BOSS_H
