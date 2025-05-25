@@ -215,11 +215,11 @@ int main(void)
     int currentEnemyDestroySound;
 
     Sound deathPlayerSound = LoadSound("resources/soundEffects/fighter_destroyed.mp3");
-    Music laserDiagonalSFX = LoadMusicStream("resources/soundEffects/Diagonal_Attack.wav");
-    Music wideBeamSFX = LoadMusicStream("resources/soundEffects/Wide_Beam_Attack.wav");
-    Music bulletDodgeSFX = LoadMusicStream("resources/soundEffects/Bullet_Dodge_Attack.wav");
+    Sound laserDiagonalSFX = LoadSound("resources/soundEffects/Diagonal_Attack.wav");
+    Sound wideBeamSFX = LoadSound("resources/soundEffects/Wide_Beam_Attack.mp3");
+    Sound bulletDodgeSFX = LoadSound("resources/soundEffects/Bullet_Dodge_Attack.mp3");
 
-    shotSound[0] = LoadSound("resources/soundEffects/laser_default.mp3");
+    shotSound[0] = LoadSound("resources/soundEffects/laser_default.wav");
 
     for (int i = 1; i < 4; i++)
     {
@@ -253,9 +253,6 @@ int main(void)
     PlayMusicStream(musicBoss);
     PlayMusicStream(winMusic);
     PlayMusicStream(gameOverMusic);
-    PlayMusicStream(laserDiagonalSFX);
-    PlayMusicStream(wideBeamSFX);
-    PlayMusicStream(bulletDodgeSFX);
 
     bool winMusicStarted = false;
     float winMusicDuration = 3.7f;
@@ -349,7 +346,7 @@ int main(void)
         if (inMenu)
         {
             if (!isMenuTimerStarted) {
-                menuDelayTimer.Start(2);        // Inicia el temporizador solo una vez
+                menuDelayTimer.Start(2); 
                 isMenuTimerStarted = true;
             }
 
@@ -970,24 +967,32 @@ int main(void)
             if (boss.active)
             {
                 boss.BossManager(pause);
+                
             }
 
-            if (boss.diagonalLaserSFXActive)
+            if (!pause)
             {
-                UpdateMusicStream(laserDiagonalSFX);
-                boss.bulletDodgeSFXPlayed = true;
-            }
+                if (boss.diagonalLaserSFXActive && !boss.diagonalLaserSFXPlayed)
+                {
+                    PlaySound(laserDiagonalSFX);
+                    boss.diagonalLaserSFXPlayed = true;
+                }
 
-            else if (boss.wideBeamActive)
-            {
-                UpdateMusicStream(wideBeamSFX);
-                boss.bulletDodgeSFXPlayed = true;
-            }
+                else if (boss.wideBeamSFXActive && !boss.wideBeamSFXPlayed)
+                {
+                    PlaySound(wideBeamSFX);
+                    boss.wideBeamSFXPlayed = true;
+                }
 
-            else if (boss.bulletDodgeSFXActive)
-            {
-                UpdateMusicStream(bulletDodgeSFX);
-                boss.bulletDodgeSFXPlayed = true;
+                else if (boss.bulletDodgeSFXActive && !boss.bulletDodgeSFXPlayed)
+                {
+                    PlaySound(bulletDodgeSFX);
+                    boss.bulletDodgeSFXPlayed = true;
+                }
+
+                if (!boss.diagonalLaserSFXActive) StopSound(laserDiagonalSFX);
+                if (!boss.wideBeamSFXActive) StopSound(wideBeamSFX);
+                if (!boss.bulletDodgeSFXActive) StopSound(bulletDodgeSFX);
             }
 
             if (isInvencibilityDelayTimerStarted)
@@ -1009,8 +1014,8 @@ int main(void)
                     if (life <= 0) gameOver = true;  // Solo se marca como ganado al terminar el temporizador
                     else
                     {
-                        player.x = (screenWidth - player.width) / 2.0f;
-                        player.y = screenHeight / 1.5f;
+                        spritePos.x = (screenWidth - spriteWidth) / 2.0f;
+                        spritePos.y = screenHeight / 1.5f;
                         isVisible = true;
                         canAct = true;
                     }
@@ -1172,6 +1177,10 @@ int main(void)
                 DrawTextureRec(bossAttackNormalSprite, boss.warningAnimFrame, { boss.rect.x, boss.rect.y }, WHITE);
             else
                 DrawTextureEx(bossSprite, { boss.rect.x, boss.rect.y }, 0, 1, WHITE);
+            if (boss.shieldActive)
+            {
+                DrawRectangle(boss.shieldRect.x, boss.shieldRect.y, boss.shieldRect.width, boss.shieldRect.height, BLUE); // borde azul
+            }
         }
 
         // Dibujar ataques del jefe DESPUÉS del jefe (así se ven encima)

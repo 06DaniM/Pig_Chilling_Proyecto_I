@@ -90,6 +90,10 @@ public:
     bool bulletDodgeSFXActive;
     bool bulletDodgeSFXPlayed;
 
+    bool shieldActive;
+    float shieldTimer;
+    float shieldDuration;
+    Rectangle shieldRect;
 
     // Constructor
     Boss();
@@ -101,6 +105,7 @@ public:
     void LaserDiagonalPattern(bool pause);
     void WideBeamAttack(bool pause);
     void BulletDodgePattern(bool pause);
+    void DrawShield();
 };
 
 #endif // BOSS_H
