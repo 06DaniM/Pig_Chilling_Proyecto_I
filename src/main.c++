@@ -182,7 +182,7 @@ int main(void)
     Texture2D bossSprite = LoadTexture("resources/enemies/boss.png");
     Texture2D bossAttackNormalSprite = LoadTexture("resources/enemies/bossAttackNormal.png");
     Texture2D bossAttackWideBeamSprite = LoadTexture("resources/enemies/bossAttackWideBeam.png");
-    Texture2D bossDeathAnim = LoadTexture("resources/enemies/bossAttackWideBeam.png");
+    Texture2D bossDeathAnim = LoadTexture("resources/enemies/bossDeath.png");
 
     // === POWER UPS SPRITES === //
     Texture2D doubleShotSprite = LoadTexture("resources/powerUps/DobleShot_PowerUp.png");
