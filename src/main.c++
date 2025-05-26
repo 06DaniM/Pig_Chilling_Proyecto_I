@@ -125,7 +125,7 @@ std::vector<Bullet_Boss> bossBullets;
 
 int main(void)
 {
-    InitWindow(screenWidth, screenHeight, "Galaga");
+    InitWindow(screenWidth, screenHeight, "Omega Space");
     InitAudioDevice();
 
     const float spriteWidth = 80;
@@ -376,14 +376,35 @@ int main(void)
             ClearBackground(BLACK);
             DrawTexture(introBackground, 0, 0, WHITE);
 
-            textWidth = MeasureText("PIG CHILLING", 50); // Measure the length of the text
-            DrawTextEx(font, "PIG CHILLING", { ((float)screenWidth - textWidth) / 2, 160 }, 100, 2, GREEN); // Center the text
+            Vector2 pos1;
+            const char* text1 = "PIG CHILLING";
+            int fontSize1 = 80;
 
-            textWidth = MeasureText("BUTTON", 50); // Measure the length of the text
-            DrawTextEx(font, "BUTTON", { ((float)screenWidth - textWidth) / 2, 710 }, 50, 2, GREEN); // Center the text
+            Vector2 textSize1 = MeasureTextEx(font, text1, fontSize1, 2);
+            pos1.x = (screenWidth / 2.0f) - (textSize1.x / 2.0f);
+            pos1.y = 150;
 
-            textWidth = MeasureText("FROM PIG CHILLING", 60); // Measure the length of the text
-            DrawTextEx(font, "FROM PIG CHILLING", { (float)(screenWidth - textWidth) / 2 + 55, 790 }, 60, 2, WHITE); // Center the text
+            DrawTextEx(font, text1, pos1, fontSize1, 2, GREEN);
+
+            Vector2 pos2;
+            const char* text2 = "DANIEL MARTINEZ ORTEGA - HECTOR TARROJA SANCHEZ - ADAM MOLINA BABA";
+            int fontSize2 = 20;
+
+            Vector2 textSize2 = MeasureTextEx(font, text2, fontSize2, 2);
+            pos2.x = 20; // pequeño margen desde la izquierda
+            pos2.y = screenHeight - textSize2.y - 10; // pegado abajo con margen 10px
+
+            DrawTextEx(font, text2, pos2, fontSize2, 2, WHITE);
+
+            Vector2 pos3;
+            const char* text3 = "TEACHER: ALEIX COTS";
+            int fontSize3 = 20;
+
+            Vector2 textSize3 = MeasureTextEx(font, text3, fontSize3, 2);
+            pos3.x = screenWidth - textSize3.x - 20; // pegado a la derecha con margen 20px
+            pos3.y = screenHeight - textSize3.y - 10; // pegado abajo con margen 10px
+
+            DrawTextEx(font, text3, pos3, fontSize3, 2, WHITE);
 
             EndDrawing();
 
