@@ -391,8 +391,8 @@ int main(void)
             int fontSize2 = 20;
 
             Vector2 textSize2 = MeasureTextEx(font, text2, fontSize2, 2);
-            pos2.x = 20; // pequeño margen desde la izquierda
-            pos2.y = screenHeight - textSize2.y - 10; // pegado abajo con margen 10px
+            pos2.x = 20; 
+            pos2.y = screenHeight - textSize2.y - 20;
 
             DrawTextEx(font, text2, pos2, fontSize2, 2, WHITE);
 
@@ -401,10 +401,30 @@ int main(void)
             int fontSize3 = 20;
 
             Vector2 textSize3 = MeasureTextEx(font, text3, fontSize3, 2);
-            pos3.x = screenWidth - textSize3.x - 20; // pegado a la derecha con margen 20px
-            pos3.y = screenHeight - textSize3.y - 10; // pegado abajo con margen 10px
+            pos3.x = screenWidth - textSize3.x - 20;
+            pos3.y = screenHeight - textSize3.y - 20; 
 
             DrawTextEx(font, text3, pos3, fontSize3, 2, WHITE);
+
+            const char* textCenter1 = "Shoot 'em up space game based on Galaga 88/90";
+            int fontSizeCenter1 = 40; 
+            Vector2 textSizeCenter1 = MeasureTextEx(font, textCenter1, fontSizeCenter1, 2);
+
+            Vector2 posCenter1;
+            posCenter1.x = (screenWidth / 2.0f) - (textSizeCenter1.x / 2.0f);
+            posCenter1.y = (screenHeight / 2.0f) - (textSizeCenter1.y / 2.0f) + 50;
+
+            DrawTextEx(font, textCenter1, posCenter1, fontSizeCenter1, 2, WHITE);
+
+            const char* textCenter2 = "Project I - Disseny i desenvolupament de videojocs (Barcelona) - CITM";
+            int fontSizeCenter2 = 30; 
+            Vector2 textSizeCenter2 = MeasureTextEx(font, textCenter2, fontSizeCenter2, 2);
+
+            Vector2 posCenter2;
+            posCenter2.x = (screenWidth / 2.0f) - (textSizeCenter2.x / 2.0f);
+            posCenter2.y = (screenHeight / 2.0f) - (textSizeCenter2.y / 2.0f) + 125;
+
+            DrawTextEx(font, textCenter2, posCenter2, fontSizeCenter2, 2, WHITE);
 
             EndDrawing();
 
@@ -874,7 +894,7 @@ int main(void)
                     if (currentEnemies == 0 && currentWave == 0)
                     {
                         currentEnemies += 5;
-                        enemy.SpawnEnemies(enemies, maxEnemies, 60.0f, -100.0f, 1, -1, 3.5f, screenWidth / 1.5f, screenHeight / 2.5f, currentEnemies, 4); // Left
+                        enemy.SpawnEnemies(enemies, maxEnemies, 60.0f, -100.0f, 1, -1, 3.5f, screenWidth / 1.5f, screenHeight / 2.5f, currentEnemies, 1); // Left
                         currentWave++;
                     }
 
