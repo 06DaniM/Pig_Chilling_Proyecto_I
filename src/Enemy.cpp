@@ -83,7 +83,7 @@ void Enemy::UpdateEnemyOffset(float deltaTime)
 // 3: Squid, Draconoida, Mantis, Draconoida, Squid
 // 4: Kraken, Kraken, Squid, Kraken, Kraken
 // 5: Kraken, Draconoida, Mantis, Draconoida, Mantis
-// 6: Squid, Mantis, Squid, Mantis, Squid
+// 6: Squid, Mantis, Mantis, Mantis, Squid
 
 // Function to spawn the enemies
 void Enemy::SpawnEnemies(std::vector<Enemy>& enemies, int numberEnemies, float baseHeight, float baseWidth, int directionX, int directionY, float loopTime, float targetx, float targety, int currentEnemies, int enemyPreset)
@@ -150,7 +150,7 @@ void Enemy::SpawnEnemies(std::vector<Enemy>& enemies, int numberEnemies, float b
         {
             if (i == 0) newEnemy.enemyClass = Squid;
             else if (i == 1) newEnemy.enemyClass = Mantis;
-            else if (i == 2) newEnemy.enemyClass = Squid;
+            else if (i == 2) newEnemy.enemyClass = Mantis;
             else if (i == 3) newEnemy.enemyClass = Mantis;
             else newEnemy.enemyClass = Squid;
         }

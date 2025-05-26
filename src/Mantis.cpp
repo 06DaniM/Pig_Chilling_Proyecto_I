@@ -30,13 +30,19 @@ void MantisEnemy::MantisAttackManager(std::vector<Bullet_Enemy>& enemyBullets, s
 
     if (enemy.attackingTimer <= 1)
     {
-        // Normalize the direction
+        // Guardamos la dirección solo si no estamos en el último frame antes del cambio
+        if (enemy.attackingTimer <= 0.5f) // margen de seguridad
+        {
+            float directionX = distX1 / distance1;
+            float directionY = distY1 / distance1;
+
+            enemy.rotation = atan2(directionY, directionX) * (180.0f / PI) + 90;
+        }
+
+        // Seguir moviendo igual
         float directionX = distX1 / distance1;
         float directionY = distY1 / distance1;
 
-        enemy.rotation = atan2(directionY, directionX) * (180.0f / PI) + 90; // Convertir a grados
-
-        // Move the enemy to the objective
         enemy.rect.x += directionX * moveSpeed;
         enemy.rect.y += directionY * moveSpeed;
 

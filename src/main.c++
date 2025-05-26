@@ -842,7 +842,7 @@ int main(void)
             // 3: Squid, Draconoide, Mantis, Draconoide, Squid
             // 4: Kraken, Kraken, Squid, Kraken, Kraken
             // 5: Kraken, Draconoide, Mantis, Draconoide, Mantis
-            // 6: Squid, Mantis, Squid, Mantis, Squid
+            // 6: Squid, Mantis, Mantis, Mantis, Squid
 
             // === WAVES MANAGER ===
             if (canSpawn)
@@ -853,7 +853,7 @@ int main(void)
                     if (currentEnemies == 0 && currentWave == 0)
                     {
                         currentEnemies += 5;
-                        enemy.SpawnEnemies(enemies, maxEnemies, 60.0f, -100.0f, 1, -1, 3.5f, screenWidth / 1.5f, screenHeight / 2.5f, currentEnemies, 1); // Left
+                        enemy.SpawnEnemies(enemies, maxEnemies, 60.0f, -100.0f, 1, -1, 3.5f, screenWidth / 1.5f, screenHeight / 2.5f, currentEnemies, 4); // Left
                         currentWave++;
                     }
 
@@ -907,18 +907,19 @@ int main(void)
                     // === Wave 3 ===
                     else if (currentEnemies == 0 && currentWave == 2)
                     {
-                        currentEnemies += 5;
-                        enemy.SpawnEnemies(enemies, maxEnemies, 140.0f, screenWidth + 100, 1, 1, 2.5f, screenWidth / 2.0f, screenHeight / 1.8f, currentEnemies, 6); // Right
+                        currentEnemies += 10;
+                        enemy.SpawnEnemies(enemies, maxEnemies, 140.0f, screenWidth + 100, 1, 1, 2.5f, screenWidth / 2.0f, screenHeight / 1.8f, currentEnemies, 6); // Left
+                        enemy.SpawnEnemies(enemies, maxEnemies, 200.0, -100.0f, -1, -1, 3.5f, screenWidth / 2.0f - 80, screenHeight / 2.0f + 50, currentEnemies, 5); // Left
                         currentWave++;
                     }
 
                     // === Wave 4 ===
-                    else if (currentEnemies <= 3 && currentWave == 3)
+                    else if (currentEnemies == 0 && currentWave == 3)
                     {
                         currentEnemies += 15;
-                        enemy.SpawnEnemies(enemies, maxEnemies, 140.0f, -100.0f, -1, -1, 2.5f, screenWidth / 2 - 100, screenHeight / 2.3f, currentEnemies, 4); // Left
+                        enemy.SpawnEnemies(enemies, maxEnemies, 140.0f, -100.0f, -1, -1, 2.5f, screenWidth / 2 - 100, screenHeight / 2.3f, currentEnemies, 5); // Left
                         enemy.SpawnEnemies(enemies, maxEnemies, 200.0f, screenWidth + 100, 1, 1, 2.5f, screenWidth / 2 + 100, screenHeight / 2.3f, currentEnemies, 3); // Right
-                        enemy.SpawnEnemies(enemies, maxEnemies, 260.0f, screenWidth + 100, -1, 1, 2.5f, screenWidth / 2 + 40, screenHeight / 3.5f, currentEnemies, 4); // Right
+                        enemy.SpawnEnemies(enemies, maxEnemies, 260.0f, screenWidth + 100, -1, 1, 2.5f, screenWidth / 2 + 40, screenHeight / 3.5f, currentEnemies, 5); // Right
                         currentWave++;
                     }
 
@@ -996,7 +997,7 @@ int main(void)
                     break;
                 }
 
-                if (enemy.picked)
+                if (enemy.picked && enemy.active)
                 {
                     canAct = false;
                     shield = false;
