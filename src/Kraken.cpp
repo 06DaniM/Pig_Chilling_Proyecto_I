@@ -1,17 +1,15 @@
-#include "Kraken.h"
+ï»¿#include "Kraken.h"
 #include <cmath>
 #include <iostream>
+#include "Globals.h"
 
 using namespace std;
 
 // Enemy constructor
-KrakenEnemy::KrakenEnemy() : attackCollider({ 0, 0, 0, 10 }), playerPicked(false) {}
+KrakenEnemy::KrakenEnemy() : attackCollider({ 0, 0, 0, 10 }) {}
 
 const int screenWidth = 1152;
 const int screenHeight = 896;
-
-bool isPicked = false;               // Estado global de si el jugador está agarrado
-Enemy* grabbingKraken = nullptr;     // Referencia al Kraken que está agarrando al jugador
 
 void KrakenEnemy::KrakenAttackManager(std::vector<Bullet_Enemy>& enemyBullets, std::vector<Enemy>& enemies, Enemy& enemy, Rectangle& player, Vector2& spritePos, float deltaTime, float globalEnemyOffsetXN, bool isInvencibilityDelayTimerStarted)
 {
@@ -38,7 +36,7 @@ void KrakenEnemy::KrakenAttackManager(std::vector<Bullet_Enemy>& enemyBullets, s
 
     else
     {
-        // 1. Movimiento hacia posición de ataque (debajo del jugador)
+        // 1. Movimiento hacia posiciï¿½n de ataque (debajo del jugador)
         float dxToAttackPos = spritePos.x + 10 - enemy.rect.x;
         float dyToAttackPos = screenHeight / 1.5f - enemy.rect.y - 90;
         float distToAttackPos = sqrt(dxToAttackPos * dxToAttackPos + dyToAttackPos * dyToAttackPos);
@@ -46,7 +44,7 @@ void KrakenEnemy::KrakenAttackManager(std::vector<Bullet_Enemy>& enemyBullets, s
         float dirXToAttack = dxToAttackPos / distToAttackPos;
         float dirYToAttack = dyToAttackPos / distToAttackPos;
 
-        // 2. Dirección para volver a la posición original (targetFinalPosition)
+        // 2. Direcciï¿½n para volver a la posiciï¿½n original (targetFinalPosition)
         float dxToFinal = enemy.targetFinalPosition.x + globalEnemyOffsetXN - enemy.rect.x;
         float dyToFinal = enemy.targetFinalPosition.y - enemy.rect.y;
         float distToFinal = sqrt(dxToFinal * dxToFinal + dyToFinal * dyToFinal);
@@ -78,7 +76,7 @@ void KrakenEnemy::KrakenAttackManager(std::vector<Bullet_Enemy>& enemyBullets, s
                 attackCollider.x = enemy.rect.x;
                 attackCollider.y = player.y;
 
-                // Intentar agarrar al jugador (solo si aún no fue agarrado)
+                // Intentar agarrar al jugador (solo si aï¿½n no fue agarrado)
                 if (CheckCollisionRecs(attackCollider, { spritePos.x, spritePos.y, 80, 80 }) &&
                     !playerPicked && !isInvencibilityDelayTimerStarted && !isPicked)
                 {
@@ -125,27 +123,27 @@ void KrakenEnemy::KrakenAttackManager(std::vector<Bullet_Enemy>& enemyBullets, s
                         enemy.attackingTimer = 0;
                         enemy.random = false;
 
-                        // Deja al jugador donde terminó el Kraken
+                        // Deja al jugador donde terminï¿½ el Kraken
                         spritePos.x = enemy.rect.x;
                         spritePos.y = enemy.rect.y;
                     }
                 }
 
-                // Si no lo agarró, regresar al targetFinalPosition
+                // Si no lo agarrï¿½, regresar al targetFinalPosition
                 else
                 {
                     if (distToFinal > moveSpeed)
                     {
-                        // ROTAR hacia la dirección de movimiento
+                        // ROTAR hacia la direcciï¿½n de movimiento
                         enemy.rotation = atan2(dirYToFinal, dirXToFinal) * (180.0f / PI) + 90;
 
-                        // MOVER hacia la posición final
+                        // MOVER hacia la posiciï¿½n final
                         enemy.rect.x += dirXToFinal * moveSpeed;
                         enemy.rect.y += dirYToFinal * moveSpeed;
                     }
                     else
                     {
-                        // Llegó al destino, reinicia
+                        // Llegï¿½ al destino, reinicia
                         enemy.canAttack = false;
                         enemy.attackingTimer = 0;
                         enemy.random = false;

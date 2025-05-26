@@ -532,6 +532,7 @@
     <ClInclude Include="..\..\src\Bullet.h" />
     <ClInclude Include="..\..\src\Draconoida.h" />
     <ClInclude Include="..\..\src\Enemy.h" />
+    <ClInclude Include="..\..\src\Globals.h" />
     <ClInclude Include="..\..\src\Kraken.h" />
     <ClInclude Include="..\..\src\Mantis.h" />
     <ClInclude Include="..\..\src\Squid.h" />
@@ -542,6 +543,7 @@
     <ClCompile Include="..\..\src\Bullet.cpp" />
     <ClCompile Include="..\..\src\Draconoida.cpp" />
     <ClCompile Include="..\..\src\Enemy.cpp" />
+    <ClCompile Include="..\..\src\Globals.cpp" />
     <ClCompile Include="..\..\src\Kraken.cpp" />
     <ClCompile Include="..\..\src\main.c++" />
     <ClCompile Include="..\..\src\Mantis.cpp" />

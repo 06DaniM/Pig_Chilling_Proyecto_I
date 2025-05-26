@@ -37,6 +37,7 @@ SOFTWARE.
 #include "Kraken.h"
 #include "Bullet.h"
 #include "Timer.h"
+#include "Globals.h"
 
 using namespace std;
 
@@ -486,14 +487,20 @@ int main(void)
             ClearBackground(BLACK);
             DrawTextureRec(menuBackground, backgroundMenuFrameRec, { 0,0 }, WHITE);
 
-            textWidth = MeasureText("PUSH RUN", 50); // Measure the length of the text
-            DrawTextEx(font, "PUSH RUN", { ((float)screenWidth - textWidth) / 2, 650 }, 50, 2, GREEN); // Center the text
+            const char* textPushRun = "PUSH RUN";
+            int fontSizePushRun = 50;
+            Vector2 sizePushRun = MeasureTextEx(font, textPushRun, fontSizePushRun, 2);
+            DrawTextEx(font, textPushRun, { (screenWidth - sizePushRun.x) / 2.0f, 650 }, fontSizePushRun, 2, GREEN);
 
-            textWidth = MeasureText("BUTTON", 50); // Measure the length of the text
-            DrawTextEx(font, "BUTTON", { ((float)screenWidth - textWidth) / 2, 710 }, 50, 2, GREEN); // Center the text
+            const char* textButton = "BUTTON";
+            int fontSizeButton = 50;
+            Vector2 sizeButton = MeasureTextEx(font, textButton, fontSizeButton, 2);
+            DrawTextEx(font, textButton, { (screenWidth - sizeButton.x) / 2.0f, 710 }, fontSizeButton, 2, GREEN);
 
-            textWidth = MeasureText("FROM PIG CHILLING", 60); // Measure the length of the text
-            DrawTextEx(font, "FROM PIG CHILLING", { (float)(screenWidth - textWidth) / 2 + 55, 790 }, 60, 2, WHITE); // Center the text
+            const char* textPigChilling = "FROM PIG CHILLING";
+            int fontSizePig = 60;
+            Vector2 sizePig = MeasureTextEx(font, textPigChilling, fontSizePig, 2);
+            DrawTextEx(font, textPigChilling, { (screenWidth - sizePig.x) / 2.0f, 790 }, fontSizePig, 2, WHITE);
 
             EndDrawing();
 
@@ -770,7 +777,6 @@ int main(void)
                             bosshitframe++;
                             boss.life--;
                             if (boss.life <= 0) score += 5000;
-                            cout << boss.life;
                         }
                     }
                 }
@@ -1008,9 +1014,10 @@ int main(void)
             // Update enemies
             for (Enemy& enemy : enemies)
             {
+                // Colisión sin escudo
                 if (CheckCollisionRecs(player, enemy.rect) && !shield && !playerGotHit && !enemy.picked && isVisible && !isInvencibilityDelayTimerStarted && enemy.active && !enemy.gotHit)
                 {
-                    PlaySound(deathPlayerSound); 
+                    PlaySound(deathPlayerSound);
                     PlaySound(enemyDestroySound[currentEnemyDestroySound]);
                     currentEnemyDestroySound++;
 
@@ -1024,7 +1031,8 @@ int main(void)
 
                     break;
                 }
-                
+
+                // Colisión con escudo
                 else if (CheckCollisionRecs(player, enemy.rect) && shield && !enemy.gotHit && isVisible)
                 {
                     PlaySound(enemyDestroySound[currentEnemyDestroySound]);
@@ -1038,14 +1046,26 @@ int main(void)
                     break;
                 }
 
-                if (enemy.picked && enemy.active)
+                // Si el enemigo te ha agarrado
+                if (isPicked && enemy.active)
                 {
                     canAct = false;
                     shield = false;
                 }
-                else if (!canAct) krakenEnemy.playerPicked = true;
 
+                // Actualización de enemigos (incluye ataque Kraken)
                 enemy.UpdateEnemy(enemyBullets, enemies, enemy, GetFrameTime(), player, spritePos, gameOver, isInvencibilityDelayTimerStarted);
+            }
+
+            // ✅ Verificación al final del bucle
+            if (grabbingKraken && grabbingKraken->gotHit)
+            {
+                playerPicked = false;
+                isPicked = false;
+                grabbingKraken = nullptr;
+
+                canAct = true;
+                spritePos.y = screenHeight / 1.5f;
             }
 
             // Update enemies bullets
@@ -1289,8 +1309,6 @@ int main(void)
             else if (doubleShot && shield) DrawTexture(shipSpriteDoubleandBuble, (int)spritePos.x, (int)spritePos.y, WHITE);
 
             else DrawTextureEx(shipSpriteBase, spritePos, 0, 1, isInvencibilityDelayTimerStarted ? Color{ 255, 255, 255, 120 } : WHITE);
-
-            DrawRectangleLinesEx(player, 2, GREEN);
         }
 
         // Draw the enemies

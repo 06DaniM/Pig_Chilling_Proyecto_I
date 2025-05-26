@@ -342,7 +342,7 @@ void Enemy::UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, std::vector<Ene
                     {
                         if (enemy.attackCooldown >= 1.5f)
                         {
-                            enemy.attackTime = (float)GetRandomValue(1, 5000); // Random attack time
+                            enemy.attackTime = (float)GetRandomValue(1, 3000); // Random attack time
 
                             if (enemy.attackTime <= 10)
                             {
@@ -390,7 +390,5 @@ void Enemy::UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, std::vector<Ene
         {
             squid.SquidAttackManager(enemyBullets, enemies, enemy, player, GetFrameTime(), globalEnemyOffsetX, enemy.enemyStartX, gameOver);
         }
-        if (kraken.playerPicked) picked = true;
-        else picked = false;
     }
 }
