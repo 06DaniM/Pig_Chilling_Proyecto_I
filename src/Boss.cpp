@@ -71,7 +71,7 @@ int currentPatternIndex = 0;
 
 void Boss::SelectNextPattern()
 {
-    currentPattern = static_cast<BossAttackPattern> (1);
+    currentPattern = static_cast<BossAttackPattern> (0);
     /*if (currentCombinationIndex == -1 || currentPatternIndex >= patternCombinations[currentCombinationIndex].size())
     {
         int newIndex;
