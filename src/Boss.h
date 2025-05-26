@@ -122,7 +122,7 @@ public:
     float dodgeBulletLaserBallAnimSpeed;
     Rectangle dodgeBulletLaserBallFrameRect;
 
-
+    bool bossAttackFromWideBeam;
 
     // Constructor
     Boss();

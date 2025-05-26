@@ -963,15 +963,33 @@ int main(void)
             // Update enemies
             for (Enemy& enemy : enemies)
             {
-                if (CheckCollisionRecs(player, enemy.rect) && !shield && !playerGotHit && !enemy.picked && isVisible && !isInvencibilityDelayTimerStarted && enemy.active)
+                if (CheckCollisionRecs(player, enemy.rect) && !shield && !playerGotHit && !enemy.picked && isVisible && !isInvencibilityDelayTimerStarted && enemy.active && !enemy.gotHit)
                 {
-                    PlaySound(deathPlayerSound);
+                    PlaySound(deathPlayerSound); 
+                    PlaySound(enemyDestroySound[currentEnemyDestroySound]);
+                    currentEnemyDestroySound++;
+
+                    if (currentEnemyDestroySound >= 4) currentEnemyDestroySound = 0;
+
                     playerGotHit = true;
                     enemy.gotHit = true;
                     canAct = false;
                     life--;
                     currentEnemies--;
 
+                    break;
+                }
+                
+                else if (CheckCollisionRecs(player, enemy.rect) && shield && !enemy.gotHit)
+                {
+                    PlaySound(enemyDestroySound[currentEnemyDestroySound]);
+                    currentEnemyDestroySound++;
+
+                    if (currentEnemyDestroySound >= 4) currentEnemyDestroySound = 0;
+
+                    shield = false;
+                    enemy.gotHit = true;
+                    currentEnemies--;
                     break;
                 }
 
@@ -1056,6 +1074,10 @@ int main(void)
                     boss.dying = true;
                     bosshitframe = 0;
                 }
+
+                if (!boss.diagonalLaserSFXActive) StopSound(laserDiagonalSFX);
+                if (!boss.wideBeamSFXActive) StopSound(wideBeamSFX);
+                if (!boss.bulletDodgeSFXActive) StopSound(bulletDodgeSFX);
             }
 
             if (boss.dying)
@@ -1272,15 +1294,14 @@ int main(void)
         {
             if (!boss.dying && boss.life > 0)
             {
-
                 // Si está mostrando la animación de advertencia, dibujarla
-                if (boss.currentPattern != ATTACK_WIDE_BEAM && (boss.warningAnimPlaying || boss.warningAnimFinished))
+                if (boss.currentPattern != ATTACK_WIDE_BEAM && (boss.warningAnimPlaying || boss.warningAnimFinished) && !boss.bossAttackFromWideBeam)
                 {
                     if (bosshitframe == 0) DrawTextureRec(bossAttackNormalSprite, boss.warningAnimFrame, { boss.rect.x, boss.rect.y }, WHITE);
                     else if (bosshitframe > 0) DrawTextureRec(bossAttackNormalSprite, boss.warningAnimFrame, { boss.rect.x, boss.rect.y }, RED);
                 }
 
-                else if (boss.currentPattern == ATTACK_WIDE_BEAM && (boss.warningAnimPlaying || boss.warningAnimFinished))
+                else if (boss.currentPattern == ATTACK_WIDE_BEAM && (boss.warningAnimPlaying || boss.warningAnimFinished) && boss.bossAttackFromWideBeam)
                 {
                     if (bosshitframe == 0) DrawTextureRec(bossAttackWideBeamSprite, boss.warningAnimFrame, { boss.rect.x, boss.rect.y }, WHITE);
                     else if (bosshitframe > 0) DrawTextureRec(bossAttackWideBeamSprite, boss.warningAnimFrame, { boss.rect.x, boss.rect.y }, RED);
@@ -1292,7 +1313,10 @@ int main(void)
                     boss.gotHit = false;
                 }
 
-                else DrawTextureRec(bossSprite, boss.bossIdleFrameRect, { boss.rect.x, boss.rect.y }, WHITE);
+                else
+                {
+                    DrawTextureRec(bossSprite, boss.bossIdleFrameRect, { boss.rect.x, boss.rect.y }, WHITE);
+                }
 
                 if (boss.shieldActive)
                 {
@@ -1321,15 +1345,70 @@ int main(void)
                 if (boss.laserDamageActive)
                 {
                     Vector2 origin = { boss.rect.x + boss.rect.width / 2, boss.rect.y + boss.rect.height };
-                    DrawTextureEx(diagonalMidAttackLaser, { origin.x - 50, origin.y - 50 }, 0, 1, WHITE);
-                    DrawTextureEx(diagonalLateralAttackLaser, { origin.x - 190, origin.y }, -50, 1, WHITE);
-                    DrawTextureEx(diagonalLateralAttackLaser, { origin.x + 190, origin.y }, 50, 1, WHITE);
-                }
 
+                    // Láser central
+                    DrawTextureEx(diagonalMidAttackLaser, { origin.x - 50, origin.y - 50 }, 0, 1, WHITE);
+
+                    // --------------------
+                    // LÁSER IZQUIERDO
+                    // --------------------
+
+                    Vector2 startLeft = { origin.x - 190, origin.y };
+                    Vector2 endLeft = { origin.x + 950, origin.y + 800 };
+
+                    Vector2 diffLeft = { endLeft.x - startLeft.x, endLeft.y - startLeft.y };
+                    float lengthLeft = sqrtf(diffLeft.x * diffLeft.x + diffLeft.y * diffLeft.y);
+                    float angleLeft = atan2f(diffLeft.y, diffLeft.x) * RAD2DEG;
+
+                    Vector2 centerLeft = {
+                        (startLeft.x + endLeft.x) / 2.0f,
+                        (startLeft.y + endLeft.y) / 2.0f
+                    };
+
+                    Rectangle sourceRec = {
+                        0, 0,
+                        (float)diagonalLateralAttackLaser.width,
+                        (float)diagonalLateralAttackLaser.height
+                    };
+
+                    Rectangle destLeft = {
+                        centerLeft.x, centerLeft.y,
+                        1100, 50
+                    };
+
+                    Vector2 originLeft = { lengthLeft / 2, 25 };
+
+                    DrawTexturePro(diagonalLateralAttackLaser, sourceRec, destLeft, originLeft, angleLeft, WHITE);
+
+                    // --------------------
+                    // LÁSER DERECHO
+                    // --------------------
+
+                    Vector2 startRight = { origin.x + 190, origin.y };
+                    Vector2 endRight = { origin.x - 950, origin.y + 800 };
+
+                    Vector2 diffRight = { endRight.x - startRight.x, endRight.y - startRight.y };
+                    float lengthRight = sqrtf(diffRight.x * diffRight.x + diffRight.y * diffRight.y);
+                    float angleRight = atan2f(diffRight.y, diffRight.x) * RAD2DEG;
+
+                    Vector2 centerRight = {
+                        (startRight.x + endRight.x) / 2.0f,
+                        (startRight.y + endRight.y) / 2.0f
+                    };
+
+                    Rectangle destRight = {
+                        centerRight.x, centerRight.y,
+                        1100, 50
+                    };
+
+                    Vector2 originRight = { lengthRight / 2, 50 / 2 };
+
+                    DrawTexturePro(diagonalLateralAttackLaser, sourceRec, destRight, originRight, angleRight, WHITE);
+                }
 
                 if (boss.warningAnimFinished && boss.currentPattern == ATTACK_LASER_DIAGONAL)
                 {
-                    boss.LaserDiagonalBallWarningAnimation(); // <-- actualiza los frames
+                    boss.LaserDiagonalBallWarningAnimation(); 
 
                     Vector2 origin = { boss.rect.x + boss.rect.width / 2, boss.rect.y + boss.rect.height };
                     Vector2 positions[2] = {
