@@ -26,7 +26,8 @@ Boss::Boss()
     bossIdleAnimTimer(0.0f), bossIdleAnimSpeed(0.2f), bossIdleFrameRect({ 0, 0, 256, 256 }), bossDieFrameIndex(0), bossDieAnimTimer(0.0f), bossDieAnimSpeed(0.2f), 
     bossDieFrameRect({ 0, 0, 432, 256 }), diagonalBallFrameIndex(0), diagonalBallAnimTimer(0.0f), diagonalBallAnimSpeed(0.1f), diagonalBallFrameRect({ 0, 0, 80, 80 }), 
     diagonalBallMidFrameRect({ 0, 0, 120, 120 }), wideBeamBallFrameIndex(0), wideBeamBallAnimTimer(0.0f), wideBeamBallAnimSpeed(0.1f), wideBeamBallFrameRect({ 0, 0, 160, 160 }), 
-    dodgeBulletLaserBallFrameIndex(0), dodgeBulletLaserBallAnimTimer(0.0f), dodgeBulletLaserBallAnimSpeed(0.1f), dodgeBulletLaserBallFrameRect({ 0, 0, 160, 160 }), bossAttackFromWideBeam(false)
+    dodgeBulletLaserBallFrameIndex(0), dodgeBulletLaserBallAnimTimer(0.0f), dodgeBulletLaserBallAnimSpeed(0.1f), dodgeBulletLaserBallFrameRect({ 0, 0, 160, 160 }), bossAttackFromWideBeam(false),
+    rectDamage({ 0 })
 {}
 
 const int screenWidth = 1152;
@@ -534,6 +535,8 @@ void Boss::EndBulletDodgePattern()
 
 void Boss::BossManager()
 {
+    rectDamage = { rect.x + 96, rect.y, 256, 200 };
+
     if (warningAnimPlaying)
         PlayWarningAnimation();
 

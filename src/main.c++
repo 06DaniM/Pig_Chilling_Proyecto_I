@@ -722,7 +722,7 @@ int main(void)
                             bullet.active = false;
                         }
 
-                        else if (CheckCollisionRecs(boss.rect, bullet.rect))
+                        else if (CheckCollisionRecs(boss.rectDamage, bullet.rect))
                         {
                             bullet.active = false;
                             boss.gotHit = true;

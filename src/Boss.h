@@ -124,6 +124,8 @@ public:
 
     bool bossAttackFromWideBeam;
 
+    Rectangle rectDamage;
+
     // Constructor
     Boss();
 
