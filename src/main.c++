@@ -983,7 +983,7 @@ int main(void)
                     break;
                 }
                 
-                else if (CheckCollisionRecs(player, enemy.rect) && shield && !enemy.gotHit)
+                else if (CheckCollisionRecs(player, enemy.rect) && shield && !enemy.gotHit && isVisible)
                 {
                     PlaySound(enemyDestroySound[currentEnemyDestroySound]);
                     currentEnemyDestroySound++;
@@ -1023,7 +1023,7 @@ int main(void)
                         break;
                     }
 
-                    else if (CheckCollisionRecs(player, bullet.rect) && shield)
+                    else if (CheckCollisionRecs(player, bullet.rect) && shield && isVisible)
                     {
                         shield = false;
                         bullet.active = false;
@@ -1061,14 +1061,19 @@ int main(void)
 
             for (Bullet_Boss& bullet : boss.dodgeBullets)
             {
-                if (CheckCollisionRecs(player, bullet.rect) && canAct && isVisible && !isInvencibilityDelayTimerStarted)
+                if (CheckCollisionRecs(player, bullet.rect) && canAct && isVisible && !shield && !isInvencibilityDelayTimerStarted)
                 {
                     PlaySound(deathPlayerSound);
                     playerGotHit = true;
                     bullet.active = false;
                     canAct = false;
-                    shield = false;
                     life--;
+                }
+
+                else if (CheckCollisionRecs(player, bullet.rect) && isVisible && shield)
+                {
+                    shield = false;
+                    bullet.active = false;
                 }
             }
 

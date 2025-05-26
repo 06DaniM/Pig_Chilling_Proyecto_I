@@ -71,7 +71,6 @@ int currentPatternIndex = 0;
 
 void Boss::SelectNextPattern()
 {
-    //currentPattern = static_cast<BossAttackPattern> (0);
     if (currentCombinationIndex == -1 || currentPatternIndex >= patternCombinations[currentCombinationIndex].size())
     {
         int newIndex;
@@ -85,6 +84,7 @@ void Boss::SelectNextPattern()
 
     currentPattern = patternCombinations[currentCombinationIndex][currentPatternIndex];
     currentPatternIndex++;
+    currentPattern = static_cast<BossAttackPattern> (2);
 }
 
 void Boss::IdleAnimation()
