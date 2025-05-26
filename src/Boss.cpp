@@ -71,8 +71,8 @@ int currentPatternIndex = 0;
 
 void Boss::SelectNextPattern()
 {
-    currentPattern = static_cast<BossAttackPattern> (0);
-    /*if (currentCombinationIndex == -1 || currentPatternIndex >= patternCombinations[currentCombinationIndex].size())
+    //currentPattern = static_cast<BossAttackPattern> (0);
+    if (currentCombinationIndex == -1 || currentPatternIndex >= patternCombinations[currentCombinationIndex].size())
     {
         int newIndex;
         do {
@@ -84,7 +84,7 @@ void Boss::SelectNextPattern()
     }
 
     currentPattern = patternCombinations[currentCombinationIndex][currentPatternIndex];
-    currentPatternIndex++;*/
+    currentPatternIndex++;
 }
 
 void Boss::IdleAnimation()
@@ -276,9 +276,6 @@ void Boss::LaserDiagonalPattern()
         // 🔥 Ataque activo
         Vector2 origin = { rect.x + rect.width / 2, rect.y + rect.height };
 
-        DrawLineEx({ origin.x - 190, origin.y }, { origin.x + 950, origin.y + 800 }, 50, RED); // izquierda
-        DrawLineEx({ origin.x + 190, origin.y }, { origin.x - 950, origin.y + 800 }, 50, RED); // derecha
-
         // 💥 Definir zonas de daño
         centerLaserRect = { origin.x - 50, origin.y - 50, 100, 800 };
 
@@ -291,9 +288,6 @@ void Boss::LaserDiagonalPattern()
             screenWidth - 365, 600,
             145, 50
         };
-
-        DrawRectangleLines(leftDiagonalRect.x, leftDiagonalRect.y, leftDiagonalRect.width, leftDiagonalRect.height, GREEN);
-        DrawRectangleLines(rightDiagonalRect.x, rightDiagonalRect.y, rightDiagonalRect.width, rightDiagonalRect.height, GREEN);
 
         // ⏲️ Timer del ataque
         laserTimer -= GetFrameTime();

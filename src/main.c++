@@ -661,6 +661,7 @@ int main(void)
                                 bullet.active = false;
 
                                 if (enemy.enemyClass == Kraken && !enemy.krakenHit) enemy.krakenHit = true;
+                                
                                 else
                                 {
                                     enemy.gotHit = true;
@@ -733,9 +734,11 @@ int main(void)
                     }
                 }
             }
-            // Delete the inactive bullets
-            bullets.erase(std::remove_if(bullets.begin(), bullets.end(),
-                [](const Bullet& b) { return !b.active || b.rect.y < 0; }), bullets.end());
+
+            // Delete bullets
+            if (life <= 0) bullets.clear();
+            else bullets.erase(std::remove_if(bullets.begin(), bullets.end(),
+                    [](const Bullet& b) { return !b.active || b.rect.y < 0; }), bullets.end());
 
             if (playerGotHit)
             {
@@ -867,7 +870,7 @@ int main(void)
                     else if (currentEnemies == 0 && currentWave == 2)
                     {
                         currentEnemies += 5;
-                        enemy.SpawnEnemies(enemies, maxEnemies, 60.0f, screenWidth + 100, 1, 1, 2.5f, screenWidth / 2.0f, screenHeight / 1.8f, currentEnemies, 1); // Right
+                        enemy.SpawnEnemies(enemies, maxEnemies, 120.0f, screenWidth + 100, 1, 1, 2.5f, screenWidth / 2.0f, screenHeight / 1.8f, currentEnemies, 1); // Right
                         currentWave++;
                     }
 
@@ -875,9 +878,9 @@ int main(void)
                     else if (currentEnemies <= 3 && currentWave == 3)
                     {
                         currentEnemies += 15;
-                        enemy.SpawnEnemies(enemies, maxEnemies, 140.0f, screenWidth + 100, -1, 1, 2.5f, screenWidth / 2 + 40, screenHeight / 3.5f, currentEnemies, 3); // Right
-                        enemy.SpawnEnemies(enemies, maxEnemies, 200.0f, -100.0f, -1, -1, 2.5f, screenWidth / 2 - 100, screenHeight / 2.3f, currentEnemies, 1); // Left
-                        enemy.SpawnEnemies(enemies, maxEnemies, 260.0f, screenWidth + 100, 1, 1, 2.5f, screenWidth / 2 + 100, screenHeight / 2.3f, currentEnemies, 2); // Right
+                        enemy.SpawnEnemies(enemies, maxEnemies, 180.0f, screenWidth + 100, -1, 1, 2.5f, screenWidth / 2 + 40, screenHeight / 3.5f, currentEnemies, 3); // Right
+                        enemy.SpawnEnemies(enemies, maxEnemies, 240.0f, -100.0f, -1, -1, 2.5f, screenWidth / 2 - 100, screenHeight / 2.3f, currentEnemies, 1); // Left
+                        enemy.SpawnEnemies(enemies, maxEnemies, 300.0f, screenWidth + 100, 1, 1, 2.5f, screenWidth / 2 + 100, screenHeight / 2.3f, currentEnemies, 2); // Right
                         currentWave++;
                     }
                 }
@@ -893,7 +896,7 @@ int main(void)
                     }
 
                     // === Wave 2 ===
-                    else if (currentEnemies <= 2 && currentWave == 1)
+                    else if (currentEnemies == 0 && currentWave == 1)
                     {
                         currentEnemies += 10;
                         enemy.SpawnEnemies(enemies, maxEnemies, 200.0, -100.0f, -1, -1, 3.5f, screenWidth / 2.0f - 80, screenHeight / 2.0f + 50, currentEnemies, 5); // Left
@@ -1000,7 +1003,7 @@ int main(void)
                 }
                 else if (!canAct) krakenEnemy.playerPicked = true;
 
-                enemy.UpdateEnemy(enemyBullets, enemies, enemy, GetFrameTime(), player, gameOver, isInvencibilityDelayTimerStarted);
+                enemy.UpdateEnemy(enemyBullets, enemies, enemy, GetFrameTime(), player, spritePos, gameOver, isInvencibilityDelayTimerStarted);
             }
 
             // Update enemies bullets
@@ -1034,6 +1037,7 @@ int main(void)
                 PlaySound(deathPlayerSound);
                 playerGotHit = true;
                 canAct = false;
+                shield = false;
                 life--;
             }
 
@@ -1042,6 +1046,7 @@ int main(void)
                 PlaySound(deathPlayerSound);
                 playerGotHit = true;
                 canAct = false;
+                shield = false;
                 life--;
             }
 
@@ -1050,6 +1055,7 @@ int main(void)
                 PlaySound(deathPlayerSound);
                 playerGotHit = true;
                 canAct = false;
+                shield = false;
                 life--;
             }
 
@@ -1061,6 +1067,7 @@ int main(void)
                     playerGotHit = true;
                     bullet.active = false;
                     canAct = false;
+                    shield = false;
                     life--;
                 }
             }
@@ -1346,7 +1353,7 @@ int main(void)
                 {
                     Vector2 origin = { boss.rect.x + boss.rect.width / 2, boss.rect.y + boss.rect.height };
 
-                    // Láser central
+                    // Láser central 
                     DrawTextureEx(diagonalMidAttackLaser, { origin.x - 50, origin.y - 50 }, 0, 1, WHITE);
 
                     // --------------------

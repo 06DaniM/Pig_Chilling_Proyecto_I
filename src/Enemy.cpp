@@ -179,7 +179,7 @@ void Enemy::SpawnEnemies(std::vector<Enemy>& enemies, int numberEnemies, float b
     }
 }
 
-void Enemy::UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, std::vector<Enemy>& enemies, Enemy& enemy, float deltaTime, Rectangle& player, bool gameOver, bool isInvencibilityDelayTimerStarted)
+void Enemy::UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, std::vector<Enemy>& enemies, Enemy& enemy, float deltaTime, Rectangle& player, Vector2& spritePos, bool gameOver, bool isInvencibilityDelayTimerStarted)
 {
     if (enemy.gotHit)
     {
@@ -379,7 +379,7 @@ void Enemy::UpdateEnemy(std::vector<Bullet_Enemy>& enemyBullets, std::vector<Ene
 
                     else if (enemy.enemyClass == Kraken)
                     {
-                        kraken.KrakenAttackManager(enemyBullets, enemies, enemy, player, GetFrameTime(), globalEnemyOffsetXN, isInvencibilityDelayTimerStarted);
+                        kraken.KrakenAttackManager(enemyBullets, enemies, enemy, player, spritePos, GetFrameTime(), globalEnemyOffsetXN, isInvencibilityDelayTimerStarted);
                     }
                 }
             }

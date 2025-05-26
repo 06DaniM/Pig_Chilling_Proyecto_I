@@ -15,8 +15,6 @@ void MantisEnemy::MantisAttackManager(std::vector<Bullet_Enemy>& enemyBullets, s
     float distX1;
     float moveSpeed = 300 * deltaTime;
     enemy.attackingTimer += deltaTime;
-    /*if (attackdirnum == 0) distX1 = enemy.targetFinalPosition.x - 100 - enemy.rect.x;
-    else distX1 = enemy.targetFinalPosition.x + 100 - enemy.rect.x;*/
 
     // Move the enemy to the target
 
