@@ -84,7 +84,7 @@ void Boss::SelectNextPattern()
 
     currentPattern = patternCombinations[currentCombinationIndex][currentPatternIndex];
     currentPatternIndex++;
-    currentPattern = static_cast<BossAttackPattern> (2);
+    //currentPattern = static_cast<BossAttackPattern> (2);
 }
 
 void Boss::IdleAnimation()

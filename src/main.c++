@@ -1542,6 +1542,10 @@ int main(void)
                 isNextScreenTimerStarted = true;
             }
 
+            if (boss.diagonalLaserSFXActive) StopSound(laserDiagonalSFX);
+            if (boss.wideBeamSFXActive) StopSound(wideBeamSFX);
+            if (boss.bulletDodgeSFXActive) StopSound(bulletDodgeSFX);
+
             if (!gameOverMusicStarted)
             {
                 PlayMusicStream(gameOverMusic);
