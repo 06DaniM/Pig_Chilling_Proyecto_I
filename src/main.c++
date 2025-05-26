@@ -206,6 +206,7 @@ int main(void)
     Texture2D Shield_Boss = LoadTexture("resources/bullets/Shield_Boss.png");
 
     // === MENU SPRITES === //
+    Texture2D introBackground = LoadTexture("resources/backgrounds/Intro Background.png");
     Texture2D menuBackground = LoadTexture("resources/backgrounds/Menu Background.png");
     Texture2D gamePlayBackgroundLevel1 = LoadTexture("resources/backgrounds/Gameplay Background Level 1.png");
     Texture2D gamePlayBackgroundLevel2 = LoadTexture("resources/backgrounds/Gameplay Background Level 2.png");
@@ -250,7 +251,7 @@ int main(void)
 
     bool doubleShot = false, shield = false, canAct = false, isVisible = true, playerGotHit = false;
     bool canStart = false, canPass = false,pause = false, gameOver = false, hasWon = false, canSpawn = false;
-    bool inMenu = true, inboss = false;
+    bool inIntro = true, inMenu = false, inboss = false;
     int score = 0;
     int life = 3;
     float scale = 0.75f; // Reduce the scale of the sprites
@@ -361,6 +362,41 @@ int main(void)
             }
         }
 
+        // Intro manager
+        if (inIntro)
+        {
+            int textWidth;
+
+            if (!isMenuTimerStarted) {
+                menuDelayTimer.Start(2);
+                isMenuTimerStarted = true;
+            }
+
+            BeginDrawing();
+            ClearBackground(BLACK);
+            DrawTexture(introBackground, 0, 0, WHITE);
+
+            textWidth = MeasureText("PIG CHILLING", 50); // Measure the length of the text
+            DrawTextEx(font, "PIG CHILLING", { ((float)screenWidth - textWidth) / 2, 160 }, 100, 2, GREEN); // Center the text
+
+            textWidth = MeasureText("BUTTON", 50); // Measure the length of the text
+            DrawTextEx(font, "BUTTON", { ((float)screenWidth - textWidth) / 2, 710 }, 50, 2, GREEN); // Center the text
+
+            textWidth = MeasureText("FROM PIG CHILLING", 60); // Measure the length of the text
+            DrawTextEx(font, "FROM PIG CHILLING", { (float)(screenWidth - textWidth) / 2 + 55, 790 }, 60, 2, WHITE); // Center the text
+
+            EndDrawing();
+
+            if (GetKeyPressed() != 0 && canStart) // Detect any key
+            {
+                isMenuTimerStarted = false;
+                inIntro = false;
+                inMenu = true;
+                canStart = false;
+            }
+            continue; // Avoid the code is still executing in the menu
+        }
+
         // Menu manager
         if (inMenu)
         {
@@ -432,6 +468,8 @@ int main(void)
 
                 isMenuTimerStarted = false;
 
+                doubleShot = false;
+                shield = false;
                 spritePos = { (screenWidth - spriteWidth) / 2.0f, screenHeight / 1.5f };
 
                 canStart = false;
@@ -689,6 +727,7 @@ int main(void)
                             boss.gotHit = true;
                             bosshitframe++;
                             boss.life--;
+                            if (boss.life <= 0) score += 5000;
                             cout << boss.life;
                         }
                     }
@@ -1036,7 +1075,6 @@ int main(void)
 
             if (boss.dead) canAct = false;
 
-            cout << boss.diagonalLaserSFXActive << boss.diagonalLaserSFXPlayed << endl;
             if (boss.diagonalLaserSFXActive && !boss.diagonalLaserSFXPlayed)
             {
                 PlaySound(laserDiagonalSFX);
